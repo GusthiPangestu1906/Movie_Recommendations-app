@@ -84,7 +84,7 @@ Aplikasi dilengkapi dengan halaman login sederhana untuk demonstrasi:
 
 ## 👤 Developer
 **Gusthi Pangestu**  
-Mahasiswa Workshop Pemrograman Perangkat Bergerak
+Mahasiswa
 
 ---
 *Proyek ini dibuat untuk memenuhi tugas akhir (UAS) mata kuliah Workshop Pemrograman Perangkat Bergerak.*
