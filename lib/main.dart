@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/movie_provider.dart';
+import 'providers/history_provider.dart';
 import 'pages/login_page.dart';
 
 void main() {
@@ -8,6 +9,11 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => MovieProvider()),
+        ChangeNotifierProxyProvider<MovieProvider, HistoryProvider>(
+          create: (_) => HistoryProvider(),
+          update: (_, movieProvider, historyProvider) => 
+              historyProvider!..update(movieProvider),
+        ),
       ],
       child: const MyApp(),
     ),

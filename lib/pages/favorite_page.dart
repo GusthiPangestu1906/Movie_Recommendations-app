@@ -1,34 +1,78 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/movie_provider.dart';
+import '../providers/history_provider.dart';
 import 'detail_page.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
-class FavoritePage extends StatelessWidget {
+class FavoritePage extends StatefulWidget {
   const FavoritePage({super.key});
+
+  @override
+  State<FavoritePage> createState() => _FavoritePageState();
+}
+
+class _FavoritePageState extends State<FavoritePage> {
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0B0E1E),
       appBar: AppBar(
-        title: const Text('My Favorites', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        centerTitle: true,
-        backgroundColor: const Color(0xFF0B0E1E),
-        elevation: 0,
+        title: const Text('My Favorites'),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(60),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: TextField(
+              controller: _searchController,
+              onChanged: (value) {
+                Provider.of<MovieProvider>(context, listen: false).setFavoriteSearchQuery(value);
+              },
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: 'Search in favorites...',
+                hintStyle: const TextStyle(color: Colors.white24),
+                prefixIcon: const Icon(Icons.search, color: Colors.white24),
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.05),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(vertical: 0),
+              ),
+            ),
+          ),
+        ),
       ),
       body: Consumer<MovieProvider>(
         builder: (context, provider, child) {
-          if (provider.favoriteMovies.isEmpty) {
+          final favorites = provider.filteredFavorites;
+
+          if (favorites.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.favorite_border, size: 80, color: Colors.white.withOpacity(0.05)),
+                  Icon(
+                    _searchController.text.isEmpty ? Icons.favorite_border : Icons.search_off,
+                    size: 64,
+                    color: Colors.white10,
+                  ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'No favorites yet',
-                    style: TextStyle(color: Colors.white30),
+                  Text(
+                    _searchController.text.isEmpty 
+                        ? 'No favorites yet' 
+                        : 'No matching favorites found',
+                    style: const TextStyle(color: Colors.white38, fontSize: 18),
                   ),
                 ],
               ),
@@ -36,9 +80,9 @@ class FavoritePage extends StatelessWidget {
           }
           return ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            itemCount: provider.favoriteMovies.length,
+            itemCount: favorites.length,
             itemBuilder: (context, index) {
-              final movie = provider.favoriteMovies[index];
+              final movie = favorites[index];
               return GestureDetector(
                 onTap: () {
                   Navigator.push(
@@ -55,7 +99,7 @@ class FavoritePage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                         child: CachedNetworkImage(
                           imageUrl: movie.fullPosterPath,
-                          width: 85,
+                          width: 80,
                           height: 120,
                           fit: BoxFit.cover,
                           placeholder: (context, url) => Container(color: Colors.white10),
@@ -73,33 +117,31 @@ class FavoritePage extends StatelessWidget {
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
                                 color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                             const SizedBox(height: 8),
                             Row(
                               children: [
-                                const Icon(Icons.star, color: Colors.amber, size: 14),
+                                const Icon(Icons.star, color: Colors.amber, size: 16),
                                 const SizedBox(width: 4),
                                 Text(
-                                  '${movie.voteAverage.round()}/10 IMDb',
+                                  '${movie.voteAverage.toStringAsFixed(1)}/10 IMDb',
                                   style: const TextStyle(color: Colors.white38, fontSize: 12),
                                 ),
                               ],
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              movie.releaseDate.split('-')[0],
-                              style: const TextStyle(color: Colors.white30, fontSize: 12),
                             ),
                           ],
                         ),
                       ),
                       IconButton(
                         icon: const Icon(Icons.favorite, color: Colors.redAccent),
-                        onPressed: () => provider.toggleFavorite(movie),
+                        onPressed: () {
+                          final historyProvider = Provider.of<HistoryProvider>(context, listen: false);
+                          provider.toggleFavorite(movie, history: historyProvider.history);
+                        },
                       ),
                     ],
                   ),

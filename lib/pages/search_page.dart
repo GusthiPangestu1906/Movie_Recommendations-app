@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/movie_provider.dart';
+import '../providers/history_provider.dart';
+import '../models/movie.dart';
 import 'detail_page.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -226,13 +228,25 @@ class _SearchPageState extends State<SearchPage> {
                 child: TextField(
                   controller: _searchController,
                   style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: 'Search movies...',
-                    hintStyle: TextStyle(color: Colors.white30, fontSize: 14),
-                    prefixIcon: Icon(Icons.search, color: Colors.white30),
+                    hintStyle: const TextStyle(color: Colors.white30, fontSize: 14),
+                    prefixIcon: const Icon(Icons.search, color: Colors.white30),
+                    suffixIcon: _searchController.text.isNotEmpty 
+                      ? IconButton(
+                          icon: const Icon(Icons.close, color: Colors.white30, size: 20),
+                          onPressed: () {
+                            _searchController.clear();
+                            Provider.of<MovieProvider>(context, listen: false).clearSearch();
+                          },
+                        )
+                      : null,
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
                   ),
+                  onChanged: (query) {
+                    Provider.of<MovieProvider>(context, listen: false).search(query);
+                  },
                   onSubmitted: (query) {
                     if (query.isNotEmpty) {
                       Provider.of<MovieProvider>(context, listen: false).search(query);

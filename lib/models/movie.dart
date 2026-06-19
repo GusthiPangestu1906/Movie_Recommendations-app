@@ -9,6 +9,7 @@ class Movie {
   List<Cast>? cast;
   String? trailerKey;
   String? certification;
+  DateTime? watchDate;
 
   Movie({
     required this.id,
@@ -21,6 +22,7 @@ class Movie {
     this.cast,
     this.trailerKey,
     this.certification,
+    this.watchDate,
   });
 
   factory Movie.fromJson(Map<String, dynamic> json) {

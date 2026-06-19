@@ -79,8 +79,9 @@ class ApiService {
   }
 
   Future<List<Movie>> searchMovies(String query) async {
+    final encodedQuery = Uri.encodeComponent(query);
     final response = await http.get(
-      Uri.parse('$_baseUrl/search/movie?api_key=$_apiKey&query=$query'),
+      Uri.parse('$_baseUrl/search/movie?api_key=$_apiKey&query=$encodedQuery'),
     );
 
     if (response.statusCode == 200) {
