@@ -13,7 +13,6 @@
 
 *   **Smart Search Suggestions (Auto-Guess)**: Sistem pencarian cerdas yang menampilkan hasil secara *real-time* saat pengguna mengetik (Autocomplete) dengan optimasi *debounce* untuk efisiensi API.
 *   **Manual Watch History Journal**: Pengguna dapat mencatat riwayat tontonan secara manual dengan memilih tanggal menonton melalui *Date Picker* (Kalender).
-*   **Bulk Data Import**: Fitur canggih untuk mengimpor ratusan data riwayat tontonan sekaligus dari daftar teks mentah melalui sinkronisasi otomatis dengan database TMDb.
 *   **Smart Recommendation (For You)**: Sistem rekomendasi yang dipersonalisasi berdasarkan daftar **Favorit** dan **Riwayat Tontonan** pengguna.
 *   **Watch Status Indicator**: Label visual **"WATCHED"** pada film yang sudah pernah ditonton untuk mencegah duplikasi data dan memudahkan identifikasi.
 *   **Advanced Multi-Genre Filter**: Mencari film dengan kombinasi berbagai genre (misal: Action + Sci-Fi) untuk hasil yang lebih spesifik.
@@ -43,7 +42,6 @@
 lib/
 ├── models/         # Model data (Movie, Cast)
 ├── providers/      # State management (MovieProvider, HistoryProvider)
-├── services/       # Komunikasi API & Data Seeding (ApiService, SeederService)
 ├── pages/          # UI Pages (Home, Detail, Login, Search, History, Favorite)
 └── main.dart       # Entry point & Provider Setup
 ```
