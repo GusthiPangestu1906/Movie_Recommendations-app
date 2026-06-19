@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -6,6 +7,7 @@ import '../services/api_service.dart';
 
 class MovieProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();
+  Timer? _debounce;
 
   List<Movie> _movies = [];
   List<Movie> get movies => _movies;
@@ -13,8 +15,25 @@ class MovieProvider with ChangeNotifier {
   List<Movie> _searchResults = [];
   List<Movie> get searchResults => _searchResults;
 
+  List<Movie> _suggestions = [];
+  List<Movie> get suggestions => _suggestions;
+
   List<Movie> _favoriteMovies = [];
   List<Movie> get favoriteMovies => _favoriteMovies;
+
+  String _favoriteSearchQuery = '';
+  List<Movie> get filteredFavorites {
+    if (_favoriteSearchQuery.isEmpty) return _favoriteMovies;
+    return _favoriteMovies
+        .where((movie) =>
+            movie.title.toLowerCase().contains(_favoriteSearchQuery.toLowerCase()))
+        .toList();
+  }
+
+  void setFavoriteSearchQuery(String query) {
+    _favoriteSearchQuery = query;
+    notifyListeners();
+  }
 
   List<Movie> _recommendations = [];
   List<Movie> get recommendations => _recommendations;
@@ -90,40 +109,66 @@ class MovieProvider with ChangeNotifier {
     }
   }
 
-  Future<void> fetchRecommendations() async {
-    if (_favoriteMovies.isEmpty) {
-      _recommendations = [];
+  Future<void> fetchRecommendations({List<Movie>? history}) async {
+    // Priority 1: Favorites
+    if (_favoriteMovies.isNotEmpty) {
+      try {
+        final latestFavorite = _favoriteMovies.first;
+        _recommendations = await _apiService.getRecommendations(latestFavorite.id);
+        notifyListeners();
+        return;
+      } catch (e) {
+        print('Error fetching favorite-based recommendations: $e');
+      }
+    }
+
+    // Priority 2: History (if favorites are empty or fetch failed)
+    if (history != null && history.isNotEmpty) {
+      try {
+        final latestHistory = history.first;
+        _recommendations = await _apiService.getRecommendations(latestHistory.id);
+        notifyListeners();
+        return;
+      } catch (e) {
+        print('Error fetching history-based recommendations: $e');
+      }
+    }
+
+    // Fallback: If both are empty, we can show popular movies or keep it empty
+    _recommendations = [];
+    notifyListeners();
+  }
+
+  Future<void> search(String query) async {
+    if (_debounce?.isActive ?? false) _debounce?.cancel();
+    
+    if (query.isEmpty) {
+      _searchResults = [];
+      _suggestions = [];
       notifyListeners();
       return;
     }
 
-    try {
-      // Get recommendations based on the most recent favorite
-      final latestFavorite = _favoriteMovies.first;
-      _recommendations = await _apiService.getRecommendations(latestFavorite.id);
-      
-      // If recommendations are sparse, try discovering by genres of favorites
-      if (_recommendations.length < 5) {
-        // Simple genre analysis could be added here if needed
-      }
+    _debounce = Timer(const Duration(milliseconds: 500), () async {
+      _isLoading = true;
+      _selectedGenreIds.clear();
       notifyListeners();
-    } catch (e) {
-      print('Error fetching recommendations: $e');
-    }
+      try {
+        _searchResults = await _apiService.searchMovies(query);
+        _suggestions = _searchResults.take(5).toList(); // Top 5 as "guesses"
+      } catch (e) {
+        print(e);
+      } finally {
+        _isLoading = false;
+        notifyListeners();
+      }
+    });
   }
 
-  Future<void> search(String query) async {
-    _isLoading = true;
-    _selectedGenreIds.clear();
+  void clearSearch() {
+    _searchResults = [];
+    _suggestions = [];
     notifyListeners();
-    try {
-      _searchResults = await _apiService.searchMovies(query);
-    } catch (e) {
-      print(e);
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
   }
 
   Future<void> searchByCategory(String category) async {
@@ -190,7 +235,7 @@ class MovieProvider with ChangeNotifier {
     }
   }
 
-  void toggleFavorite(Movie movie) {
+  void toggleFavorite(Movie movie, {List<Movie>? history}) {
     final index = _favoriteMovies.indexWhere((m) => m.id == movie.id);
     if (index != -1) {
       _favoriteMovies.removeAt(index);
@@ -198,7 +243,7 @@ class MovieProvider with ChangeNotifier {
       _favoriteMovies.insert(0, movie); // Insert at top for "latest" logic
     }
     saveFavorites();
-    fetchRecommendations(); // Update recommendations when favorites change
+    fetchRecommendations(history: history); // Update recommendations when favorites change
     notifyListeners();
   }
 
@@ -229,6 +274,15 @@ class MovieProvider with ChangeNotifier {
       final List decodedData = json.decode(encodedData);
       _favoriteMovies = decodedData.map((m) => Movie.fromJson(m)).toList();
       notifyListeners();
+    }
+  }
+
+  Future<List<Movie>> searchForHistory(String query) async {
+    try {
+      return await _apiService.searchMovies(query);
+    } catch (e) {
+      print(e);
+      return [];
     }
   }
 }

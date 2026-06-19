@@ -5,6 +5,8 @@ import '../models/movie.dart';
 import 'detail_page.dart';
 import 'search_page.dart';
 import 'favorite_page.dart';
+import 'history_page.dart';
+import '../providers/history_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class HomePage extends StatefulWidget {
@@ -21,6 +23,7 @@ class _HomePageState extends State<HomePage> {
     const MovieListScreen(),
     const SearchPage(),
     const FavoritePage(),
+    const HistoryPage(),
   ];
 
   @override
@@ -68,6 +71,13 @@ class _HomePageState extends State<HomePage> {
               ),
               label: 'Favorites',
             ),
+            BottomNavigationBarItem(
+              icon: Padding(
+                padding: EdgeInsets.only(bottom: 4),
+                child: Icon(Icons.history),
+              ),
+              label: 'History',
+            ),
           ],
         ),
       ),
@@ -90,7 +100,9 @@ class _MovieListScreenState extends State<MovieListScreen> {
     super.initState();
     Future.microtask(() {
       final provider = Provider.of<MovieProvider>(context, listen: false);
+      final historyProvider = Provider.of<HistoryProvider>(context, listen: false);
       provider.fetchNowPlaying();
+      provider.fetchRecommendations(history: historyProvider.history);
     });
     
     _scrollController.addListener(() {
@@ -239,10 +251,12 @@ class _MovieListScreenState extends State<MovieListScreen> {
 
   Widget _buildHorizontalCard(BuildContext context, Movie movie) {
     return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => DetailPage(movie: movie)),
-      ),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => DetailPage(movie: movie)),
+        );
+      },
       child: Container(
         width: 140,
         margin: const EdgeInsets.only(right: 12),
