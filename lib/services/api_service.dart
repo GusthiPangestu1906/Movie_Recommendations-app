@@ -6,13 +6,25 @@ class ApiService {
   static const String _apiKey = '12d2377d20d4f51bf7c4c31f6b13a70b';
   static const String _baseUrl = 'https://api.themoviedb.org/3';
 
-  Future<List<Movie>> getNowPlayingMovies() async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/movie/now_playing?api_key=$_apiKey'),
-    );
+  // Simple in-memory cache
+  final Map<String, dynamic> _cache = {};
 
+  Future<dynamic> _getWithCache(String url) async {
+    if (_cache.containsKey(url)) {
+      return _cache[url];
+    }
+    final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
+      _cache[url] = data;
+      return data;
+    }
+    return null;
+  }
+
+  Future<List<Movie>> getNowPlayingMovies() async {
+    final data = await _getWithCache('$_baseUrl/movie/now_playing?api_key=$_apiKey');
+    if (data != null) {
       final List results = data['results'];
       return results.map((movie) => Movie.fromJson(movie)).toList();
     } else {
@@ -21,12 +33,8 @@ class ApiService {
   }
 
   Future<List<Movie>> getMoviesByCategory(String category, {int page = 1}) async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/movie/$category?api_key=$_apiKey&page=$page'),
-    );
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
+    final data = await _getWithCache('$_baseUrl/movie/$category?api_key=$_apiKey&page=$page');
+    if (data != null) {
       final List results = data['results'];
       return results.map((movie) => Movie.fromJson(movie)).toList();
     } else {
@@ -52,12 +60,8 @@ class ApiService {
   }
 
   Future<List<Movie>> getRecommendations(int movieId) async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/movie/$movieId/recommendations?api_key=$_apiKey'),
-    );
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
+    final data = await _getWithCache('$_baseUrl/movie/$movieId/recommendations?api_key=$_apiKey');
+    if (data != null) {
       final List results = data['results'];
       return results.map((movie) => Movie.fromJson(movie)).toList();
     } else {
@@ -66,12 +70,8 @@ class ApiService {
   }
 
   Future<List<Movie>> getDetails(int movieId) async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/movie/$movieId?api_key=$_apiKey'),
-    );
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
+    final data = await _getWithCache('$_baseUrl/movie/$movieId?api_key=$_apiKey');
+    if (data != null) {
       return [Movie.fromJson(data)];
     } else {
       return [];
@@ -94,12 +94,8 @@ class ApiService {
   }
 
   Future<List<Cast>> getMovieCast(int movieId) async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/movie/$movieId/credits?api_key=$_apiKey'),
-    );
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
+    final data = await _getWithCache('$_baseUrl/movie/$movieId/credits?api_key=$_apiKey');
+    if (data != null) {
       final List castList = data['cast'];
       return castList.take(10).map((c) => Cast.fromJson(c)).toList();
     } else {
@@ -108,12 +104,8 @@ class ApiService {
   }
 
   Future<String?> getMovieTrailer(int movieId) async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/movie/$movieId/videos?api_key=$_apiKey'),
-    );
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
+    final data = await _getWithCache('$_baseUrl/movie/$movieId/videos?api_key=$_apiKey');
+    if (data != null) {
       final List results = data['results'];
       final trailer = results.firstWhere(
         (v) => v['type'] == 'Trailer' && v['site'] == 'YouTube',
@@ -126,12 +118,8 @@ class ApiService {
   }
 
   Future<String?> getMovieCertification(int movieId) async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/movie/$movieId/release_dates?api_key=$_apiKey'),
-    );
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
+    final data = await _getWithCache('$_baseUrl/movie/$movieId/release_dates?api_key=$_apiKey');
+    if (data != null) {
       final List results = data['results'];
       
       // Try to find US certification as it's the most common
