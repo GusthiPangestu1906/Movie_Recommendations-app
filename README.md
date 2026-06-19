@@ -5,20 +5,20 @@
 ![Dart](https://img.shields.io/badge/dart-%230175C2.svg?style=for-the-badge&logo=dart&logoColor=white)
 ![TMDb](https://img.shields.io/badge/TMDb-API-01d277?style=for-the-badge&logo=themoviedatabase&logoColor=white)
 
-**My Movies** (FilmKu) adalah aplikasi katalog film modern yang dibangun menggunakan Flutter. Aplikasi ini dirancang untuk memberikan pengalaman eksplorasi film yang intuitif dengan integrasi langsung ke database TMDb, sistem rekomendasi cerdas, dan fitur streaming eksternal.
+**My Movies** (FilmKu) adalah aplikasi katalog film modern yang dibangun menggunakan Flutter. Aplikasi ini dirancang untuk memberikan pengalaman eksplorasi film yang intuitif dengan integrasi langsung ke database TMDb, sistem rekomendasi cerdas, dan fitur manajemen riwayat tontonan pribadi.
 
 ---
 
 ## 🚀 Fitur Utama
 
-*   **Premium Dark UI**: Antarmuka modern dengan mode gelap (deep navy) yang elegan dan nyaman di mata.
-*   **Smart Recommendation (For You)**: Sistem rekomendasi otomatis berdasarkan daftar film yang disukai (favorit) pengguna.
-*   **Advanced Multi-Genre Filter**: Memungkinkan pengguna mencari film dengan mengombinasikan berbagai genre sekaligus (misal: Action + Sci-Fi).
-*   **Infinite Scrolling**: Loading data yang mulus saat men-scroll daftar film (Pagination) untuk performa yang optimal.
-*   **Netflix Integration**: Tombol khusus "Watch on Netflix" yang langsung mengarahkan pengguna ke aplikasi Netflix untuk menonton film terkait.
-*   **Trailer Playback**: Integrasi YouTube untuk memutar trailer film secara langsung.
-*   **Dynamic Age Rating**: Menampilkan klasifikasi usia film secara akurat (General, 13+, For 18+, dsb).
-*   **Favorite Management**: Simpan film favorit Anda secara lokal menggunakan `shared_preferences`.
+*   **Smart Search Suggestions (Auto-Guess)**: Sistem pencarian cerdas yang menampilkan hasil secara *real-time* saat pengguna mengetik (Autocomplete) dengan optimasi *debounce* untuk efisiensi API.
+*   **Manual Watch History Journal**: Pengguna dapat mencatat riwayat tontonan secara manual dengan memilih tanggal menonton melalui *Date Picker* (Kalender).
+*   **Bulk Data Import**: Fitur canggih untuk mengimpor ratusan data riwayat tontonan sekaligus dari daftar teks mentah melalui sinkronisasi otomatis dengan database TMDb.
+*   **Smart Recommendation (For You)**: Sistem rekomendasi yang dipersonalisasi berdasarkan daftar **Favorit** dan **Riwayat Tontonan** pengguna.
+*   **Watch Status Indicator**: Label visual **"WATCHED"** pada film yang sudah pernah ditonton untuk mencegah duplikasi data dan memudahkan identifikasi.
+*   **Advanced Multi-Genre Filter**: Mencari film dengan kombinasi berbagai genre (misal: Action + Sci-Fi) untuk hasil yang lebih spesifik.
+*   **Netflix & Trailer Integration**: Akses cepat untuk menonton film di Netflix dan memutar trailer YouTube langsung dari aplikasi.
+*   **Premium Dark UI**: Antarmuka modern bertema *Deep Navy* yang elegan dengan navigasi *Bottom Navigation Bar* yang intuitif.
 
 ---
 
@@ -26,14 +26,14 @@
 
 - **Framework**: Flutter
 - **Bahasa**: Dart
-- **State Management**: Provider
-- **Penyimpanan Lokal**: Shared Preferences
+- **State Management**: Provider (dengan `ChangeNotifierProxyProvider` untuk sinkronisasi antar-data)
+- **Penyimpanan Lokal**: Shared Preferences (untuk persistensi Favorit dan Riwayat)
 - **API**: The Movie Database (TMDb)
 - **Library Utama**:
-  - `http`: Untuk request data dari API.
-  - `cached_network_image`: Untuk manajemen cache gambar poster film.
-  - `url_launcher`: Untuk membuka link eksternal (YouTube & Netflix).
-  - `intl`: Untuk manajemen format tanggal dan filter waktu.
+  - `http`: Untuk komunikasi data API.
+  - `cached_network_image`: Manajemen cache gambar poster.
+  - `url_launcher`: Membuka link eksternal (Netflix & YouTube).
+  - `intl`: Manajemen format tanggal Indonesia dan pengurutan riwayat.
 
 ---
 
@@ -42,10 +42,10 @@
 ```text
 lib/
 ├── models/         # Model data (Movie, Cast)
-├── providers/      # State management (MovieProvider)
-├── services/       # Komunikasi API (ApiService)
-├── pages/          # Tampilan antar muka (Home, Detail, Login, dsb)
-└── main.dart       # Entry point aplikasi
+├── providers/      # State management (MovieProvider, HistoryProvider)
+├── services/       # Komunikasi API & Data Seeding (ApiService, SeederService)
+├── pages/          # UI Pages (Home, Detail, Login, Search, History, Favorite)
+└── main.dart       # Entry point & Provider Setup
 ```
 
 ---
@@ -75,7 +75,6 @@ lib/
 ---
 
 ## 🔑 Kredensial Akses
-Aplikasi dilengkapi dengan halaman login sederhana untuk demonstrasi:
 - **Username**: `admin`
 - **Password**: `admin`
 - *(Atau gunakan fitur **Login as Guest** untuk akses instan)*
@@ -84,7 +83,7 @@ Aplikasi dilengkapi dengan halaman login sederhana untuk demonstrasi:
 
 ## 👤 Developer
 **Gusthi Pangestu**  
-Mahasiswa
+Mahasiswa Workshop Pemrograman Perangkat Bergerak
 
 ---
 *Proyek ini dibuat untuk memenuhi tugas akhir (UAS) mata kuliah Workshop Pemrograman Perangkat Bergerak.*
