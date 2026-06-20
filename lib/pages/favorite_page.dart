@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/movie_provider.dart';
-import '../providers/history_provider.dart';
+import '../models/movie.dart';
 import 'detail_page.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -23,133 +23,176 @@ class _FavoritePageState extends State<FavoritePage> {
 
   @override
   Widget build(BuildContext context) {
+    final movieProvider = Provider.of<MovieProvider>(context);
+    final isDramaMode = movieProvider.isDramaMode;
+
     return Scaffold(
       backgroundColor: const Color(0xFF0B0E1E),
-      appBar: AppBar(
-        title: const Text('My Favorites'),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(60),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-            child: TextField(
-              controller: _searchController,
-              onChanged: (value) {
-                Provider.of<MovieProvider>(context, listen: false).setFavoriteSearchQuery(value);
-              },
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                hintText: 'Search in favorites...',
-                hintStyle: const TextStyle(color: Colors.white24),
-                prefixIcon: const Icon(Icons.search, color: Colors.white24),
-                filled: true,
-                fillColor: Colors.white.withOpacity(0.05),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 0),
-              ),
-            ),
-          ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSectionTitle(isDramaMode ? 'Favorite Dramas' : 'Liked Movies'),
+            _buildMovieList(isDramaMode ? movieProvider.favoriteTv : movieProvider.favoriteMovies),
+          ],
         ),
       ),
-      body: Consumer<MovieProvider>(
-        builder: (context, provider, child) {
-          final favorites = provider.filteredFavorites;
+    );
+  }
 
-          if (favorites.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    _searchController.text.isEmpty ? Icons.favorite_border : Icons.search_off,
-                    size: 64,
-                    color: Colors.white10,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    _searchController.text.isEmpty 
-                        ? 'No favorites yet' 
-                        : 'No matching favorites found',
-                    style: const TextStyle(color: Colors.white38, fontSize: 18),
-                  ),
-                ],
-              ),
-            );
-          }
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            itemCount: favorites.length,
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+      child: Text(
+        title,
+        style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _buildActorSection(MovieProvider provider) {
+    if (provider.favoriteActors.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('Favorite Actors & Actresses'),
+        SizedBox(
+          height: 120,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: provider.favoriteActors.length,
             itemBuilder: (context, index) {
-              final movie = favorites[index];
-              return GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => DetailPage(movie: movie)),
-                  );
-                },
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  height: 120,
-                  child: Row(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: CachedNetworkImage(
-                          imageUrl: movie.fullPosterPath,
-                          width: 80,
-                          height: 120,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(color: Colors.white10),
-                          errorWidget: (context, url, error) => const Icon(Icons.error),
+              final actor = provider.favoriteActors[index];
+              return Container(
+                width: 90,
+                margin: const EdgeInsets.only(right: 12),
+                child: Column(
+                  children: [
+                    Stack(
+                      children: [
+                        CircleAvatar(
+                          radius: 35,
+                          backgroundImage: CachedNetworkImageProvider(actor.fullProfilePath),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              movie.title,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                        Positioned(
+                          right: 0,
+                          bottom: 0,
+                          child: GestureDetector(
+                            onTap: () => provider.toggleFavoriteActor(actor),
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                color: Colors.black54,
+                                shape: BoxShape.circle,
                               ),
+                              child: const Icon(Icons.favorite, color: Colors.redAccent, size: 14),
                             ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                const Icon(Icons.star, color: Colors.amber, size: 16),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '${movie.voteAverage.toStringAsFixed(1)}/10 IMDb',
-                                  style: const TextStyle(color: Colors.white38, fontSize: 12),
-                                ),
-                              ],
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.favorite, color: Colors.redAccent),
-                        onPressed: () {
-                          final historyProvider = Provider.of<HistoryProvider>(context, listen: false);
-                          provider.toggleFavorite(movie, history: historyProvider.history);
-                        },
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      actor.name,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Colors.white70, fontSize: 11),
+                    ),
+                  ],
                 ),
               );
             },
-          );
-        },
+          ),
+        ),
+        const Divider(color: Colors.white10, indent: 16, endIndent: 16),
+      ],
+    );
+  }
+
+  Widget _buildMovieList(List<Movie> list) {
+    if (list.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(40.0),
+          child: Text(
+            'No favorites added yet.',
+            style: TextStyle(color: Colors.white24),
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: list.length,
+      itemBuilder: (context, index) {
+        final movie = list[index];
+        return _buildMovieCard(context, movie);
+      },
+    );
+  }
+
+  Widget _buildMovieCard(BuildContext context, Movie movie) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => DetailPage(movie: movie)),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.02),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withOpacity(0.05)),
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: CachedNetworkImage(
+                imageUrl: movie.fullPosterPath,
+                width: 80,
+                height: 120,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    movie.title,
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(Icons.star_rounded, color: Colors.amber, size: 16),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${movie.voteAverage.toStringAsFixed(1)}',
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.favorite, color: Colors.redAccent),
+              onPressed: () {
+                Provider.of<MovieProvider>(context, listen: false).toggleFavorite(movie);
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

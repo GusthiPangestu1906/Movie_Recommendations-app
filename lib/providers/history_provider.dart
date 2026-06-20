@@ -8,13 +8,20 @@ class HistoryProvider with ChangeNotifier {
   List<Movie> _history = [];
   List<Movie> get history => _history;
 
+  List<Movie> _tvHistory = [];
+  List<Movie> get tvHistory => _tvHistory;
+
   String _searchQuery = '';
+  String get searchQuery => _searchQuery;
+  
   List<Movie> get filteredHistory {
-    if (_searchQuery.isEmpty) return _history;
-    return _history
-        .where((movie) =>
-            movie.title.toLowerCase().contains(_searchQuery.toLowerCase()))
-        .toList();
+    final list = _searchQuery.isEmpty ? _history : _history.where((movie) => movie.title.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+    return list..sort((a, b) => (b.watchDate ?? DateTime(0)).compareTo(a.watchDate ?? DateTime(0)));
+  }
+
+  List<Movie> get filteredTvHistory {
+    final list = _searchQuery.isEmpty ? _tvHistory : _tvHistory.where((movie) => movie.title.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+    return list..sort((a, b) => (b.watchDate ?? DateTime(0)).compareTo(a.watchDate ?? DateTime(0)));
   }
 
   void setSearchQuery(String query) {
@@ -23,12 +30,12 @@ class HistoryProvider with ChangeNotifier {
   }
 
   bool isWatched(int movieId) {
-    return _history.any((movie) => movie.id == movieId);
+    return _history.any((movie) => movie.id == movieId) || _tvHistory.any((movie) => movie.id == movieId);
   }
 
   DateTime? getWatchDate(int movieId) {
     try {
-      return _history.firstWhere((movie) => movie.id == movieId).watchDate;
+      return [..._history, ..._tvHistory].firstWhere((movie) => movie.id == movieId).watchDate;
     } catch (_) {
       return null;
     }
@@ -46,86 +53,70 @@ class HistoryProvider with ChangeNotifier {
 
   Future<void> _loadHistory() async {
     final prefs = await SharedPreferences.getInstance();
-    final String? historyData = prefs.getString('watch_history');
-    if (historyData != null) {
-      final List<dynamic> decodedData = json.decode(historyData);
-      _history = decodedData.map((item) {
-        final movie = Movie.fromJson(item);
-        if (item['watch_date'] != null) {
-          movie.watchDate = DateTime.parse(item['watch_date']);
-        }
-        return movie;
-      }).toList();
-      notifyListeners();
+    final String? movieData = prefs.getString('watch_history');
+    final String? tvData = prefs.getString('watch_history_tv');
+    
+    if (movieData != null) {
+      final List<dynamic> decoded = json.decode(movieData);
+      _history = decoded.map((item) => _mapToMovie(item, false)).toList();
     }
+    if (tvData != null) {
+      final List<dynamic> decoded = json.decode(tvData);
+      _tvHistory = decoded.map((item) => _mapToMovie(item, true)).toList();
+    }
+    notifyListeners();
+  }
+
+  Movie _mapToMovie(dynamic item, bool isTv) {
+    final movie = Movie.fromJson(item, isTv: isTv);
+    if (item['watch_date'] != null) {
+      movie.watchDate = DateTime.parse(item['watch_date']);
+    }
+    return movie;
   }
 
   Future<void> addToHistory(Movie movie, DateTime watchDate) async {
-    // Check for duplicates (same ID)
-    final existingIndex = _history.indexWhere((item) => item.id == movie.id);
+    final list = movie.isTv ? _tvHistory : _history;
+    final existingIndex = list.indexWhere((item) => item.id == movie.id);
     
     if (existingIndex != -1) {
-      // If found, check if it's the same watch date
-      final existingMovie = _history[existingIndex];
-      if (existingMovie.watchDate != null && 
-          existingMovie.watchDate!.year == watchDate.year &&
-          existingMovie.watchDate!.month == watchDate.month &&
-          existingMovie.watchDate!.day == watchDate.day) {
-        // Exactly the same movie on the same day, just update to be sure but don't notify/save extra if unnecessary
-        return;
-      }
-      // If different date, remove old one to replace with new date
-      _history.removeAt(existingIndex);
+      list.removeAt(existingIndex);
     }
     
     movie.watchDate = watchDate;
-    
-    // Insert at the beginning of the list
-    _history.insert(0, movie);
-    
-    // Sort history by watch date (descending)
-    _history.sort((a, b) => (b.watchDate ?? DateTime.now()).compareTo(a.watchDate ?? DateTime.now()));
+    list.insert(0, movie);
+    list.sort((a, b) => (b.watchDate ?? DateTime.now()).compareTo(a.watchDate ?? DateTime.now()));
 
     notifyListeners();
     await _saveHistory();
-
-    // Trigger recommendation update in MovieProvider
     _movieProvider?.fetchRecommendations(history: _history);
   }
 
-  Future<void> removeFromHistory(int movieId) async {
-    _history.removeWhere((movie) => movie.id == movieId);
+  Future<void> removeFromHistory(int movieId, {bool isTv = false}) async {
+    final list = isTv ? _tvHistory : _history;
+    list.removeWhere((movie) => movie.id == movieId);
     notifyListeners();
     await _saveHistory();
-    
-    // Update recommendations based on new history state
     _movieProvider?.fetchRecommendations(history: _history);
   }
 
   Future<void> _saveHistory() async {
     final prefs = await SharedPreferences.getInstance();
-    final String historyData = json.encode(
-      _history.map((movie) => {
-        'id': movie.id,
-        'title': movie.title,
-        'overview': movie.overview,
-        'poster_path': movie.posterPath,
-        'backdrop_path': movie.backdropPath,
-        'vote_average': movie.voteAverage,
-        'release_date': movie.releaseDate,
-        'watch_date': movie.watchDate?.toIso8601String(),
-      }).toList(),
-    );
-    await prefs.setString('watch_history', historyData);
+    await prefs.setString('watch_history', json.encode(_history.map((m) => _movieToMap(m)).toList()));
+    await prefs.setString('watch_history_tv', json.encode(_tvHistory.map((m) => _movieToMap(m)).toList()));
   }
 
-  Future<void> clearHistory() async {
-    _history.clear();
-    notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('watch_history');
-    
-    // Trigger recommendation update in MovieProvider
-    _movieProvider?.fetchRecommendations(history: _history);
+  Map<String, dynamic> _movieToMap(Movie m) {
+    return {
+      'id': m.id,
+      'title': m.title,
+      'overview': m.overview,
+      'poster_path': m.posterPath,
+      'backdrop_path': m.backdropPath,
+      'vote_average': m.voteAverage,
+      'release_date': m.releaseDate,
+      'watch_date': m.watchDate?.toIso8601String(),
+      'isTv': m.isTv,
+    };
   }
 }
