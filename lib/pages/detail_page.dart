@@ -6,6 +6,7 @@ import '../models/movie.dart';
 import '../providers/movie_provider.dart';
 import '../providers/history_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'actor_detail_page.dart';
 
 class DetailPage extends StatefulWidget {
   final Movie movie;
@@ -420,32 +421,77 @@ class _DetailPageState extends State<DetailPage> {
   }
 
   Widget _buildCastItem(Cast castMember) {
-    return Container(
-      width: 80,
-      margin: const EdgeInsets.only(right: 12),
-      child: Column(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: CachedNetworkImage(
-              imageUrl: castMember.fullProfilePath,
-              width: 60,
-              height: 60,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => Container(color: Colors.white10),
-              errorWidget: (context, url, error) => const Icon(Icons.person, color: Colors.white30),
+    return Consumer<MovieProvider>(
+      builder: (context, provider, child) {
+        final isFav = provider.isFavoriteActor(castMember.id);
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ActorDetailPage(actorId: castMember.id, actorName: castMember.name),
+              ),
+            );
+          },
+          onLongPress: () {
+            provider.toggleFavoriteActor(castMember);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(isFav ? 'Removed from favorite actors' : 'Added to favorite actors'),
+                duration: const Duration(seconds: 1),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          },
+          child: Container(
+            width: 80,
+            margin: const EdgeInsets.only(right: 12),
+            child: Column(
+              children: [
+                Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(30),
+                      child: CachedNetworkImage(
+                        imageUrl: castMember.fullProfilePath,
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(color: Colors.white10),
+                        errorWidget: (context, url, error) => const Icon(Icons.person, color: Colors.white30),
+                      ),
+                    ),
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: const BoxDecoration(
+                          color: Colors.black54,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          isFav ? Icons.favorite : Icons.favorite_border,
+                          color: isFav ? Colors.redAccent : Colors.white70,
+                          size: 14,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  castMember.name,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: Colors.white, fontSize: 10),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            castMember.name,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: Colors.white, fontSize: 10),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

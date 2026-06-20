@@ -21,6 +21,12 @@ class MovieProvider with ChangeNotifier {
   List<Movie> _favoriteMovies = [];
   List<Movie> get favoriteMovies => _favoriteMovies;
 
+  List<Movie> _favoriteTv = [];
+  List<Movie> get favoriteTv => _favoriteTv;
+
+  List<Cast> _favoriteActors = [];
+  List<Cast> get favoriteActors => _favoriteActors;
+
   String _favoriteSearchQuery = '';
   List<Movie> get filteredFavorites {
     if (_favoriteSearchQuery.isEmpty) return _favoriteMovies;
@@ -50,6 +56,22 @@ class MovieProvider with ChangeNotifier {
   int _currentPage = 1;
   String _currentCategory = 'popular';
   
+  bool _isDramaMode = false;
+  bool get isDramaMode => _isDramaMode;
+
+  void setDramaMode(bool value) {
+    _isDramaMode = value;
+    _searchResults = [];
+    _tvSearchResults = [];
+    notifyListeners();
+  }
+
+  // TV/Drama state
+  List<Movie> _tvSeries = [];
+  List<Movie> get tvSeries => _tvSeries;
+  String? _selectedCountry;
+  String? get selectedCountry => _selectedCountry;
+
   final List<String> _selectedGenreIds = [];
   List<String> get selectedGenreIds => _selectedGenreIds;
 
@@ -59,7 +81,45 @@ class MovieProvider with ChangeNotifier {
 
   Future<void> _init() async {
     await loadFavorites();
+    await loadFavoriteActors();
     fetchRecommendations();
+    fetchTvSeries();
+  }
+
+  Future<void> fetchTvSeries({String? country}) async {
+    _isLoading = true;
+    _selectedCountry = country;
+    _tvSearchResults = []; // Clear search results when switching country
+    notifyListeners();
+    try {
+      _tvSeries = await _apiService.getTvSeries(originCountry: country);
+    } catch (e) {
+      print(e);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  List<Movie> _tvSearchResults = [];
+  List<Movie> get tvSearchResults => _tvSearchResults;
+
+  Future<void> searchTv(String query) async {
+    if (query.isEmpty) {
+      _tvSearchResults = [];
+      notifyListeners();
+      return;
+    }
+    _isLoading = true;
+    notifyListeners();
+    try {
+      _tvSearchResults = await _apiService.searchMovies(query, isTv: true);
+    } catch (e) {
+      print(e);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> fetchNowPlaying() async {
@@ -143,18 +203,26 @@ class MovieProvider with ChangeNotifier {
     if (_debounce?.isActive ?? false) _debounce?.cancel();
     
     if (query.isEmpty) {
-      _searchResults = [];
-      _suggestions = [];
-      notifyListeners();
+      if (_selectedGenreIds.isNotEmpty) {
+        applyGenreFilter();
+      } else {
+        _searchResults = [];
+        _suggestions = [];
+        notifyListeners();
+      }
       return;
     }
 
     _debounce = Timer(const Duration(milliseconds: 500), () async {
       _isLoading = true;
-      _selectedGenreIds.clear();
       notifyListeners();
       try {
-        _searchResults = await _apiService.searchMovies(query);
+        final genreString = _selectedGenreIds.isEmpty ? null : _selectedGenreIds.join(',');
+        _searchResults = await _apiService.searchMovies(query, withGenres: genreString);
+        
+        // If results are sparse and it's a long title, try a more aggressive approach if needed
+        // but typically searchMovies handles long titles well if encoded.
+
         _suggestions = _searchResults.take(5).toList(); // Top 5 as "guesses"
       } catch (e) {
         print(e);
@@ -191,6 +259,9 @@ class MovieProvider with ChangeNotifier {
     } else {
       _selectedGenreIds.add(genreId);
     }
+    
+    // Auto-apply if there's an active search or if query is empty
+    // This allows "combining" genres with the current search query
     notifyListeners();
   }
 
@@ -222,9 +293,9 @@ class MovieProvider with ChangeNotifier {
       return;
     }
     try {
-      final cast = await _apiService.getMovieCast(movie.id);
-      final trailer = await _apiService.getMovieTrailer(movie.id);
-      final certification = await _apiService.getMovieCertification(movie.id);
+      final cast = await _apiService.getMovieCast(movie.id, isTv: movie.isTv);
+      final trailer = await _apiService.getMovieTrailer(movie.id, isTv: movie.isTv);
+      final certification = await _apiService.getMovieCertification(movie.id, isTv: movie.isTv);
       _relatedMovies = await _apiService.getRecommendations(movie.id);
       movie.cast = cast;
       movie.trailerKey = trailer;
@@ -235,46 +306,108 @@ class MovieProvider with ChangeNotifier {
     }
   }
 
+  Future<Cast?> getFullActorDetails(int actorId) async {
+    // Only basic loading for person info initially
+    return await _apiService.getPersonDetails(actorId);
+  }
+
+  Future<Map<String, List<Movie>>> fetchVerifiedWork(int actorId) async {
+    return await _apiService.getVerifiedFilmography(actorId);
+  }
+
   void toggleFavorite(Movie movie, {List<Movie>? history}) {
-    final index = _favoriteMovies.indexWhere((m) => m.id == movie.id);
+    final list = movie.isTv ? _favoriteTv : _favoriteMovies;
+    final index = list.indexWhere((m) => m.id == movie.id);
     if (index != -1) {
-      _favoriteMovies.removeAt(index);
+      list.removeAt(index);
     } else {
-      _favoriteMovies.insert(0, movie); // Insert at top for "latest" logic
+      list.insert(0, movie);
     }
     saveFavorites();
-    fetchRecommendations(history: history); // Update recommendations when favorites change
+    fetchRecommendations(history: history);
     notifyListeners();
   }
 
+  void toggleFavoriteActor(Cast actor) {
+    final index = _favoriteActors.indexWhere((a) => a.id == actor.id);
+    if (index != -1) {
+      _favoriteActors.removeAt(index);
+    } else {
+      _favoriteActors.insert(0, actor);
+    }
+    saveFavoriteActors();
+    notifyListeners();
+  }
+
+  bool isFavoriteActor(int actorId) {
+    return _favoriteActors.any((a) => a.id == actorId);
+  }
+
+  Future<void> saveFavoriteActors() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String encodedData = json.encode(
+      _favoriteActors.map((a) => {
+        'id': a.id,
+        'name': a.name,
+        'profile_path': a.profilePath,
+      }).toList(),
+    );
+    await prefs.setString('favorite_actors', encodedData);
+  }
+
+  Future<void> loadFavoriteActors() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? encodedData = prefs.getString('favorite_actors');
+    if (encodedData != null) {
+      final List decodedData = json.decode(encodedData);
+      _favoriteActors = decodedData.map((a) => Cast.fromJson(a)).toList();
+      notifyListeners();
+    }
+  }
+
   bool isFavorite(int movieId) {
-    return _favoriteMovies.any((m) => m.id == movieId);
+    return _favoriteMovies.any((m) => m.id == movieId) || _favoriteTv.any((m) => m.id == movieId);
   }
 
   Future<void> saveFavorites() async {
     final prefs = await SharedPreferences.getInstance();
-    final String encodedData = json.encode(
-      _favoriteMovies.map((m) => {
-        'id': m.id,
-        'title': m.title,
-        'overview': m.overview,
-        'poster_path': m.posterPath,
-        'backdrop_path': m.backdropPath,
-        'vote_average': m.voteAverage,
-        'release_date': m.releaseDate,
-      }).toList(),
+    final String encodedMovies = json.encode(
+      _favoriteMovies.map((m) => _movieToMap(m)).toList(),
     );
-    await prefs.setString('favorites', encodedData);
+    final String encodedTv = json.encode(
+      _favoriteTv.map((m) => _movieToMap(m)).toList(),
+    );
+    await prefs.setString('favorites', encodedMovies);
+    await prefs.setString('favorites_tv', encodedTv);
+  }
+
+  Map<String, dynamic> _movieToMap(Movie m) {
+    return {
+      'id': m.id,
+      'title': m.title,
+      'overview': m.overview,
+      'poster_path': m.posterPath,
+      'backdrop_path': m.backdropPath,
+      'vote_average': m.voteAverage,
+      'release_date': m.releaseDate,
+      'isTv': m.isTv,
+    };
   }
 
   Future<void> loadFavorites() async {
     final prefs = await SharedPreferences.getInstance();
-    final String? encodedData = prefs.getString('favorites');
-    if (encodedData != null) {
-      final List decodedData = json.decode(encodedData);
-      _favoriteMovies = decodedData.map((m) => Movie.fromJson(m)).toList();
-      notifyListeners();
+    final String? encodedMovies = prefs.getString('favorites');
+    final String? encodedTv = prefs.getString('favorites_tv');
+    
+    if (encodedMovies != null) {
+      final List decodedData = json.decode(encodedMovies);
+      _favoriteMovies = decodedData.map((m) => Movie.fromJson(m, isTv: false)).toList();
     }
+    if (encodedTv != null) {
+      final List decodedData = json.decode(encodedTv);
+      _favoriteTv = decodedData.map((m) => Movie.fromJson(m, isTv: true)).toList();
+    }
+    notifyListeners();
   }
 
   Future<List<Movie>> searchForHistory(String query) async {

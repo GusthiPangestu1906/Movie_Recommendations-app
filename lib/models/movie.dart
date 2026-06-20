@@ -6,6 +6,7 @@ class Movie {
   final String backdropPath;
   final double voteAverage;
   final String releaseDate;
+  final bool isTv;
   List<Cast>? cast;
   String? trailerKey;
   String? certification;
@@ -19,21 +20,23 @@ class Movie {
     required this.backdropPath,
     required this.voteAverage,
     required this.releaseDate,
+    this.isTv = false,
     this.cast,
     this.trailerKey,
     this.certification,
     this.watchDate,
   });
 
-  factory Movie.fromJson(Map<String, dynamic> json) {
+  factory Movie.fromJson(Map<String, dynamic> json, {bool isTv = false}) {
     return Movie(
       id: json['id'] ?? 0,
-      title: json['title'] ?? '',
+      title: json['title'] ?? json['name'] ?? '',
       overview: json['overview'] ?? '',
       posterPath: json['poster_path'] ?? '',
       backdropPath: json['backdrop_path'] ?? '',
       voteAverage: (json['vote_average'] as num?)?.toDouble() ?? 0.0,
-      releaseDate: json['release_date'] ?? '',
+      releaseDate: json['release_date'] ?? json['first_air_date'] ?? '',
+      isTv: isTv,
     );
   }
 
@@ -50,14 +53,31 @@ class Cast {
   final int id;
   final String name;
   final String? profilePath;
+  String? biography;
+  String? birthday;
+  String? placeOfBirth;
+  List<Movie>? filmography;
+  List<Movie>? tvCredits;
 
-  Cast({required this.id, required this.name, this.profilePath});
+  Cast({
+    required this.id, 
+    required this.name, 
+    this.profilePath,
+    this.biography,
+    this.birthday,
+    this.placeOfBirth,
+    this.filmography,
+    this.tvCredits,
+  });
 
   factory Cast.fromJson(Map<String, dynamic> json) {
     return Cast(
       id: json['id'],
       name: json['name'],
       profilePath: json['profile_path'],
+      biography: json['biography'],
+      birthday: json['birthday'],
+      placeOfBirth: json['place_of_birth'],
     );
   }
 
