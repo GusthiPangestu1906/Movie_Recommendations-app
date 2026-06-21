@@ -32,7 +32,7 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
   Future<void> _loadInitialData() async {
     final provider = Provider.of<MovieProvider>(context, listen: false);
     
-    // Phase 1: Load Basic Info (Biography, Birthday, etc.)
+    // Phase 1: Load Basic Info
     final details = await provider.getFullActorDetails(widget.actorId);
     if (mounted) {
       setState(() {
@@ -41,7 +41,7 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
       });
     }
 
-    // Phase 2: Load Verified Filmography in background
+    // Phase 2: Load Verified Filmography
     if (details != null) {
       final work = await provider.fetchVerifiedWork(widget.actorId);
       if (mounted) {
@@ -62,83 +62,152 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
           ? const Center(child: CircularProgressIndicator(color: Color(0xFF5C6AC4)))
           : _actorDetails == null
               ? const Center(child: Text('Failed to load actor details', style: TextStyle(color: Colors.white38)))
-              : CustomScrollView(
-                  slivers: [
-                    _buildSliverAppBar(),
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildInfoRow(),
-                            const SizedBox(height: 24),
-                            _buildBiography(),
-                            const SizedBox(height: 32),
-                            _buildDynamicVerifiedSection(),
-                            const SizedBox(height: 40),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+              : SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      _buildHeader(),
+                      _buildContent(),
+                    ],
+                  ),
                 ),
     );
   }
 
-  Widget _buildSliverAppBar() {
-    return SliverAppBar(
-      expandedHeight: 400,
-      pinned: true,
-      backgroundColor: const Color(0xFF0B0E1E),
-      flexibleSpace: FlexibleSpaceBar(
-        title: Text(
-          widget.actorName,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            shadows: [Shadow(color: Colors.black, blurRadius: 10)],
+  Widget _buildHeader() {
+    return Stack(
+      children: [
+        Hero(
+          tag: 'actor-backdrop-${widget.actorId}',
+          child: CachedNetworkImage(
+            imageUrl: _actorDetails!.fullProfilePath,
+            width: double.infinity,
+            height: 450,
+            fit: BoxFit.cover,
+            placeholder: (context, url) => Container(color: Colors.white10),
+            errorWidget: (context, url, error) => Container(
+              height: 450,
+              color: Colors.white10,
+              child: const Icon(Icons.person, color: Colors.white30, size: 80),
+            ),
           ),
         ),
-        background: Stack(
-          fit: StackFit.expand,
-          children: [
-            CachedNetworkImage(
-              imageUrl: _actorDetails!.fullProfilePath,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => Container(color: Colors.white10),
-            ),
-            const DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Color(0xFF0B0E1E)],
-                ),
+        const Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Colors.transparent, Color(0xFF0B0E1E)],
+                stops: [0.6, 1.0],
               ),
             ),
-          ],
+          ),
         ),
+        // FIXED BACK BUTTON - REORDERED TO BE ON TOP
+        Positioned(
+          top: MediaQuery.of(context).padding.top + 10,
+          left: 16,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              Navigator.of(context).pop();
+            },
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.black45,
+                borderRadius: BorderRadius.circular(15),
+                border: Border.all(color: Colors.white10),
+              ),
+              child: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildContent() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      decoration: const BoxDecoration(
+        color: Color(0xFF0B0E1E),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  widget.actorName,
+                  style: const TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              Consumer<MovieProvider>(
+                builder: (context, provider, child) {
+                  final isFav = provider.isFavoriteActor(widget.actorId);
+                  return IconButton(
+                    onPressed: () {
+                      if (_actorDetails != null) {
+                        provider.toggleFavoriteActor(_actorDetails!);
+                      }
+                    },
+                    icon: Icon(
+                      isFav ? Icons.favorite : Icons.favorite_border,
+                      color: isFav ? Colors.redAccent : Colors.white,
+                      size: 28,
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildInfoRow(),
+          const SizedBox(height: 32),
+          _buildBiography(),
+          const SizedBox(height: 32),
+          _buildDynamicVerifiedSection(),
+          const SizedBox(height: 40),
+        ],
       ),
     );
   }
 
   Widget _buildInfoRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        _buildInfoColumn('Born', _actorDetails!.birthday ?? 'N/A'),
-        _buildInfoColumn('From', _actorDetails!.placeOfBirth?.split(',').last.trim() ?? 'N/A'),
-      ],
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.02),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildInfoItem(Icons.cake_outlined, 'Born', _actorDetails!.birthday ?? 'N/A'),
+          Container(width: 1, height: 30, color: Colors.white10),
+          _buildInfoItem(Icons.location_on_outlined, 'From', _actorDetails!.placeOfBirth?.split(',').last.trim() ?? 'N/A'),
+        ],
+      ),
     );
   }
 
-  Widget _buildInfoColumn(String label, String value) {
+  Widget _buildInfoItem(IconData icon, String label, String value) {
     return Column(
       children: [
-        Text(label, style: const TextStyle(color: Colors.white38, fontSize: 12)),
-        const SizedBox(height: 4),
-        Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+        Icon(icon, color: const Color(0xFF5C6AC4), size: 20),
+        const SizedBox(height: 8),
+        Text(label, style: const TextStyle(color: Colors.white38, fontSize: 11)),
+        const SizedBox(height: 2),
+        Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
       ],
     );
   }
@@ -157,7 +226,7 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
           'Biography',
           style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         Text(
           canExpand && !_isBiographyExpanded ? '${bio.substring(0, 300)}...' : bio,
           style: const TextStyle(color: Colors.white70, height: 1.6, fontSize: 14),
@@ -165,6 +234,7 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
         if (canExpand)
           TextButton(
             onPressed: () => setState(() => _isBiographyExpanded = !_isBiographyExpanded),
+            style: TextButton.styleFrom(padding: EdgeInsets.zero),
             child: Text(
               _isBiographyExpanded ? 'Read Less' : 'Read More',
               style: const TextStyle(color: Color(0xFF5C6AC4), fontWeight: FontWeight.bold),
@@ -190,11 +260,11 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
               scrollDirection: Axis.horizontal,
               itemCount: 3,
               itemBuilder: (context, index) => Container(
-                width: 130,
+                width: 140,
                 margin: const EdgeInsets.only(right: 16),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(16),
+                  color: Colors.white.withOpacity(0.03),
+                  borderRadius: BorderRadius.circular(20),
                 ),
               ),
             ),
@@ -241,14 +311,14 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
                   );
                 },
                 child: Container(
-                  width: 130,
+                  width: 140,
                   margin: const EdgeInsets.only(right: 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(20),
                           child: CachedNetworkImage(
                             imageUrl: item.fullPosterPath,
                             fit: BoxFit.cover,
@@ -258,18 +328,28 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
                       Text(
                         item.title,
-                        maxLines: 2,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                        style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        item.isTv ? 'Involved in Drama' : 'Involved in Film',
-                        style: const TextStyle(color: Color(0xFF5C6AC4), fontSize: 10, fontWeight: FontWeight.w500),
+                        item.isTv ? 'Involved in Drama' : 'Involved in Movie',
+                        style: const TextStyle(color: Color(0xFF5C6AC4), fontSize: 10, fontWeight: FontWeight.w600),
                       ),
+                      if (item.character != null && item.character!.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            'as ${item.character}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(color: Colors.white38, fontSize: 9, fontStyle: FontStyle.italic),
+                          ),
+                        ),
                     ],
                   ),
                 ),

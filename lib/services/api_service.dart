@@ -74,11 +74,12 @@ class ApiService {
     }
   }
 
-  Future<List<Movie>> getRecommendations(int movieId) async {
-    final data = await _getWithCache('$_baseUrl/movie/$movieId/recommendations?api_key=$_apiKey');
+  Future<List<Movie>> getRecommendations(int movieId, {bool isTv = false}) async {
+    final type = isTv ? 'tv' : 'movie';
+    final data = await _getWithCache('$_baseUrl/$type/$movieId/recommendations?api_key=$_apiKey');
     if (data != null) {
       final List results = data['results'];
-      return results.map((movie) => Movie.fromJson(movie)).toList();
+      return results.map((movie) => Movie.fromJson(movie, isTv: isTv)).toList();
     } else {
       return [];
     }
@@ -221,8 +222,13 @@ class ApiService {
         return popB.compareTo(popA);
       });
 
-      // Verify TV in parallel
-      final List<Future<Movie?>> verificationTasks = candidateTv.take(20).map((tv) async {
+      // Verify TV in parallel - Optimized: Only check top 10 and skip if character info is already present
+      final List<Future<Movie?>> verificationTasks = candidateTv.take(12).map((tv) async {
+        // Optimization: If character is already known from combined_credits, we trust it as verified
+        if (tv.character != null && tv.character!.isNotEmpty) {
+          return tv;
+        }
+
         try {
           final creditUrl = '$_baseUrl/tv/${tv.id}/credits?api_key=$_apiKey';
           final creditRes = await http.get(Uri.parse(creditUrl));

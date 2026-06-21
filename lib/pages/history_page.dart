@@ -5,6 +5,7 @@ import '../providers/history_provider.dart';
 import '../providers/movie_provider.dart';
 import '../models/movie.dart';
 import 'detail_page.dart';
+import '../widgets/movie_card.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class HistoryPage extends StatefulWidget {
@@ -75,8 +76,7 @@ class _HistoryPageState extends State<HistoryPage> {
             padding: const EdgeInsets.all(16),
             itemCount: history.length,
             itemBuilder: (context, index) {
-              final movie = history[index];
-              return _buildHistoryItem(context, movie, provider, isDramaMode);
+              return MovieCard(movie: history[index]);
             },
           );
         },
@@ -89,114 +89,7 @@ class _HistoryPageState extends State<HistoryPage> {
     );
   }
 
-  Widget _buildHistoryItem(BuildContext context, Movie movie, HistoryProvider provider, bool isTv) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => DetailPage(movie: movie)),
-        );
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 20),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.03),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.05)),
-        ),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: CachedNetworkImage(
-                imageUrl: movie.fullPosterPath,
-                width: 90,
-                height: 130,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(color: Colors.white10),
-                errorWidget: (context, url, error) => const Icon(Icons.error),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    movie.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  if (movie.watchDate != null)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: (isTv ? Colors.blueAccent : const Color(0xFF5C6AC4)).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.calendar_today, 
-                            color: isTv ? Colors.blueAccent : const Color(0xFF5C6AC4), 
-                            size: 10
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Watched: ${DateFormat('MMM dd, yyyy').format(movie.watchDate!)}',
-                            style: TextStyle(
-                              color: isTv ? Colors.blueAccent : const Color(0xFF5C6AC4), 
-                              fontSize: 10, 
-                              fontWeight: FontWeight.bold
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.star, color: Colors.amber, size: 14),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${movie.voteAverage.toStringAsFixed(1)}',
-                            style: const TextStyle(color: Colors.white38, fontSize: 12),
-                          ),
-                        ],
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 18),
-                        onPressed: () {
-                          provider.removeFromHistory(movie.id, isTv: isTv);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Removed from history'),
-                              duration: Duration(seconds: 1),
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // _buildHistoryItem removed - now using MovieCard widget
 }
 
 class AddHistoryBottomSheet extends StatefulWidget {

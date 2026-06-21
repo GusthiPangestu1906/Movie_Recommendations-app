@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/movie_provider.dart';
 import '../models/movie.dart';
 import 'detail_page.dart';
+import '../widgets/movie_card.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class FavoritePage extends StatefulWidget {
@@ -130,70 +131,10 @@ class _FavoritePageState extends State<FavoritePage> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       itemCount: list.length,
       itemBuilder: (context, index) {
-        final movie = list[index];
-        return _buildMovieCard(context, movie);
+        return MovieCard(movie: list[index]);
       },
     );
   }
 
-  Widget _buildMovieCard(BuildContext context, Movie movie) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => DetailPage(movie: movie)),
-        );
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.02),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.05)),
-        ),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: CachedNetworkImage(
-                imageUrl: movie.fullPosterPath,
-                width: 80,
-                height: 120,
-                fit: BoxFit.cover,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    movie.title,
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Icon(Icons.star_rounded, color: Colors.amber, size: 16),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${movie.voteAverage.toStringAsFixed(1)}',
-                        style: const TextStyle(color: Colors.white70),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.favorite, color: Colors.redAccent),
-              onPressed: () {
-                Provider.of<MovieProvider>(context, listen: false).toggleFavorite(movie);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // _buildMovieCard removed - now using MovieCard widget
 }
