@@ -283,9 +283,9 @@ class MovieProvider with ChangeNotifier {
 
   Future<void> loadMovieExtras(Movie movie) async {
     if (movie.cast != null && movie.trailerKey != null && movie.certification != null) {
-      // Still need to fetch related movies for the specific detail page context
+      // Still need to fetch related items for the specific detail page context
       try {
-        _relatedMovies = await _apiService.getRecommendations(movie.id);
+        _relatedMovies = await _apiService.getRecommendations(movie.id, isTv: movie.isTv);
         notifyListeners();
       } catch (e) {
         print(e);
@@ -296,7 +296,7 @@ class MovieProvider with ChangeNotifier {
       final cast = await _apiService.getMovieCast(movie.id, isTv: movie.isTv);
       final trailer = await _apiService.getMovieTrailer(movie.id, isTv: movie.isTv);
       final certification = await _apiService.getMovieCertification(movie.id, isTv: movie.isTv);
-      _relatedMovies = await _apiService.getRecommendations(movie.id);
+      _relatedMovies = await _apiService.getRecommendations(movie.id, isTv: movie.isTv);
       movie.cast = cast;
       movie.trailerKey = trailer;
       movie.certification = certification;

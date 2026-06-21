@@ -8,6 +8,8 @@ import '../providers/history_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'actor_detail_page.dart';
 
+import '../widgets/movie_card.dart';
+
 class DetailPage extends StatefulWidget {
   final Movie movie;
   const DetailPage({super.key, required this.movie});
@@ -113,14 +115,6 @@ class _DetailPageState extends State<DetailPage> {
                         child: const Icon(Icons.broken_image, color: Colors.white30),
                       ),
                     ),
-                    Positioned(
-                      top: 40,
-                      left: 16,
-                      child: IconButton(
-                        icon: const Icon(Icons.arrow_back, color: Colors.white),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ),
                     if (widget.movie.trailerKey != null)
                       Positioned.fill(
                         child: Center(
@@ -147,6 +141,21 @@ class _DetailPageState extends State<DetailPage> {
                           ),
                         ),
                       ),
+                    // BACK BUTTON MOVED TO TOP LAYER
+                    Positioned(
+                      top: 40,
+                      left: 16,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black26,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_back, color: Colors.white),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
                 Container(
@@ -205,8 +214,7 @@ class _DetailPageState extends State<DetailPage> {
                             icon: Icon(provider.isFavorite(widget.movie.id) ? Icons.favorite : Icons.favorite_border),
                             color: provider.isFavorite(widget.movie.id) ? Colors.redAccent : Colors.white,
                             onPressed: () {
-                              final historyProvider = Provider.of<HistoryProvider>(context, listen: false);
-                              provider.toggleFavorite(widget.movie, history: historyProvider.history);
+                              provider.toggleFavorite(widget.movie);
                             },
                           ),
                         ],
@@ -295,9 +303,9 @@ class _DetailPageState extends State<DetailPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Related Movies',
-          style: TextStyle(
+        Text(
+          widget.movie.isTv ? 'Related Dramas' : 'Related Movies',
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -305,51 +313,14 @@ class _DetailPageState extends State<DetailPage> {
         ),
         const SizedBox(height: 16),
         SizedBox(
-          height: 200,
+          height: 220,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: related.length,
             itemBuilder: (context, index) {
-              final movie = related[index];
-              return GestureDetector(
-                onTap: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => DetailPage(movie: movie)),
-                  );
-                },
-                child: Container(
-                  width: 120,
-                  margin: const EdgeInsets.only(right: 12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: CachedNetworkImage(
-                            imageUrl: movie.fullPosterPath,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            placeholder: (context, url) => Container(color: Colors.white10),
-                            errorWidget: (context, url, error) => const Icon(Icons.error),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        movie.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              return MovieCard(
+                movie: related[index],
+                isHorizontal: true,
               );
             },
           ),
@@ -464,16 +435,28 @@ class _DetailPageState extends State<DetailPage> {
                     Positioned(
                       right: 0,
                       bottom: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: const BoxDecoration(
-                          color: Colors.black54,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          isFav ? Icons.favorite : Icons.favorite_border,
-                          color: isFav ? Colors.redAccent : Colors.white70,
-                          size: 14,
+                      child: GestureDetector(
+                        onTap: () {
+                          provider.toggleFavoriteActor(castMember);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(isFav ? 'Removed from favorite actors' : 'Added to favorite actors'),
+                              duration: const Duration(seconds: 1),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Colors.black87,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            isFav ? Icons.favorite : Icons.favorite_border,
+                            color: isFav ? Colors.redAccent : Colors.white70,
+                            size: 14,
+                          ),
                         ),
                       ),
                     ),

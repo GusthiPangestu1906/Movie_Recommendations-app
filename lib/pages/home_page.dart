@@ -8,6 +8,7 @@ import 'tv_page.dart';
 import 'favorite_page.dart';
 import 'history_page.dart';
 import 'actors_page.dart';
+import '../widgets/movie_card.dart';
 import '../providers/history_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -592,7 +593,10 @@ class _MovieListScreenState extends State<MovieListScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       itemCount: provider.recommendations.length,
                       itemBuilder: (context, index) {
-                        return _buildHorizontalCard(context, provider.recommendations[index]);
+                        return MovieCard(
+                          movie: provider.recommendations[index],
+                          isHorizontal: true,
+                        );
                       },
                     ),
                   ),
@@ -605,7 +609,7 @@ class _MovieListScreenState extends State<MovieListScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: provider.movies.length,
                   itemBuilder: (context, index) {
-                    return _buildStandardCard(context, provider.movies[index]);
+                    return MovieCard(movie: provider.movies[index]);
                   },
                 ),
                 if (provider.isFetchingMore)
@@ -636,129 +640,5 @@ class _MovieListScreenState extends State<MovieListScreen> {
     );
   }
 
-  Widget _buildHorizontalCard(BuildContext context, Movie movie) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => DetailPage(movie: movie)),
-        );
-      },
-      child: Container(
-        width: 140,
-        margin: const EdgeInsets.only(right: 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: CachedNetworkImage(
-                  imageUrl: movie.fullPosterPath,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  placeholder: (context, url) => Container(color: Colors.white10),
-                  errorWidget: (context, url, error) => const Icon(Icons.error),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              movie.title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.white),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStandardCard(BuildContext context, Movie movie) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => DetailPage(movie: movie)),
-        );
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 20),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.02),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withOpacity(0.05)),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: Row(
-            children: [
-              CachedNetworkImage(
-                imageUrl: movie.fullPosterPath,
-                width: 100,
-                height: 140,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(color: Colors.white10),
-                errorWidget: (context, url, error) => const Icon(Icons.error),
-              ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        movie.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          const Icon(Icons.star_rounded, color: Colors.amber, size: 18),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${movie.voteAverage.round()}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const Text(
-                            ' / 10 IMDb',
-                            style: TextStyle(color: Colors.white30, fontSize: 12),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          const Icon(Icons.calendar_today, color: Colors.white30, size: 12),
-                          const SizedBox(width: 6),
-                          Text(
-                            movie.releaseDate.isNotEmpty ? movie.releaseDate.split('-')[0] : 'N/A',
-                            style: const TextStyle(color: Colors.white30, fontSize: 12),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const Icon(Icons.chevron_right, color: Colors.white10),
-              const SizedBox(width: 12),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  // _buildHorizontalCard and _buildStandardCard removed - now using MovieCard widget
 }

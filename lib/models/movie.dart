@@ -11,6 +11,7 @@ class Movie {
   String? trailerKey;
   String? certification;
   DateTime? watchDate;
+  String? character;
 
   Movie({
     required this.id,
@@ -25,6 +26,7 @@ class Movie {
     this.trailerKey,
     this.certification,
     this.watchDate,
+    this.character,
   });
 
   factory Movie.fromJson(Map<String, dynamic> json, {bool isTv = false}) {
@@ -37,6 +39,7 @@ class Movie {
       voteAverage: (json['vote_average'] as num?)?.toDouble() ?? 0.0,
       releaseDate: json['release_date'] ?? json['first_air_date'] ?? '',
       isTv: isTv,
+      character: json['character'],
     );
   }
 
