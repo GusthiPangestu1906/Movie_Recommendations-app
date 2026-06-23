@@ -59,6 +59,10 @@ class Cast {
   String? biography;
   String? birthday;
   String? placeOfBirth;
+  String? instagramId;
+  String? twitterId;
+  String? facebookId;
+  double? popularity;
   List<Movie>? filmography;
   List<Movie>? tvCredits;
 
@@ -69,6 +73,10 @@ class Cast {
     this.biography,
     this.birthday,
     this.placeOfBirth,
+    this.instagramId,
+    this.twitterId,
+    this.facebookId,
+    this.popularity,
     this.filmography,
     this.tvCredits,
   });
@@ -81,10 +89,15 @@ class Cast {
       biography: json['biography'],
       birthday: json['birthday'],
       placeOfBirth: json['place_of_birth'],
+      popularity: (json['popularity'] as num?)?.toDouble(),
     );
   }
 
   String get fullProfilePath => profilePath != null 
       ? 'https://image.tmdb.org/t/p/w185$profilePath' 
       : 'https://via.placeholder.com/185x278?text=No+Image';
+
+  String get fullProfilePathHD => profilePath != null
+      ? 'https://image.tmdb.org/t/p/h632$profilePath'
+      : 'https://via.placeholder.com/600x900?text=No+Image';
 }

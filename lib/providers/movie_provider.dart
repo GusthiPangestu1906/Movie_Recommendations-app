@@ -27,6 +27,45 @@ class MovieProvider with ChangeNotifier {
   List<Cast> _favoriteActors = [];
   List<Cast> get favoriteActors => _favoriteActors;
 
+  String _actorSearchQuery = '';
+  List<Cast> get filteredFavoriteActors {
+    if (_actorSearchQuery.isEmpty) return _favoriteActors;
+    return _favoriteActors
+        .where((actor) =>
+            actor.name.toLowerCase().contains(_actorSearchQuery.toLowerCase()))
+        .toList();
+  }
+
+  void setActorSearchQuery(String query) {
+    _actorSearchQuery = query;
+    if (query.isEmpty) {
+      _globalActorSearchResults = [];
+      notifyListeners();
+      return;
+    }
+
+    if (_debounce?.isActive ?? false) _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () async {
+      _isActorLoading = true;
+      notifyListeners();
+      try {
+        _globalActorSearchResults = await _apiService.searchActors(query);
+      } catch (e) {
+        print('Error searching actors: $e');
+      } finally {
+        _isActorLoading = false;
+        notifyListeners();
+      }
+    });
+    notifyListeners();
+  }
+
+  List<Cast> _globalActorSearchResults = [];
+  List<Cast> get globalActorSearchResults => _globalActorSearchResults;
+
+  bool _isActorLoading = false;
+  bool get isActorLoading => _isActorLoading;
+
   String _favoriteSearchQuery = '';
   List<Movie> get filteredFavorites {
     if (_favoriteSearchQuery.isEmpty) return _favoriteMovies;
@@ -54,8 +93,11 @@ class MovieProvider with ChangeNotifier {
   bool get isFetchingMore => _isFetchingMore;
 
   int _currentPage = 1;
+  int _currentTvPage = 1;
+  int _currentSearchPage = 1;
   String _currentCategory = 'popular';
-  
+  String _lastSearchQuery = '';
+
   bool _isDramaMode = false;
   bool get isDramaMode => _isDramaMode;
 
@@ -89,14 +131,33 @@ class MovieProvider with ChangeNotifier {
   Future<void> fetchTvSeries({String? country}) async {
     _isLoading = true;
     _selectedCountry = country;
+    _currentTvPage = 1;
     _tvSearchResults = []; // Clear search results when switching country
     notifyListeners();
     try {
-      _tvSeries = await _apiService.getTvSeries(originCountry: country);
+      _tvSeries = await _apiService.getTvSeries(originCountry: country, page: _currentTvPage);
     } catch (e) {
       print(e);
     } finally {
       _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchMoreTvSeries() async {
+    if (_isFetchingMore) return;
+    _isFetchingMore = true;
+    notifyListeners();
+
+    _currentTvPage++;
+    try {
+      List<Movie> nextTv = await _apiService.getTvSeries(originCountry: _selectedCountry, page: _currentTvPage);
+      _tvSeries.addAll(nextTv);
+    } catch (e) {
+      print(e);
+      _currentTvPage--;
+    } finally {
+      _isFetchingMore = false;
       notifyListeners();
     }
   }
@@ -111,9 +172,11 @@ class MovieProvider with ChangeNotifier {
       return;
     }
     _isLoading = true;
+    _currentSearchPage = 1;
+    _lastSearchQuery = query;
     notifyListeners();
     try {
-      _tvSearchResults = await _apiService.searchMovies(query, isTv: true);
+      _tvSearchResults = await _apiService.searchMovies(query, isTv: true, page: _currentSearchPage);
     } catch (e) {
       print(e);
     } finally {
@@ -215,10 +278,12 @@ class MovieProvider with ChangeNotifier {
 
     _debounce = Timer(const Duration(milliseconds: 500), () async {
       _isLoading = true;
+      _currentSearchPage = 1;
+      _lastSearchQuery = query;
       notifyListeners();
       try {
         final genreString = _selectedGenreIds.isEmpty ? null : _selectedGenreIds.join(',');
-        _searchResults = await _apiService.searchMovies(query, withGenres: genreString);
+        _searchResults = await _apiService.searchMovies(query, withGenres: genreString, page: _currentSearchPage);
         
         // If results are sparse and it's a long title, try a more aggressive approach if needed
         // but typically searchMovies handles long titles well if encoded.
@@ -231,6 +296,35 @@ class MovieProvider with ChangeNotifier {
         notifyListeners();
       }
     });
+  }
+
+  Future<void> fetchMoreSearchResults() async {
+    if (_isFetchingMore || _lastSearchQuery.isEmpty) return;
+    _isFetchingMore = true;
+    notifyListeners();
+
+    _currentSearchPage++;
+    try {
+      final genreString = _selectedGenreIds.isEmpty ? null : _selectedGenreIds.join(',');
+      List<Movie> nextResults = await _apiService.searchMovies(
+        _lastSearchQuery,
+        withGenres: genreString,
+        isTv: _isDramaMode,
+        page: _currentSearchPage,
+      );
+
+      if (_isDramaMode) {
+        _tvSearchResults.addAll(nextResults);
+      } else {
+        _searchResults.addAll(nextResults);
+      }
+    } catch (e) {
+      print(e);
+      _currentSearchPage--;
+    } finally {
+      _isFetchingMore = false;
+      notifyListeners();
+    }
   }
 
   void clearSearch() {

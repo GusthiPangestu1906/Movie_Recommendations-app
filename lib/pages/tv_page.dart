@@ -15,7 +15,7 @@ class TvPage extends StatefulWidget {
 
 class _TvPageState extends State<TvPage> {
   final TextEditingController _tvSearchController = TextEditingController();
-  bool _isSearching = false;
+  final ScrollController _scrollController = ScrollController();
 
   final List<Map<String, String>> _countries = [
     {'label': 'All Countries', 'value': ''},
@@ -32,11 +32,23 @@ class _TvPageState extends State<TvPage> {
     Future.microtask(() {
       Provider.of<MovieProvider>(context, listen: false).fetchTvSeries();
     });
+
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+        final provider = Provider.of<MovieProvider>(context, listen: false);
+        if (_tvSearchController.text.isEmpty) {
+          provider.fetchMoreTvSeries();
+        } else {
+          provider.fetchMoreSearchResults();
+        }
+      }
+    });
   }
 
   @override
   void dispose() {
     _tvSearchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -96,61 +108,12 @@ class _TvPageState extends State<TvPage> {
       body: Column(
         children: [
           Expanded(
-            child: provider.isLoading
+            child: provider.isLoading && (provider.tvSeries.isEmpty && provider.tvSearchResults.isEmpty)
                 ? const Center(child: CircularProgressIndicator(color: Color(0xFF5C6AC4)))
                 : _buildTvList(provider),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildFavoriteActorsSection(MovieProvider provider) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-          child: Text(
-            'Favorite Actors & Actresses',
-            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-        ),
-        SizedBox(
-          height: 100,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: provider.favoriteActors.length,
-            itemBuilder: (context, index) {
-              final actor = provider.favoriteActors[index];
-              return Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: Column(
-                  children: [
-                    CircleAvatar(
-                      radius: 30,
-                      backgroundImage: CachedNetworkImageProvider(actor.fullProfilePath),
-                    ),
-                    const SizedBox(height: 4),
-                    SizedBox(
-                      width: 60,
-                      child: Text(
-                        actor.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(color: Colors.white70, fontSize: 10),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-        const Divider(color: Colors.white10),
-      ],
     );
   }
 
@@ -166,13 +129,18 @@ class _TvPageState extends State<TvPage> {
     }
 
     return ListView.builder(
+      controller: _scrollController,
       padding: const EdgeInsets.all(16),
-      itemCount: list.length,
+      itemCount: list.length + (provider.isFetchingMore ? 1 : 0),
       itemBuilder: (context, index) {
+        if (index == list.length) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          );
+        }
         return MovieCard(movie: list[index]);
       },
     );
   }
-
-  // _buildTvCard removed - now using MovieCard widget
 }
