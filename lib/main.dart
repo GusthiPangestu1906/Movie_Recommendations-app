@@ -1,13 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'providers/movie_provider.dart';
 import 'providers/history_provider.dart';
+import 'providers/auth_provider.dart';
 import 'pages/login_page.dart';
+import 'pages/home_page.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => MovieProvider()),
         ChangeNotifierProxyProvider<MovieProvider, HistoryProvider>(
           create: (_) => HistoryProvider(),
@@ -30,7 +42,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0B0E1E), // Deep dark navy
+        scaffoldBackgroundColor: const Color(0xFF0B0E1E),
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF5C6AC4),
           brightness: Brightness.dark,
@@ -55,7 +67,15 @@ class MyApp extends StatelessWidget {
           bodyMedium: TextStyle(color: Colors.white70),
         ),
       ),
-      home: const LoginPage(), // Set LoginPage as the initial route
+      // Use AuthProvider to decide initial page
+      home: Consumer<AuthProvider>(
+        builder: (context, auth, _) {
+          if (auth.isAuthenticated) {
+            return const HomePage();
+          }
+          return const LoginPage();
+        },
+      ),
     );
   }
 }

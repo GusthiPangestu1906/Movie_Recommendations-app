@@ -1,82 +1,72 @@
-# 🎬 My Movies - Dual Universe App
-### Projek UAS Workshop Pemrograman Perangkat Bergerak
+# 🎬 Movie Universe - Dual Experience Discovery App
+[![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=for-the-badge&logo=Flutter&logoColor=white)](https://flutter.dev)
+[![Firebase](https://img.shields.io/badge/Firebase-Authentication-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com)
+[![TMDB](https://img.shields.io/badge/TMDb-API-01d277?style=for-the-badge&logo=themoviedatabase&logoColor=white)](https://www.themoviedb.org)
 
-![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=for-the-badge&logo=Flutter&logoColor=white)
-![Dart](https://img.shields.io/badge/dart-%230175C2.svg?style=for-the-badge&logo=dart&logoColor=white)
-![TMDb](https://img.shields.io/badge/TMDb-API-01d277?style=for-the-badge&logo=themoviedatabase&logoColor=white)
-
-**My Movies** (FilmKu) kini hadir dengan konsep **Dual Universe**, memisahkan secara total pengalaman menonton Film dan Drama/Serial TV dalam satu aplikasi yang elegan dan profesional.
+**Movie Universe** is a premium mobile application that offers a dual-universe experience for cinema enthusiasts and TV series fans. Built with Flutter and powered by the TMDb API, it provides a seamless and immersive way to discover, track, and explore the vast world of entertainment.
 
 ---
 
-## 🌌 Fitur Unggulan (Dual Universe)
+## 🌌 Core Features (The Dual Universe)
 
-*   **⚡ Navigation Drawer (Hamburger Menu)**: Sistem navigasi "Garis Tiga" untuk berpindah secara mulus antara **Movie Universe** dan **Drama Universe**. Seluruh aplikasi akan beradaptasi mengikuti mode yang dipilih.
-*   **🌟 Premium Actor Profiles**: Jelajahi biografi lengkap aktor/aktris idola Anda. Menampilkan informasi detail seperti tanggal lahir, tempat lahir, dan riwayat hidup dengan fitur *Read More*.
-*   **✅ Strict Verified Filmography**: Daftar karya aktor yang 100% akurat. Sistem melakukan verifikasi ID ganda untuk memastikan aktor tersebut memang terdaftar resmi di setiap poster film/drama yang ditampilkan.
-*   **🎭 Integrated Favorite Stars**: Simpan aktor dan aktris favorit Anda dalam galeri khusus yang dapat diakses dari Sidebar. Berlaku global baik dari konten Film maupun Drama.
-*   **🔍 Context-Aware Search**: Mesin pencari cerdas yang otomatis menyesuaikan target pencarian (Film vs Drama) berdasarkan Universe yang sedang aktif.
-*   **🚀 Optimized Lazy Loading**: Profil aktor memuat data biografi secara instan, sementara verifikasi riwayat filmografi berjalan cepat di latar belakang untuk pengalaman pengguna yang mulus.
-*   **📁 Proper History & Favorite Separation**: Riwayat tontonan dan daftar favorit kini terkelompok rapi secara terpisah antara kategori Movie dan Drama.
+*   **⚡ Universe Switching**: Seamlessly toggle between **Movie Universe** and **Drama Universe**. The entire app interface and recommendation engine adapt instantly to your selected mode.
+*   **🔐 Secure Authentication**: Integrated with **Firebase Authentication**, providing a robust and personalized experience with real-time user profiles and secure cloud sessions.
+*   **🌟 Premium Star Profiles**: Explore in-depth actor biographies with HD visuals, birth details, and global popularity rankings.
+*   **✅ Verified Filmography**: A sophisticated ID-matching system ensures that filmographies are 100% accurate, allowing users to discover every verified project of their favorite stars.
+*   **🔍 Global Cross-Search**: A powerful, debounced search engine that fetches results locally from your favorites and globally from the entire TMDb database simultaneously.
+*   **🚀 Performance Optimized**: Features **Infinite Scrolling (Lazy Loading)** across all lists and searches to ensure a smooth, high-speed experience even with thousands of titles.
+*   **📁 Smart Organization**: Completely separate history logs and favorite collections for Movies and TV Series, keeping your profile clean and organized.
 
 ---
 
-## 🚀 Fitur Standar Utama
-
-*   **Smart Search Suggestions**: Hasil pencarian muncul seketika (*Autocomplete*) dengan optimasi *debounce*.
-*   **Advanced Filters**: Filter film berdasarkan genre dan filter drama berdasarkan negara asal (K-Drama, J-Drama, dll).
-*   **Manual Watch Journal**: Catat riwayat tontonan dengan tanggal spesifik melalui kalender digital.
-*   **Netflix & YouTube Integration**: Link langsung ke aplikasi Netflix dan pemutar trailer YouTube resmi.
-*   **Premium Dark UI**: Antarmuka bertema *Deep Navy* yang modern dengan navigasi intuitif.
+## 🎨 Design Philosophy
+*   **Premium Dark UI**: A modern *Deep Navy* aesthetic designed for cinematic immersion.
+*   **Glassmorphism**: Elegant translucent UI elements with frosted glass effects for a high-end feel.
+*   **Adaptive Layout**: Fully responsive design that maintains its integrity across various screen sizes and resolutions.
 
 ---
 
 ## 🛠️ Tech Stack
-
 - **Framework**: Flutter (Dart)
-- **State Management**: Provider (dengan `ChangeNotifierProxyProvider`)
-- **Penyimpanan Lokal**: Shared Preferences (Favorit & Riwayat)
-- **API**: The Movie Database (TMDb)
-- **Keamanan & Optimasi**: ProGuard & Parallel Asynchronous Processing
+- **Backend**: Firebase Authentication
+- **State Management**: Provider (ChangeNotifier with ProxyProvider)
+- **Data Source**: The Movie Database (TMDb) API
+- **Image Handling**: Cached Network Image & Flutter SVG
+- **Local Storage**: Shared Preferences (Offline Persistence)
 
 ---
 
-## 📂 Struktur Proyek
+## ⚙️ Installation & Setup
 
-```text
-lib/
-├── models/         # Model data (Movie, Cast)
-├── providers/      # Logic & State (MovieProvider, HistoryProvider)
-├── services/       # Komunikasi API, Caching, & Verification (ApiService)
-├── pages/          # UI: Home, Search, History, Favorite, Actor Detail, Stars Galaxy
-└── main.dart       # Entry point
+1.  **Clone the Repository**
+    ```bash
+    git clone https://github.com/GusthiPangestu1906/Movie_Recommendations-app.git
+    ```
+2.  **Configure Firebase**
+    - Install the Firebase CLI and FlutterFire CLI.
+    - Run `flutterfire configure` to sync your local environment with your Firebase project.
+3.  **Install Dependencies**
+    ```bash
+    flutter pub get
+    ```
+4.  **Run the Application**
+    ```bash
+    flutter run --release
+    ```
+
+---
+
+## 📦 Release
+To generate a production-ready APK, use:
+```bash
+flutter build apk --release
 ```
 
 ---
 
-## ⚙️ Cara Menjalankan Proyek
-
-1. **Clone Repositori**
-   ```bash
-   git clone https://github.com/GusthiPangestu1906/Movie_Recommendations-app.git
-   ```
-2. **Install Dependensi & Jalankan**
-   ```bash
-   flutter pub get
-   flutter run --release
-   ```
-
----
-
-## 🔑 Kredensial Akses
-- **Username**: `admin` | **Password**: `admin`
-- *(Tersedia tombol **Login as Guest** untuk akses cepat)*
-
----
-
-## 👤 Developer
+## 👤 Lead Developer
 **Gusthi Pangestu**  
-Mahasiswa Workshop Pemrograman Perangkat Bergerak
+*Full-stack Flutter Developer passionate about high-performance mobile experiences.*
 
 ---
-*Proyek ini merupakan hasil akhir (UAS) yang mendemonstrasikan integrasi API kompleks, manajemen state tingkat lanjut, dan desain antarmuka pengguna yang profesional.*
+© 2024 Movie Universe. All rights reserved.

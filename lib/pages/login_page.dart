@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import 'home_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -9,25 +11,49 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _usernameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _nameController = TextEditingController();
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
+  bool _isLoginMode = true;
 
-  void _login() {
-    if (_usernameController.text == 'admin' && _passwordController.text == 'admin') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Invalid Username or Password'),
-          backgroundColor: Colors.redAccent.withOpacity(0.8),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+  Future<void> _handleAuth() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final name = _nameController.text.trim();
+
+    if (email.isEmpty || password.isEmpty || (!_isLoginMode && name.isEmpty)) {
+      _showError('Please fill in all fields');
+      return;
     }
+
+    setState(() => _isLoading = true);
+
+    String? error;
+    if (_isLoginMode) {
+      error = await authProvider.signIn(email, password);
+    } else {
+      error = await authProvider.signUp(email, password, name);
+    }
+
+    if (mounted) {
+      setState(() => _isLoading = false);
+      if (error != null) {
+        _showError(error);
+      }
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.redAccent.withOpacity(0.8),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   @override
@@ -35,112 +61,120 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       backgroundColor: const Color(0xFF0B0E1E),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 60),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF5C6AC4).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Icon(
-                  Icons.movie_filter_rounded,
-                  color: Color(0xFF5C6AC4),
-                  size: 48,
-                ),
-              ),
-              const SizedBox(height: 32),
-              const Text(
-                'Welcome Back',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Sign in to continue exploring movies',
-                style: TextStyle(
-                  color: Colors.white38,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 48),
-              _buildTextField(
-                controller: _usernameController,
-                hint: 'Username',
-                icon: Icons.person_outline,
-              ),
-              const SizedBox(height: 20),
-              _buildTextField(
-                controller: _passwordController,
-                hint: 'Password',
-                icon: Icons.lock_outline,
-                isPassword: true,
-                isPasswordVisible: _isPasswordVisible,
-                onToggleVisibility: () {
-                  setState(() {
-                    _isPasswordVisible = !_isPasswordVisible;
-                  });
-                },
-              ),
-              const SizedBox(height: 40),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: _login,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF5C6AC4),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF5C6AC4).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                    elevation: 0,
-                  ),
-                  child: const Text(
-                    'Login',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    child: const Icon(
+                      Icons.movie_filter_rounded,
+                      color: Color(0xFF5C6AC4),
+                      size: 48,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: OutlinedButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const HomePage()),
-                    );
+                const SizedBox(height: 32),
+                Text(
+                  _isLoginMode ? 'Welcome Back' : 'Create Account',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _isLoginMode
+                    ? 'Sign in to continue exploring movies'
+                    : 'Join our universe of movies and stars',
+                  style: const TextStyle(
+                    color: Colors.white38,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 40),
+                if (!_isLoginMode) ...[
+                  _buildTextField(
+                    controller: _nameController,
+                    hint: 'Full Name',
+                    icon: Icons.person_outline,
+                  ),
+                  const SizedBox(height: 20),
+                ],
+                _buildTextField(
+                  controller: _emailController,
+                  hint: 'Email Address',
+                  icon: Icons.email_outlined,
+                  keyboardType: TextInputType.emailAddress,
+                ),
+                const SizedBox(height: 20),
+                _buildTextField(
+                  controller: _passwordController,
+                  hint: 'Password',
+                  icon: Icons.lock_outline,
+                  isPassword: true,
+                  isPasswordVisible: _isPasswordVisible,
+                  onToggleVisibility: () {
+                    setState(() {
+                      _isPasswordVisible = !_isPasswordVisible;
+                    });
                   },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF5C6AC4),
-                    side: const BorderSide(color: Color(0xFF5C6AC4)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                ),
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _handleAuth,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF5C6AC4),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                        )
+                      : Text(
+                          _isLoginMode ? 'Login' : 'Sign Up',
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Center(
+                  child: TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _isLoginMode = !_isLoginMode;
+                      });
+                    },
+                    child: Text(
+                      _isLoginMode
+                        ? "Don't have an account? Sign Up"
+                        : "Already have an account? Login",
+                      style: const TextStyle(color: Color(0xFF5C6AC4)),
                     ),
                   ),
-                  child: const Text(
-                    'Login as Guest',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              const Center(
-                child: Text(
-                  'Use admin/admin to access',
-                  style: TextStyle(color: Colors.white10, fontSize: 12),
-                ),
-              ),
-            ],
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),
@@ -154,6 +188,7 @@ class _LoginPageState extends State<LoginPage> {
     bool isPassword = false,
     bool isPasswordVisible = false,
     VoidCallback? onToggleVisibility,
+    TextInputType keyboardType = TextInputType.text,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -164,6 +199,7 @@ class _LoginPageState extends State<LoginPage> {
       child: TextField(
         controller: controller,
         obscureText: isPassword && !isPasswordVisible,
+        keyboardType: keyboardType,
         style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
           hintText: hint,

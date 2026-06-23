@@ -10,6 +10,7 @@ import 'history_page.dart';
 import 'actors_page.dart';
 import '../widgets/movie_card.dart';
 import '../providers/history_provider.dart';
+import '../providers/auth_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class HomePage extends StatefulWidget {
@@ -410,6 +411,9 @@ else if (_currentIndex == 2) { // Favorites
   }
 
   Widget _buildDrawer(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final user = authProvider.user;
+
     return Drawer(
       backgroundColor: const Color(0xFF0B0E1E),
       child: Column(
@@ -420,8 +424,14 @@ else if (_currentIndex == 2) { // Favorites
               backgroundColor: Color(0xFF5C6AC4),
               child: Icon(Icons.person, color: Colors.white, size: 40),
             ),
-            accountName: const Text('Admin User', style: TextStyle(fontWeight: FontWeight.bold)),
-            accountEmail: const Text('admin@mymovies.app', style: TextStyle(color: Colors.white38)),
+            accountName: Text(
+              user?.displayName ?? 'Guest User',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            accountEmail: Text(
+              user?.email ?? 'guest@mymovies.app',
+              style: const TextStyle(color: Colors.white38),
+            ),
           ),
           _buildDrawerItem(
             icon: Icons.movie_filter,
@@ -465,9 +475,11 @@ else if (_currentIndex == 2) { // Favorites
           _buildDrawerItem(
             icon: Icons.logout,
             label: 'Logout',
-            onTap: () {
-              // Handle logout logic
-              Navigator.pop(context);
+            onTap: () async {
+              await authProvider.signOut();
+              if (context.mounted) {
+                Navigator.pop(context); // Close drawer
+              }
             },
           ),
           const SizedBox(height: 20),

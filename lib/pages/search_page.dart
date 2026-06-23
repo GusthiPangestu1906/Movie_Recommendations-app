@@ -15,10 +15,25 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   final _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+        final provider = Provider.of<MovieProvider>(context, listen: false);
+        if (provider.searchResults.isNotEmpty || provider.tvSearchResults.isNotEmpty) {
+          provider.fetchMoreSearchResults();
+        }
+      }
+    });
+  }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -33,7 +48,7 @@ class _SearchPageState extends State<SearchPage> {
         builder: (context, provider, child) {
           final results = isDramaMode ? provider.tvSearchResults : provider.searchResults;
           
-          if (provider.isLoading) {
+          if (provider.isLoading && results.isEmpty) {
             return const Center(child: CircularProgressIndicator(color: Color(0xFF5C6AC4)));
           }
 
@@ -43,17 +58,13 @@ class _SearchPageState extends State<SearchPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    _searchController.text.isEmpty 
-                      ? (isDramaMode ? Icons.tv : Icons.movie_outlined) 
-                      : Icons.sentiment_dissatisfied,
+                    provider.isLoading ? Icons.search : (isDramaMode ? Icons.tv : Icons.movie_outlined),
                     size: 64,
                     color: Colors.white.withOpacity(0.05),
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    _searchController.text.isEmpty 
-                      ? 'Find your next ${isDramaMode ? 'drama' : 'movie'}' 
-                      : 'No ${isDramaMode ? 'dramas' : 'movies'} found',
+                    provider.isLoading ? 'Searching...' : 'Find your next ${isDramaMode ? 'drama' : 'movie'}',
                     style: const TextStyle(color: Colors.white30, fontSize: 16),
                   ),
                 ],
@@ -62,9 +73,16 @@ class _SearchPageState extends State<SearchPage> {
           }
 
           return ListView.builder(
+            controller: _scrollController,
             padding: const EdgeInsets.all(16),
-            itemCount: results.length,
+            itemCount: results.length + (provider.isFetchingMore ? 1 : 0),
             itemBuilder: (context, index) {
+              if (index == results.length) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                );
+              }
               return MovieCard(movie: results[index]);
             },
           );
@@ -72,6 +90,4 @@ class _SearchPageState extends State<SearchPage> {
       ),
     );
   }
-
-  // _buildResultCard removed - now using MovieCard widget
 }

@@ -95,10 +95,10 @@ class ApiService {
     }
   }
 
-  Future<List<Movie>> searchMovies(String query, {String? withGenres, bool isTv = false}) async {
+  Future<List<Movie>> searchMovies(String query, {String? withGenres, bool isTv = false, int page = 1}) async {
     final encodedQuery = Uri.encodeComponent(query);
     final type = isTv ? 'tv' : 'movie';
-    var url = '$_baseUrl/search/$type?api_key=$_apiKey&query=$encodedQuery';
+    var url = '$_baseUrl/search/$type?api_key=$_apiKey&query=$encodedQuery&page=$page';
     
     final response = await http.get(Uri.parse(url));
 
@@ -171,13 +171,50 @@ class ApiService {
     return null;
   }
 
+  Future<List<Cast>> searchActors(String query) async {
+    final encodedQuery = Uri.encodeComponent(query);
+    final url = '$_baseUrl/search/person?api_key=$_apiKey&query=$encodedQuery';
+
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final List results = data['results'] ?? [];
+      return results.map((c) => Cast.fromJson(c)).toList();
+    } else {
+      throw Exception('Failed to search actors');
+    }
+  }
+
+  Future<Map<String, String?>> getPersonExternalIds(int personId) async {
+    final url = '$_baseUrl/person/$personId/external_ids?api_key=$_apiKey';
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return {
+        'instagram': data['instagram_id'],
+        'twitter': data['twitter_id'],
+        'facebook': data['facebook_id'],
+      };
+    }
+    return {};
+  }
+
   Future<Cast?> getPersonDetails(int personId) async {
     final url = '$_baseUrl/person/$personId?api_key=$_apiKey&append_to_response=combined_credits';
     final response = await http.get(Uri.parse(url));
     
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      return Cast.fromJson(data);
+      final cast = Cast.fromJson(data);
+
+      // Fetch external IDs
+      final externals = await getPersonExternalIds(personId);
+      cast.instagramId = externals['instagram'];
+      cast.twitterId = externals['twitter'];
+      cast.facebookId = externals['facebook'];
+
+      return cast;
     }
     return null;
   }
