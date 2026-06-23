@@ -69,4 +69,4 @@ flutter build apk --release
 *Full-stack Flutter Developer passionate about high-performance mobile experiences.*
 
 ---
-© 2024 Movie Universe. All rights reserved.
+© 2026 Movie Universe. All rights reserved.
