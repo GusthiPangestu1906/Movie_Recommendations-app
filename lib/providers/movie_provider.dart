@@ -2,11 +2,15 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/movie.dart';
 import '../services/api_service.dart';
+import 'auth_provider.dart';
 
 class MovieProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  String? _userId;
   Timer? _debounce;
 
   List<Movie> _movies = [];
@@ -119,6 +123,40 @@ class MovieProvider with ChangeNotifier {
 
   MovieProvider() {
     _init();
+  }
+
+  void update(AuthProvider auth) {
+    if (_userId != auth.user?.uid) {
+      _userId = auth.user?.uid;
+      if (_userId != null) {
+        _loadFromFirestore();
+      } else {
+        _favoriteMovies = [];
+        _favoriteTv = [];
+        _favoriteActors = [];
+        _init(); // Reload local if logged out
+      }
+    }
+  }
+
+  Future<void> _loadFromFirestore() async {
+    if (_userId == null) return;
+    try {
+      // Load Movies & TV Favorites
+      final favSnapshot = await _firestore.collection('users').doc(_userId).collection('favorites').get();
+      final allFavs = favSnapshot.docs.map((doc) => Movie.fromJson(doc.data(), isTv: doc.data()['isTv'] ?? false)).toList();
+      _favoriteMovies = allFavs.where((m) => !m.isTv).toList();
+      _favoriteTv = allFavs.where((m) => m.isTv).toList();
+
+      // Load Favorite Actors
+      final actorSnapshot = await _firestore.collection('users').doc(_userId).collection('favorite_actors').get();
+      _favoriteActors = actorSnapshot.docs.map((doc) => Cast.fromJson(doc.data())).toList();
+
+      notifyListeners();
+      fetchRecommendations();
+    } catch (e) {
+      print('Error loading from Firestore: $e');
+    }
   }
 
   Future<void> _init() async {
@@ -418,8 +456,21 @@ class MovieProvider with ChangeNotifier {
       list.insert(0, movie);
     }
     saveFavorites();
+    if (_userId != null) {
+      _syncFavoriteToFirestore(movie);
+    }
     fetchRecommendations(history: history);
     notifyListeners();
+  }
+
+  Future<void> _syncFavoriteToFirestore(Movie movie) async {
+    final isFav = isFavorite(movie.id);
+    final docRef = _firestore.collection('users').doc(_userId).collection('favorites').doc(movie.id.toString());
+    if (isFav) {
+      await docRef.set(_movieToMap(movie));
+    } else {
+      await docRef.delete();
+    }
   }
 
   void toggleFavoriteActor(Cast actor) {
@@ -430,7 +481,24 @@ class MovieProvider with ChangeNotifier {
       _favoriteActors.insert(0, actor);
     }
     saveFavoriteActors();
+    if (_userId != null) {
+      _syncActorToFirestore(actor);
+    }
     notifyListeners();
+  }
+
+  Future<void> _syncActorToFirestore(Cast actor) async {
+    final isFav = isFavoriteActor(actor.id);
+    final docRef = _firestore.collection('users').doc(_userId).collection('favorite_actors').doc(actor.id.toString());
+    if (isFav) {
+      await docRef.set({
+        'id': actor.id,
+        'name': actor.name,
+        'profile_path': actor.profilePath,
+      });
+    } else {
+      await docRef.delete();
+    }
   }
 
   bool isFavoriteActor(int actorId) {

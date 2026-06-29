@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/movie.dart';
 
 class ApiService {
-  static const String _apiKey = '12d2377d20d4f51bf7c4c31f6b13a70b';
+  static String get _apiKey => dotenv.env['TMDB_API_KEY'] ?? '';
   static const String _baseUrl = 'https://api.themoviedb.org/3';
 
   // Simple in-memory cache

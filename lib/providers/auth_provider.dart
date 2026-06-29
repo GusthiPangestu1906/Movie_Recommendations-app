@@ -8,6 +8,9 @@ class AuthProvider with ChangeNotifier {
   User? get user => _user;
   bool get isAuthenticated => _user != null;
 
+  String? _photoUrl;
+  String? get photoUrl => _photoUrl;
+
   AuthProvider() {
     _init();
   }
@@ -15,8 +18,25 @@ class AuthProvider with ChangeNotifier {
   void _init() {
     _auth.authStateChanges().listen((User? user) {
       _user = user;
+      if (user != null) {
+        _photoUrl = user.photoURL;
+      } else {
+        _photoUrl = null;
+      }
       notifyListeners();
     });
+  }
+
+  Future<void> updateProfilePhoto(String photoUrl) async {
+    try {
+      await _user?.updatePhotoURL(photoUrl);
+      await _user?.reload();
+      _user = _auth.currentUser;
+      _photoUrl = _user?.photoURL;
+      notifyListeners();
+    } catch (e) {
+      print('Error updating profile photo: $e');
+    }
   }
 
   Future<String?> signIn(String email, String password) async {

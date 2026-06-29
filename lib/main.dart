@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'firebase_options.dart';
 import 'providers/movie_provider.dart';
 import 'providers/history_provider.dart';
@@ -11,20 +13,32 @@ import 'pages/home_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Load environment variables
+  await dotenv.load(fileName: ".env");
+
   // Initialize Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // Firestore Offline Persistence
+  FirebaseFirestore.instance.settings = Settings(
+    persistenceEnabled: true,
+    cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
   );
 
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => MovieProvider()),
-        ChangeNotifierProxyProvider<MovieProvider, HistoryProvider>(
+        ChangeNotifierProxyProvider<AuthProvider, MovieProvider>(
+          create: (_) => MovieProvider(),
+          update: (_, auth, movieProvider) => movieProvider!..update(auth),
+        ),
+        ChangeNotifierProxyProvider2<AuthProvider, MovieProvider, HistoryProvider>(
           create: (_) => HistoryProvider(),
-          update: (_, movieProvider, historyProvider) => 
-              historyProvider!..update(movieProvider),
+          update: (_, auth, movieProvider, historyProvider) =>
+              historyProvider!..update(auth, movieProvider),
         ),
       ],
       child: const MyApp(),

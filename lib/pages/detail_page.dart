@@ -45,16 +45,18 @@ class _DetailPageState extends State<DetailPage> {
     return cert;
   }
 
-  void _watchOnNetflix(String title) async {
+  void _watchOnPlatform(String title, bool isTv) async {
     final encodedTitle = Uri.encodeComponent(title);
-    // This deep link attempts to open the search page in the Netflix app, 
-    // falling back to the browser if the app isn't installed.
-    final url = Uri.parse('https://www.netflix.com/search?q=$encodedTitle');
+    // For Movies we use Netflix, for Dramas we use WeTV
+    final url = isTv
+        ? Uri.parse('https://wetv.vip/search?q=$encodedTitle')
+        : Uri.parse('https://www.netflix.com/search?q=$encodedTitle');
+
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open Netflix')),
+        SnackBar(content: Text('Could not open ${isTv ? 'WeTV' : 'Netflix'}')),
       );
     }
   }
@@ -253,14 +255,14 @@ class _DetailPageState extends State<DetailPage> {
                         width: double.infinity,
                         height: 56,
                         child: ElevatedButton.icon(
-                          onPressed: () => _watchOnNetflix(widget.movie.title),
+                          onPressed: () => _watchOnPlatform(widget.movie.title, widget.movie.isTv),
                           icon: const Icon(Icons.play_circle_fill, size: 24),
-                          label: const Text(
-                            'Watch on Netflix',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          label: Text(
+                            widget.movie.isTv ? 'Watch on WeTV' : 'Watch on Netflix',
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red[900],
+                            backgroundColor: widget.movie.isTv ? Colors.orange[800] : Colors.red[900],
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),

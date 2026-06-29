@@ -5,6 +5,35 @@ import '../providers/movie_provider.dart';
 import '../models/movie.dart';
 import '../pages/detail_page.dart';
 
+class FavoriteButton extends StatelessWidget {
+  final Movie movie;
+  const FavoriteButton({super.key, required this.movie});
+
+  @override
+  Widget build(BuildContext context) {
+    return Selector<MovieProvider, bool>(
+      selector: (_, provider) => provider.isFavorite(movie.id),
+      builder: (context, isFavorite, child) {
+        return GestureDetector(
+          onTap: () => context.read<MovieProvider>().toggleFavorite(movie),
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: Colors.black45,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              isFavorite ? Icons.favorite : Icons.favorite_border,
+              color: isFavorite ? Colors.redAccent : Colors.white,
+              size: 14,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
 class MovieCard extends StatelessWidget {
   final Movie movie;
   final bool isHorizontal;
@@ -21,121 +50,99 @@ class MovieCard extends StatelessWidget {
   }
 
   Widget _buildHorizontalCard(BuildContext context) {
-    return Consumer<MovieProvider>(
-      builder: (context, provider, child) {
-        final isFavorite = provider.isFavorite(movie.id);
-        return GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => DetailPage(movie: movie)),
-            );
-          },
-          child: Container(
-            width: 140,
-            margin: const EdgeInsets.only(right: 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Stack(
-                      children: [
-                        CachedNetworkImage(
-                          imageUrl: movie.fullPosterPath,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          height: double.infinity,
-                          placeholder: (context, url) => Container(color: Colors.white10),
-                          errorWidget: (context, url, error) => const Icon(Icons.movie, color: Colors.white10),
-                        ),
-                        Positioned(
-                          top: 8,
-                          left: 8,
-                          child: GestureDetector(
-                            onTap: () => provider.toggleFavorite(movie),
-                            child: Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                color: Colors.black45,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Icon(
-                                isFavorite ? Icons.favorite : Icons.favorite_border,
-                                color: isFavorite ? Colors.redAccent : Colors.white,
-                                size: 14,
-                              ),
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          top: 8,
-                          right: 8,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: Colors.black54,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.star_rounded, color: Colors.amber, size: 12),
-                                const SizedBox(width: 2),
-                                Text(
-                                  movie.voteAverage.toStringAsFixed(1),
-                                  style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  movie.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.white),
-                ),
-                Text(
-                  movie.releaseDate.isNotEmpty ? movie.releaseDate.split('-')[0] : 'N/A',
-                  style: const TextStyle(color: Colors.white38, fontSize: 10),
-                ),
-              ],
-            ),
-          ),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => DetailPage(movie: movie)),
         );
       },
+      child: Container(
+        width: 140,
+        margin: const EdgeInsets.only(right: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Stack(
+                  children: [
+                    CachedNetworkImage(
+                      imageUrl: movie.fullPosterPath,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                      placeholder: (context, url) => Container(color: Colors.white10),
+                      errorWidget: (context, url, error) => const Icon(Icons.movie, color: Colors.white10),
+                    ),
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: FavoriteButton(movie: movie),
+                    ),
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.star_rounded, color: Colors.amber, size: 12),
+                            const SizedBox(width: 2),
+                            Text(
+                              movie.voteAverage.toStringAsFixed(1),
+                              style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              movie.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.white),
+            ),
+            Text(
+              movie.releaseDate.isNotEmpty ? movie.releaseDate.split('-')[0] : 'N/A',
+              style: const TextStyle(color: Colors.white38, fontSize: 10),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildStandardCard(BuildContext context) {
-    return Consumer<MovieProvider>(
-      builder: (context, provider, child) {
-        final isFavorite = provider.isFavorite(movie.id);
-        return GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => DetailPage(movie: movie)),
-            );
-          },
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 20),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.02),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.white.withOpacity(0.05)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, 5),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => DetailPage(movie: movie)),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 20),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.02),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.white.withOpacity(0.05)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
                 ),
               ],
             ),
@@ -156,21 +163,7 @@ class MovieCard extends StatelessWidget {
                       Positioned(
                         top: 8,
                         left: 8,
-                        child: GestureDetector(
-                          onTap: () => provider.toggleFavorite(movie),
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: Colors.black45,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Icon(
-                              isFavorite ? Icons.favorite : Icons.favorite_border,
-                              color: isFavorite ? Colors.redAccent : Colors.white,
-                              size: 14,
-                            ),
-                          ),
-                        ),
+                        child: FavoriteButton(movie: movie),
                       ),
                     ],
                   ),
@@ -240,8 +233,6 @@ class MovieCard extends StatelessWidget {
             ),
           ),
         );
-      },
-    );
   }
 
   Widget _buildBadge({required IconData icon, required String text, Color? color, Color? textColor}) {
