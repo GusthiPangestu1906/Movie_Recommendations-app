@@ -9,8 +9,10 @@
 
 ## 🌌 Core Features (The Dual Universe)
 
+*   **🎨 Personalized Profiles**: Features a modern **Avatar Picker** using the artistic **Lorelei** style from DiceBear. Users can choose from a curated set of professional avatars that are synchronized across devices via Firebase Auth.
+*   **🔗 Smart Streaming Integration**: Dynamic "Watch Now" buttons that intelligently link to **Netflix** for movies and **WeTV** for dramas/TV shows, ensuring users always find the right platform.
 *   **⚡ Universe Switching**: Seamlessly toggle between **Movie Universe** and **Drama Universe**. The entire app interface and recommendation engine adapt instantly to your selected mode.
-*   **🔐 Secure Authentication**: Integrated with **Firebase Authentication**, providing a robust and personalized experience with real-time user profiles and secure cloud sessions.
+*   **🔐 Secure Authentication**: Integrated with **Firebase Authentication** and **Firestore**, providing a robust and personalized experience with real-time user profiles and cloud-synced favorites/history.
 *   **🌟 Premium Star Profiles**: Explore in-depth actor biographies with HD visuals, birth details, and global popularity rankings.
 *   **✅ Verified Filmography**: A sophisticated ID-matching system ensures that filmographies are 100% accurate, allowing users to discover every verified project of their favorite stars.
 *   **🔍 Global Cross-Search**: A powerful, debounced search engine that fetches results locally from your favorites and globally from the entire TMDb database simultaneously.

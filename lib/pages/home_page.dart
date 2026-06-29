@@ -410,6 +410,114 @@ else if (_currentIndex == 2) { // Favorites
     );
   }
 
+  void _showAvatarPicker(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    // Filtered seeds that look clean and professional in Lorelei style
+    final List<String> seeds = [
+      'Eden', 'Sasha', 'Willow', 'Aiden', 'Skylar', 'Nova', 'River', 'Jade',
+      'Zion', 'Amara', 'Kiran', 'Lumi', 'Vesper', 'Aura', 'Orion', 'Ember'
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1A1D2E), // Slightly lighter for contrast
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(35)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0B0E1E),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(35)),
+            border: Border.all(color: Colors.white.withOpacity(0.05)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 24),
+                decoration: BoxDecoration(
+                  color: Colors.white10,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const Text(
+                'Personalize Profile',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Select an avatar that represents you',
+                style: TextStyle(color: Colors.white38, fontSize: 14),
+              ),
+              const SizedBox(height: 32),
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 4,
+                  mainAxisSpacing: 20,
+                  crossAxisSpacing: 20,
+                ),
+                itemCount: seeds.length,
+                itemBuilder: (context, index) {
+                  // Using 'lorelei' style which is more artistic and proportional
+                  final url = 'https://api.dicebear.com/7.x/lorelei/png?seed=${seeds[index]}&backgroundColor=b6e3f4,c0aede,d1d4f9';
+                  final bool isSelected = authProvider.photoUrl == url;
+
+                  return GestureDetector(
+                    onTap: () async {
+                      await authProvider.updateProfilePhoto(url);
+                      if (context.mounted) Navigator.pop(context);
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isSelected ? const Color(0xFF5C6AC4) : Colors.transparent,
+                          width: 3,
+                        ),
+                        boxShadow: isSelected ? [
+                          BoxShadow(
+                            color: const Color(0xFF5C6AC4).withOpacity(0.4),
+                            blurRadius: 12,
+                            spreadRadius: 2,
+                          )
+                        ] : [],
+                      ),
+                      child: ClipOval(
+                        child: CachedNetworkImage(
+                          imageUrl: url,
+                          placeholder: (context, url) => Container(
+                            color: Colors.white.withOpacity(0.05),
+                            padding: const EdgeInsets.all(10),
+                            child: const CircularProgressIndicator(strokeWidth: 2, color: Colors.white10),
+                          ),
+                          errorWidget: (context, url, error) => const Icon(Icons.person, color: Colors.white10),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildDrawer(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final user = authProvider.user;
@@ -419,18 +527,46 @@ else if (_currentIndex == 2) { // Favorites
       child: Column(
         children: [
           UserAccountsDrawerHeader(
-            decoration: const BoxDecoration(color: Color(0xFF1A1D2E)),
-            currentAccountPicture: const CircleAvatar(
-              backgroundColor: Color(0xFF5C6AC4),
-              child: Icon(Icons.person, color: Colors.white, size: 40),
+            decoration: const BoxDecoration(
+              color: Color(0xFF1A1D2E),
+              image: DecorationImage(
+                image: NetworkImage('https://www.transparenttextures.com/patterns/dark-matter.png'),
+                opacity: 0.1,
+                repeat: ImageRepeat.repeat,
+              ),
+            ),
+            currentAccountPicture: GestureDetector(
+              onTap: () => _showAvatarPicker(context),
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFF5C6AC4), width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                    )
+                  ],
+                ),
+                child: CircleAvatar(
+                  backgroundColor: const Color(0xFF1A1D2E),
+                  backgroundImage: authProvider.photoUrl != null
+                      ? CachedNetworkImageProvider(authProvider.photoUrl!)
+                      : null,
+                  child: authProvider.photoUrl == null
+                      ? const Icon(Icons.person, color: Colors.white30, size: 40)
+                      : null,
+                ),
+              ),
             ),
             accountName: Text(
               user?.displayName ?? 'Guest User',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             accountEmail: Text(
               user?.email ?? 'guest@mymovies.app',
-              style: const TextStyle(color: Colors.white38),
+              style: const TextStyle(color: Colors.white38, fontSize: 13),
             ),
           ),
           _buildDrawerItem(

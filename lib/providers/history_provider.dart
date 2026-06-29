@@ -1,10 +1,16 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/movie.dart';
 import 'movie_provider.dart';
+import 'auth_provider.dart';
 
 class HistoryProvider with ChangeNotifier {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  String? _userId;
+  MovieProvider? _movieProvider;
+
   List<Movie> _history = [];
   List<Movie> get history => _history;
 
@@ -41,14 +47,48 @@ class HistoryProvider with ChangeNotifier {
     }
   }
 
-  MovieProvider? _movieProvider;
-
-  HistoryProvider() {
-    _loadHistory();
+  void update(AuthProvider auth, MovieProvider movieProvider) {
+    _movieProvider = movieProvider;
+    if (_userId != auth.user?.uid) {
+      _userId = auth.user?.uid;
+      if (_userId != null) {
+        _loadFromFirestore();
+      } else {
+        _history = [];
+        _tvHistory = [];
+        _loadHistory(); // Load local history if logged out
+      }
+    }
   }
 
-  void update(MovieProvider movieProvider) {
-    _movieProvider = movieProvider;
+  Future<void> _loadFromFirestore() async {
+    if (_userId == null) return;
+
+    try {
+      final snapshot = await _firestore
+          .collection('users')
+          .doc(_userId)
+          .collection('history')
+          .orderBy('watch_date', descending: true)
+          .limit(50)
+          .get(const GetOptions(source: Source.serverAndCache));
+
+      final List<Movie> allHistory = snapshot.docs.map((doc) {
+        final data = doc.data();
+        final movie = Movie.fromJson(data, isTv: data['isTv'] ?? false);
+        if (data['watch_date'] != null) {
+          movie.watchDate = (data['watch_date'] as Timestamp).toDate();
+        }
+        return movie;
+      }).toList();
+
+      _history = allHistory.where((m) => !m.isTv).toList();
+      _tvHistory = allHistory.where((m) => m.isTv).toList();
+
+      notifyListeners();
+    } catch (e) {
+      print('Error loading history from Firestore: $e');
+    }
   }
 
   Future<void> _loadHistory() async {
@@ -89,7 +129,20 @@ class HistoryProvider with ChangeNotifier {
 
     notifyListeners();
     await _saveHistory();
+    if (_userId != null) {
+      await _saveToFirestore(movie);
+    }
     _movieProvider?.fetchRecommendations(history: _history);
+  }
+
+  Future<void> _saveToFirestore(Movie movie) async {
+    if (_userId == null) return;
+    await _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('history')
+        .doc(movie.id.toString())
+        .set(_movieToFirestoreMap(movie));
   }
 
   Future<void> removeFromHistory(int movieId, {bool isTv = false}) async {
@@ -97,6 +150,14 @@ class HistoryProvider with ChangeNotifier {
     list.removeWhere((movie) => movie.id == movieId);
     notifyListeners();
     await _saveHistory();
+    if (_userId != null) {
+      await _firestore
+          .collection('users')
+          .doc(_userId)
+          .collection('history')
+          .doc(movieId.toString())
+          .delete();
+    }
     _movieProvider?.fetchRecommendations(history: _history);
   }
 
@@ -116,6 +177,20 @@ class HistoryProvider with ChangeNotifier {
       'vote_average': m.voteAverage,
       'release_date': m.releaseDate,
       'watch_date': m.watchDate?.toIso8601String(),
+      'isTv': m.isTv,
+    };
+  }
+
+  Map<String, dynamic> _movieToFirestoreMap(Movie m) {
+    return {
+      'id': m.id,
+      'title': m.title,
+      'overview': m.overview,
+      'poster_path': m.posterPath,
+      'backdrop_path': m.backdropPath,
+      'vote_average': m.voteAverage,
+      'release_date': m.releaseDate,
+      'watch_date': m.watchDate != null ? Timestamp.fromDate(m.watchDate!) : null,
       'isTv': m.isTv,
     };
   }
