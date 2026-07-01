@@ -35,22 +35,59 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
   Future<void> _loadInitialData() async {
     final provider = Provider.of<MovieProvider>(context, listen: false);
     
-    // Phase 1: Load Basic Info
-    final details = await provider.getFullActorDetails(widget.actorId);
-    if (mounted) {
-      setState(() {
-        _actorDetails = details;
-        _isLoadingBasic = false;
-      });
-    }
+    // Phase 1: Try to load from TMDB Basic Info
+    try {
+      final details = await provider.getFullActorDetails(widget.actorId);
+      if (mounted) {
+        if (details != null) {
+          setState(() {
+            _actorDetails = details;
+            _isLoadingBasic = false;
+          });
 
-    // Phase 2: Load Verified Filmography
-    if (details != null) {
-      final work = await provider.fetchVerifiedWork(widget.actorId);
+          // Phase 2: Load Verified Filmography (Only if from TMDB)
+          final work = await provider.fetchVerifiedWork(widget.actorId);
+          if (mounted) {
+            setState(() {
+              _verifiedMovies = work['movies'];
+              _verifiedTv = work['tv'];
+              _isLoadingFilmography = false;
+            });
+          }
+        } else {
+          // Fallback: Check if it's already in favoriteActors or globalActorSearchResults
+          Cast? fallbackActor;
+
+          // Try to find in favorites
+          try {
+            fallbackActor = provider.favoriteActors.firstWhere((a) => a.id == widget.actorId);
+          } catch (_) {}
+
+          // Try to find in global results if not in favorites
+          if (fallbackActor == null) {
+            try {
+              fallbackActor = provider.globalActorSearchResults.firstWhere((a) => a.id == widget.actorId);
+            } catch (_) {}
+          }
+
+          if (fallbackActor != null) {
+            setState(() {
+              _actorDetails = fallbackActor;
+              _isLoadingBasic = false;
+              _isLoadingFilmography = false; // No filmography for Wikidata yet
+            });
+          } else {
+            setState(() {
+              _isLoadingBasic = false;
+              _isLoadingFilmography = false;
+            });
+          }
+        }
+      }
+    } catch (e) {
       if (mounted) {
         setState(() {
-          _verifiedMovies = work['movies'];
-          _verifiedTv = work['tv'];
+          _isLoadingBasic = false;
           _isLoadingFilmography = false;
         });
       }
@@ -78,136 +115,125 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
           ? const Center(child: CircularProgressIndicator(color: Color(0xFF5C6AC4)))
           : _actorDetails == null
               ? const Center(child: Text('Failed to load actor details', style: TextStyle(color: Colors.white38)))
-              : SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      _buildHeader(),
-                      _buildContent(),
-                    ],
-                  ),
+              : CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(child: _buildHeader()),
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 0),
+                      sliver: SliverToBoxAdapter(child: _buildContent()),
+                    ),
+                  ],
                 ),
     );
   }
 
   Widget _buildHeader() {
-    return Stack(
-      children: [
-        Hero(
-          tag: 'actor-backdrop-${widget.actorId}',
-          child: CachedNetworkImage(
-            imageUrl: _actorDetails!.fullProfilePathHD,
-            width: double.infinity,
-            height: 550,
-            fit: BoxFit.cover,
-            placeholder: (context, url) => Container(color: Colors.white10),
-            errorWidget: (context, url, error) => Container(
-              height: 550,
-              color: Colors.white10,
-              child: const Icon(Icons.person, color: Colors.white30, size: 80),
-            ),
+    return Container(
+      margin: EdgeInsets.fromLTRB(16, MediaQuery.of(context).padding.top + 16, 16, 0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.4),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
           ),
-        ),
-        // Top-down dark gradient for back/fav buttons visibility
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 120,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withOpacity(0.5),
-                  Colors.transparent,
-                ],
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: Stack(
+          children: [
+            Hero(
+              tag: 'actor-backdrop-${widget.actorId}',
+              child: CachedNetworkImage(
+                imageUrl: _actorDetails!.fullProfilePathHD,
+                width: double.infinity,
+                height: 500,
+                fit: BoxFit.cover,
+                alignment: Alignment.topCenter,
+                placeholder: (context, url) => Container(color: Colors.white10),
+                errorWidget: (context, url, error) => Container(
+                  height: 500,
+                  color: Colors.white10,
+                  child: const Icon(Icons.person, color: Colors.white30, size: 80),
+                ),
               ),
             ),
-          ),
-        ),
-        // Premium Gradient Overlay
-        Positioned.fill(
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  const Color(0xFF0B0E1E).withOpacity(0.2),
-                  const Color(0xFF0B0E1E).withOpacity(0.8),
-                  const Color(0xFF0B0E1E),
-                ],
-                stops: const [0.4, 0.6, 0.85, 1.0],
+            // Gradient Overlay
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      const Color(0xFF0B0E1E).withValues(alpha: 0.8),
+                    ],
+                    stops: const [0.6, 1.0],
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
-        // Glassmorphism Back Button
-        Positioned(
-          top: MediaQuery.of(context).padding.top + 10,
-          left: 16,
-          child: _buildGlassButton(
-            icon: Icons.arrow_back_ios_new,
-            onTap: () => Navigator.of(context).pop(),
-          ),
-        ),
-        // Glassmorphism Favorite Button
-        Positioned(
-          top: MediaQuery.of(context).padding.top + 10,
-          right: 16,
-          child: Consumer<MovieProvider>(
-            builder: (context, provider, child) {
-              final isFav = provider.isFavoriteActor(widget.actorId);
-              return _buildGlassButton(
-                icon: isFav ? Icons.favorite : Icons.favorite_border,
-                iconColor: isFav ? Colors.redAccent : Colors.white,
-                onTap: () {
-                  if (_actorDetails != null) {
-                    provider.toggleFavoriteActor(_actorDetails!);
-                  }
+            // Glassmorphism Back Button
+            Positioned(
+              top: 20,
+              left: 16,
+              child: _buildGlassButton(
+                icon: Icons.arrow_back_ios_new,
+                onTap: () => Navigator.of(context).pop(),
+              ),
+            ),
+            // Glassmorphism Favorite Button
+            Positioned(
+              top: 20,
+              right: 16,
+              child: Consumer<MovieProvider>(
+                builder: (context, provider, child) {
+                  final isFav = provider.isFavoriteActor(widget.actorId);
+                  return _buildGlassButton(
+                    icon: isFav ? Icons.favorite : Icons.favorite_border,
+                    iconColor: isFav ? Colors.redAccent : Colors.white,
+                    onTap: () {
+                      if (_actorDetails != null) {
+                        provider.toggleFavoriteActor(_actorDetails!);
+                      }
+                    },
+                  );
                 },
-              );
-            },
-          ),
-        ),
-        // Actor Name floating on header
-        Positioned(
-          bottom: 20,
-          left: 24,
-          right: 24,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+              ),
+            ),
+            // Actor Name floating on header
+            Positioned(
+              bottom: 20,
+              left: 20,
+              right: 20,
+              child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
                     child: Text(
                       widget.actorName,
                       style: const TextStyle(
-                        fontSize: 36,
+                        fontSize: 28,
                         fontWeight: FontWeight.w900,
                         color: Colors.white,
-                        letterSpacing: -1,
+                        letterSpacing: -0.5,
                       ),
                     ),
                   ),
                   if (_actorDetails?.instagramId != null && _actorDetails!.instagramId!.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 12),
-                      child: GestureDetector(
-                        onTap: () => _launchSocial('https://instagram.com/${_actorDetails!.instagramId}'),
-                        child: _buildBootstrapInstagramIcon(),
-                      ),
+                    GestureDetector(
+                      onTap: () => _launchSocial('https://instagram.com/${_actorDetails!.instagramId}'),
+                      child: _buildBootstrapInstagramIcon(),
                     ),
                 ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -217,7 +243,7 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -232,9 +258,9 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.25),
+                color: Colors.black.withValues(alpha: 0.25),
                 borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: Colors.white.withOpacity(0.1)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
               ),
               child: Icon(icon, color: iconColor, size: 22),
             ),
@@ -248,9 +274,9 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.2)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
       ),
       child: SvgPicture.asset(
         'assets/instagram.svg',
@@ -281,15 +307,17 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
   }
 
   Widget _buildQuickStatsBar() {
+    final bool isWikidata = _actorDetails!.id.toString().length > 9; // Simple heuristic for hashed IDs
+
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(child: _buildStatTile(Icons.cake_rounded, 'BORN', _actorDetails!.birthday ?? 'N/A', const Color(0xFFFFAB40))),
           const SizedBox(width: 10),
-          Expanded(child: _buildStatTile(Icons.location_on_rounded, 'FROM', _actorDetails!.placeOfBirth?.split(',').last.trim() ?? 'N/A', const Color(0xFF448AFF))),
+          Expanded(child: _buildStatTile(Icons.location_on_rounded, 'FROM', _actorDetails!.placeOfBirth?.split(',').last.trim() ?? (isWikidata ? 'Wikidata' : 'N/A'), const Color(0xFF448AFF))),
           const SizedBox(width: 10),
-          Expanded(child: _buildStatTile(Icons.trending_up_rounded, 'RANK', _actorDetails!.popularity?.toStringAsFixed(1) ?? 'N/A', const Color(0xFF64FFDA))),
+          Expanded(child: _buildStatTile(Icons.trending_up_rounded, 'SOURCE', isWikidata ? 'W-DATA' : (_actorDetails!.popularity?.toStringAsFixed(1) ?? 'N/A'), const Color(0xFF64FFDA))),
         ],
       ),
     );
@@ -301,7 +329,7 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
+            color: Colors.black.withValues(alpha: 0.4),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
@@ -314,9 +342,9 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.06),
+              color: Colors.white.withValues(alpha: 0.06),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withOpacity(0.12)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -324,7 +352,7 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: accentColor.withOpacity(0.15),
+                    color: accentColor.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(icon, color: accentColor, size: 20),
@@ -333,12 +361,12 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
                 Text(
                   label,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.5),
+                    color: Colors.white.withValues(alpha: 0.5),
                     fontSize: 9,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 1.2,
                     shadows: [
-                      Shadow(color: Colors.black.withOpacity(0.5), blurRadius: 4, offset: const Offset(0, 1)),
+                      Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 4, offset: const Offset(0, 1)),
                     ],
                   ),
                 ),
@@ -351,7 +379,7 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
                     fontWeight: FontWeight.bold,
                     fontSize: 12, // Reduced size slightly to accommodate more text
                     shadows: [
-                      Shadow(color: Colors.black.withOpacity(0.5), blurRadius: 4, offset: const Offset(0, 1)),
+                      Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 4, offset: const Offset(0, 1)),
                     ],
                   ),
                 ),
@@ -380,7 +408,7 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
               style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const Spacer(),
-            Icon(Icons.notes, color: Colors.white.withOpacity(0.2), size: 20),
+            Icon(Icons.notes, color: Colors.white.withValues(alpha: 0.2), size: 20),
           ],
         ),
         const SizedBox(height: 16),
@@ -442,7 +470,7 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
                 width: 140,
                 margin: const EdgeInsets.only(right: 16),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.03),
+                  color: Colors.white.withValues(alpha: 0.03),
                   borderRadius: BorderRadius.circular(24),
                 ),
               ),
@@ -520,7 +548,7 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.black.withValues(alpha: 0.2),
                       blurRadius: 10,
                       offset: const Offset(0, 5),
                     ),
@@ -532,6 +560,7 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
                     imageUrl: item.fullPosterPath,
                     fit: BoxFit.cover,
                     width: double.infinity,
+                    alignment: Alignment.topCenter,
                     placeholder: (context, url) => Container(color: Colors.white10),
                     errorWidget: (context, url, error) => const Icon(Icons.movie, color: Colors.white10),
                   ),

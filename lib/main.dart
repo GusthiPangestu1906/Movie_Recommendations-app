@@ -7,6 +7,7 @@ import 'firebase_options.dart';
 import 'providers/movie_provider.dart';
 import 'providers/history_provider.dart';
 import 'providers/auth_provider.dart';
+import 'providers/connectivity_provider.dart';
 import 'pages/login_page.dart';
 import 'pages/home_page.dart';
 
@@ -30,6 +31,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => ConnectivityProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProxyProvider<AuthProvider, MovieProvider>(
           create: (_) => MovieProvider(),
@@ -81,6 +83,9 @@ class MyApp extends StatelessWidget {
           bodyMedium: TextStyle(color: Colors.white70),
         ),
       ),
+      builder: (context, child) {
+        return child!;
+      },
       // Use AuthProvider to decide initial page
       home: Consumer<AuthProvider>(
         builder: (context, auth, _) {

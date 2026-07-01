@@ -56,6 +56,7 @@ class Cast {
   final int id;
   final String name;
   final String? profilePath;
+  String? character;
   String? biography;
   String? birthday;
   String? placeOfBirth;
@@ -70,6 +71,7 @@ class Cast {
     required this.id, 
     required this.name, 
     this.profilePath,
+    this.character,
     this.biography,
     this.birthday,
     this.placeOfBirth,
@@ -86,6 +88,7 @@ class Cast {
       id: json['id'],
       name: json['name'],
       profilePath: json['profile_path'],
+      character: json['character'],
       biography: json['biography'],
       birthday: json['birthday'],
       placeOfBirth: json['place_of_birth'],
@@ -93,11 +96,15 @@ class Cast {
     );
   }
 
-  String get fullProfilePath => profilePath != null 
-      ? 'https://image.tmdb.org/t/p/w185$profilePath' 
-      : 'https://via.placeholder.com/185x278?text=No+Image';
+  String get fullProfilePath {
+    if (profilePath == null) return 'https://via.placeholder.com/185x278?text=No+Image';
+    if (profilePath!.startsWith('http')) return profilePath!;
+    return 'https://image.tmdb.org/t/p/w185$profilePath';
+  }
 
-  String get fullProfilePathHD => profilePath != null
-      ? 'https://image.tmdb.org/t/p/h632$profilePath'
-      : 'https://via.placeholder.com/600x900?text=No+Image';
+  String get fullProfilePathHD {
+    if (profilePath == null) return 'https://via.placeholder.com/600x900?text=No+Image';
+    if (profilePath!.startsWith('http')) return profilePath!;
+    return 'https://image.tmdb.org/t/p/h632$profilePath';
+  }
 }

@@ -105,18 +105,21 @@ class ApiService {
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      final List results = data['results'];
-      var items = results.map((item) => Movie.fromJson(item, isTv: isTv)).toList();
+      final List results = data['results'] ?? [];
       
       if (withGenres != null && withGenres.isNotEmpty) {
-        final genreList = withGenres.split(',').map((id) => int.tryParse(id)).whereType<int>().toList();
-        items = items.where((item) {
-          // This assumes genre_ids exist in the response for TV too
-          final List<dynamic> gIds = (results.firstWhere((r) => r['id'] == item.id, orElse: () => {})['genre_ids'] ?? []);
-          return gIds.any((id) => genreList.contains(id));
-        }).toList();
+        final genreSet = withGenres.split(',')
+            .map((id) => int.tryParse(id))
+            .whereType<int>()
+            .toSet();
+
+        return results.where((item) {
+          final List<dynamic> genreIds = item['genre_ids'] ?? [];
+          return genreIds.any((id) => genreSet.contains(id));
+        }).map((item) => Movie.fromJson(item, isTv: isTv)).toList();
       }
-      return items;
+
+      return results.map((item) => Movie.fromJson(item, isTv: isTv)).toList();
     } else {
       throw Exception('Failed to search');
     }
@@ -181,10 +184,90 @@ class ApiService {
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       final List results = data['results'] ?? [];
-      return results.map((c) => Cast.fromJson(c)).toList();
+      List<Cast> actors = results.map((c) => Cast.fromJson(c)).toList();
+
+      // If no results from TMDB, try Wikidata
+      if (actors.isEmpty) {
+        actors = await searchWikidataActors(query);
+      }
+
+      return actors;
     } else {
       throw Exception('Failed to search actors');
     }
+  }
+
+  Future<List<Cast>> searchWikidataActors(String query) async {
+    final encodedQuery = Uri.encodeComponent(query);
+    // Mencari di Wikidata dengan prioritas bahasa Indonesia dan Inggris
+    final searchUrl = 'https://www.wikidata.org/w/api.php?action=wbsearchentities&search=$encodedQuery&language=id&continue=0&format=json&uselang=id';
+
+    try {
+      final response = await http.get(Uri.parse(searchUrl)).timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final List searchResults = data['search'] ?? [];
+
+        List<Cast> actors = [];
+        for (var item in searchResults.take(8)) {
+          final String qid = item['id'];
+          final String name = item['label'] ?? 'Unknown';
+          final String description = (item['description'] ?? '').toLowerCase();
+
+          // Filter lebih luas: Cek kata kunci umum pemeran/manusia
+          bool isLikelyPerson = description.contains('pemeran') ||
+                                description.contains('aktris') ||
+                                description.contains('aktor') ||
+                                description.contains('actor') ||
+                                description.contains('actress') ||
+                                description.contains('human') ||
+                                description.contains('indonesia');
+
+          if (isLikelyPerson) {
+            // Ambil detail entitas untuk mendapatkan gambar menggunakan API wbgetentities yang lebih stabil
+            final detailUrl = 'https://www.wikidata.org/w/api.php?action=wbgetentities&ids=$qid&props=claims&format=json';
+
+            try {
+              final detailRes = await http.get(Uri.parse(detailUrl)).timeout(const Duration(seconds: 3));
+
+              String? imageUrl;
+              if (detailRes.statusCode == 200) {
+                final detailData = json.decode(detailRes.body);
+                if (detailData['entities'] != null && detailData['entities'][qid] != null) {
+                  final claims = detailData['entities'][qid]['claims'];
+
+                  // P18 (Image)
+                  if (claims != null && claims['P18'] != null) {
+                    final String imageName = claims['P18'][0]['mainsnak']['datavalue']['value'];
+                    final encodedImage = Uri.encodeComponent(imageName.replaceAll(' ', '_'));
+                    imageUrl = 'https://commons.wikimedia.org/wiki/Special:FilePath/$encodedImage?width=500';
+                  }
+                }
+              }
+
+              actors.add(Cast(
+                id: qid.hashCode,
+                name: name,
+                profilePath: imageUrl,
+                character: item['description'] ?? 'Wikidata Entity',
+              ));
+            } catch (e) {
+              // Jika gagal ambil gambar, tetap tambahkan tanpa gambar
+              actors.add(Cast(
+                id: qid.hashCode,
+                name: name,
+                profilePath: null,
+                character: item['description'] ?? 'Wikidata Entity',
+              ));
+            }
+          }
+        }
+        return actors;
+      }
+    } catch (e) {
+      print('Wikidata search error: $e');
+    }
+    return [];
   }
 
   Future<Map<String, String?>> getPersonExternalIds(int personId) async {
