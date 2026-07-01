@@ -9,7 +9,8 @@
 
 ## 🌌 Core Features (The Dual Universe)
 
-*   **🎨 Personalized Profiles**: Features a modern **Avatar Picker** using the artistic **Lorelei** style from DiceBear. Users can choose from a curated set of professional avatars that are synchronized across devices via Firebase Auth.
+*   **🎨 Personalized & Editable Profiles**: Features a modern **Avatar Picker** and now includes **profile editing capabilities**. Users can choose from curated avatars and manage their profiles, with all changes synchronized across devices via Firebase Auth.
+*   **🌐 Offline Awareness**: The app now gracefully handles network interruptions by displaying a clear "You are offline" message, ensuring users are always aware of their connection status.
 *   **🔗 Smart Streaming Integration**: Dynamic "Watch Now" buttons that intelligently link to **Netflix** for movies and **WeTV** for dramas/TV shows, ensuring users always find the right platform.
 *   **⚡ Universe Switching**: Seamlessly toggle between **Movie Universe** and **Drama Universe**. The entire app interface and recommendation engine adapt instantly to your selected mode.
 *   **🔐 Secure Authentication**: Integrated with **Firebase Authentication** and **Firestore**, providing a robust and personalized experience with real-time user profiles and cloud-synced favorites/history.
