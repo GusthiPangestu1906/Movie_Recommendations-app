@@ -219,9 +219,20 @@ class MovieProvider with ChangeNotifier {
     _lastSearchQuery = query;
     notifyListeners();
     try {
-      _tvSearchResults = await _apiService.searchMovies(query, isTv: true, page: _currentSearchPage);
+      // Fetch results from API
+      List<Movie> initialResults = await _apiService.searchMovies(query, isTv: true, page: _currentSearchPage);
+
+      // Apply client-side filter if a country is selected
+      if (_selectedCountry != null && _selectedCountry!.isNotEmpty) {
+        _tvSearchResults = initialResults.where((movie) {
+          return movie.originCountry.contains(_selectedCountry);
+        }).toList();
+      } else {
+        _tvSearchResults = initialResults;
+      }
     } catch (e) {
       print(e);
+      _tvSearchResults = []; // Clear results on error
     } finally {
       _isLoading = false;
       notifyListeners();

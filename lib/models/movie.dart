@@ -7,6 +7,7 @@ class Movie {
   final double voteAverage;
   final String releaseDate;
   final bool isTv;
+  final List<String> originCountry;
   List<Cast>? cast;
   String? trailerKey;
   String? certification;
@@ -22,6 +23,7 @@ class Movie {
     required this.voteAverage,
     required this.releaseDate,
     this.isTv = false,
+    required this.originCountry,
     this.cast,
     this.trailerKey,
     this.certification,
@@ -40,6 +42,7 @@ class Movie {
       releaseDate: json['release_date'] ?? json['first_air_date'] ?? '',
       isTv: isTv,
       character: json['character'],
+      originCountry: List<String>.from(json['origin_country'] ?? []),
     );
   }
 
