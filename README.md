@@ -1,75 +1,39 @@
-# 🎬 Movie Universe - Dual Experience Discovery App
-[![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=for-the-badge&logo=Flutter&logoColor=white)](https://flutter.dev)
-[![Firebase](https://img.shields.io/badge/Firebase-Authentication-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com)
-[![TMDB](https://img.shields.io/badge/TMDb-API-01d277?style=for-the-badge&logo=themoviedatabase&logoColor=white)](https://www.themoviedb.org)
+# Movie Recommendations App
 
-**Movie Universe** is a premium mobile application that offers a dual-universe experience for cinema enthusiasts and TV series fans. Built with Flutter and powered by the TMDb API, it provides a seamless and immersive way to discover, track, and explore the vast world of entertainment.
+A Flutter-based mobile application for discovering and getting recommendations for movies and TV shows. This app is built to demonstrate modern mobile development practices with Flutter.
 
----
+## ✨ Features
 
-## 🌌 Core Features (The Dual Universe)
-
-*   **🎨 Personalized & Editable Profiles**: Features a modern **Avatar Picker** and now includes **profile editing capabilities**. Users can choose from curated avatars and manage their profiles, with all changes synchronized across devices via Firebase Auth.
-*   **🌐 Offline Awareness**: The app now gracefully handles network interruptions by displaying a clear "You are offline" message, ensuring users are always aware of their connection status.
-*   **🔗 Smart Streaming Integration**: Dynamic "Watch Now" buttons that intelligently link to **Netflix** for movies and **WeTV** for dramas/TV shows, ensuring users always find the right platform.
-*   **⚡ Universe Switching**: Seamlessly toggle between **Movie Universe** and **Drama Universe**. The entire app interface and recommendation engine adapt instantly to your selected mode.
-*   **🔐 Secure Authentication**: Integrated with **Firebase Authentication** and **Firestore**, providing a robust and personalized experience with real-time user profiles and cloud-synced favorites/history.
-*   **🌟 Premium Star Profiles**: Explore in-depth actor biographies with HD visuals, birth details, and global popularity rankings.
-*   **✅ Verified Filmography**: A sophisticated ID-matching system ensures that filmographies are 100% accurate, allowing users to discover every verified project of their favorite stars.
-*   **🔍 Global Cross-Search**: A powerful, debounced search engine that fetches results locally from your favorites and globally from the entire TMDb database simultaneously.
-*   **🚀 Performance Optimized**: Features **Infinite Scrolling (Lazy Loading)** across all lists and searches to ensure a smooth, high-speed experience even with thousands of titles.
-*   **📁 Smart Organization**: Completely separate history logs and favorite collections for Movies and TV Series, keeping your profile clean and organized.
-
----
-
-## 🎨 Design Philosophy
-*   **Premium Dark UI**: A modern *Deep Navy* aesthetic designed for cinematic immersion.
-*   **Glassmorphism**: Elegant translucent UI elements with frosted glass effects for a high-end feel.
-*   **Adaptive Layout**: Fully responsive design that maintains its integrity across various screen sizes and resolutions.
-
----
+- **Browse Movies & TV Shows**: Explore lists of popular, top-rated, and upcoming content.
+- **Search**: Quickly find any movie or drama.
+- **Country Filter for Dramas**: In the "Drama Universe", you can filter search results by country to easily find dramas from a specific region (e.g., Korea, Japan, China).
+- **Detailed Information**: View details for each title, including synopsis, rating, and cast.
+- **Watchlist**: Save movies and shows to your personal watchlist (requires login).
+- **User Authentication**: Secure sign-up and login functionality using Firebase.
 
 ## 🛠️ Tech Stack
-- **Framework**: Flutter (Dart)
-- **Backend**: Firebase Authentication
-- **State Management**: Provider (ChangeNotifier with ProxyProvider)
-- **Data Source**: The Movie Database (TMDb) API
-- **Image Handling**: Cached Network Image & Flutter SVG
-- **Local Storage**: Shared Preferences (Offline Persistence)
 
----
+- **Framework**: Flutter
+- **State Management**: Provider
+- **API**: The Movie Database (TMDb) API
+- **Backend**: Firebase (Authentication, Firestore for watchlist)
+- **Dependencies**:
+  - `http`: For making API calls.
+  - `provider`: For state management.
+  - `cached_network_image`: To cache network images.
+  - `firebase_core`, `firebase_auth`, `cloud_firestore`: For backend services.
 
-## ⚙️ Installation & Setup
+## 🚀 Getting Started
 
-1.  **Clone the Repository**
+1.  **Clone the repository**:
     ```bash
     git clone https://github.com/GusthiPangestu1906/Movie_Recommendations-app.git
     ```
-2.  **Configure Firebase**
-    - Install the Firebase CLI and FlutterFire CLI.
-    - Run `flutterfire configure` to sync your local environment with your Firebase project.
-3.  **Install Dependencies**
+2.  **Install dependencies**:
     ```bash
     flutter pub get
     ```
-4.  **Run the Application**
+3.  **Run the app**:
     ```bash
-    flutter run --release
+    flutter run
     ```
-
----
-
-## 📦 Release
-To generate a production-ready APK, use:
-```bash
-flutter build apk --release
-```
-
----
-
-## 👤 Lead Developer
-**Gusthi Pangestu**  
-*Full-stack Flutter Developer passionate about high-performance mobile experiences.*
-
----
-© 2026 Movie Universe. All rights reserved.
