@@ -87,6 +87,9 @@ class MovieProvider with ChangeNotifier {
   List<Movie> _recommendations = [];
   List<Movie> get recommendations => _recommendations;
 
+  List<Movie> _tvRecommendations = [];
+  List<Movie> get tvRecommendations => _tvRecommendations;
+
   List<Movie> _relatedMovies = [];
   List<Movie> get relatedMovies => _relatedMovies;
 
@@ -154,6 +157,7 @@ class MovieProvider with ChangeNotifier {
 
       notifyListeners();
       fetchRecommendations();
+      fetchTvRecommendations();
     } catch (e) {
       print('Error loading from Firestore: $e');
     }
@@ -163,6 +167,7 @@ class MovieProvider with ChangeNotifier {
     await loadFavorites();
     await loadFavoriteActors();
     fetchRecommendations();
+    fetchTvRecommendations();
     fetchTvSeries();
   }
 
@@ -275,7 +280,7 @@ class MovieProvider with ChangeNotifier {
     if (_favoriteMovies.isNotEmpty) {
       try {
         final latestFavorite = _favoriteMovies.first;
-        _recommendations = await _apiService.getRecommendations(latestFavorite.id);
+        _recommendations = await _apiService.getRecommendations(latestFavorite.id, isTv: false);
         notifyListeners();
         return;
       } catch (e) {
@@ -285,18 +290,52 @@ class MovieProvider with ChangeNotifier {
 
     // Priority 2: History (if favorites are empty or fetch failed)
     if (history != null && history.isNotEmpty) {
-      try {
-        final latestHistory = history.first;
-        _recommendations = await _apiService.getRecommendations(latestHistory.id);
-        notifyListeners();
-        return;
-      } catch (e) {
-        print('Error fetching history-based recommendations: $e');
+      final movieHistory = history.where((m) => !m.isTv).toList();
+      if (movieHistory.isNotEmpty) {
+        try {
+          final latestHistory = movieHistory.first;
+          _recommendations = await _apiService.getRecommendations(latestHistory.id, isTv: false);
+          notifyListeners();
+          return;
+        } catch (e) {
+          print('Error fetching history-based recommendations: $e');
+        }
       }
     }
 
-    // Fallback: If both are empty, we can show popular movies or keep it empty
     _recommendations = [];
+    notifyListeners();
+  }
+
+  Future<void> fetchTvRecommendations({List<Movie>? history}) async {
+    // Priority 1: TV Favorites
+    if (_favoriteTv.isNotEmpty) {
+      try {
+        final latestFavorite = _favoriteTv.first;
+        _tvRecommendations = await _apiService.getRecommendations(latestFavorite.id, isTv: true);
+        notifyListeners();
+        return;
+      } catch (e) {
+        print('Error fetching favorite-based TV recommendations: $e');
+      }
+    }
+
+    // Priority 2: History
+    if (history != null && history.isNotEmpty) {
+      final tvHistory = history.where((m) => m.isTv).toList();
+      if (tvHistory.isNotEmpty) {
+        try {
+          final latestHistory = tvHistory.first;
+          _tvRecommendations = await _apiService.getRecommendations(latestHistory.id, isTv: true);
+          notifyListeners();
+          return;
+        } catch (e) {
+          print('Error fetching history-based TV recommendations: $e');
+        }
+      }
+    }
+
+    _tvRecommendations = [];
     notifyListeners();
   }
 
@@ -337,19 +376,36 @@ class MovieProvider with ChangeNotifier {
   }
 
   Future<void> fetchMoreSearchResults() async {
-    if (_isFetchingMore || _lastSearchQuery.isEmpty) return;
+    if (_isFetchingMore) return;
+
+    // Determine if we are paging a query search or a genre discover
+    final bool isQuerySearch = _lastSearchQuery.isNotEmpty;
+    final bool isGenreDiscover = _selectedGenreIds.isNotEmpty && _lastSearchQuery.isEmpty;
+
+    if (!isQuerySearch && !isGenreDiscover) return;
+
     _isFetchingMore = true;
     notifyListeners();
 
     _currentSearchPage++;
     try {
-      final genreString = _selectedGenreIds.isEmpty ? null : _selectedGenreIds.join(',');
-      List<Movie> nextResults = await _apiService.searchMovies(
-        _lastSearchQuery,
-        withGenres: genreString,
-        isTv: _isDramaMode,
-        page: _currentSearchPage,
-      );
+      List<Movie> nextResults;
+      if (isQuerySearch) {
+        final genreString = _selectedGenreIds.isEmpty ? null : _selectedGenreIds.join(',');
+        nextResults = await _apiService.searchMovies(
+          _lastSearchQuery,
+          withGenres: genreString,
+          isTv: _isDramaMode,
+          page: _currentSearchPage,
+        );
+      } else {
+        // Pure genre paging
+        final genreString = _selectedGenreIds.join(',');
+        nextResults = await _apiService.discoverMovies(
+          withGenres: genreString,
+          page: _currentSearchPage,
+        );
+      }
 
       if (_isDramaMode) {
         _tvSearchResults.addAll(nextResults);
@@ -398,13 +454,19 @@ class MovieProvider with ChangeNotifier {
   }
 
   Future<void> applyGenreFilter() async {
-    if (_selectedGenreIds.isEmpty) return;
+    if (_selectedGenreIds.isEmpty) {
+      _searchResults = [];
+      notifyListeners();
+      return;
+    }
     
     _isLoading = true;
+    _currentSearchPage = 1;
+    _lastSearchQuery = ''; // Reset search query when applying pure genre filter
     notifyListeners();
     try {
       final genreString = _selectedGenreIds.join(',');
-      _searchResults = await _apiService.discoverMovies(withGenres: genreString);
+      _searchResults = await _apiService.discoverMovies(withGenres: genreString, page: _currentSearchPage);
     } catch (e) {
       print(e);
     } finally {
@@ -439,12 +501,24 @@ class MovieProvider with ChangeNotifier {
   }
 
   Future<Cast?> getFullActorDetails(int actorId) async {
-    // Only basic loading for person info initially
-    return await _apiService.getPersonDetails(actorId);
+    try {
+      // Jika ID sangat besar (hasil hash dari Wikidata QID), kita anggap ini entitas Wikidata
+      // dan detail dasarnya sudah ada di objek Cast yang dikirim dari search.
+      // Namun untuk memastikannya, kita coba fetch TMDB, jika gagal, return null agar UI handle
+      return await _apiService.getPersonDetails(actorId);
+    } catch (e) {
+      print('Error fetching actor details from TMDB: $e');
+      return null;
+    }
   }
 
   Future<Map<String, List<Movie>>> fetchVerifiedWork(int actorId) async {
-    return await _apiService.getVerifiedFilmography(actorId);
+    try {
+      return await _apiService.getVerifiedFilmography(actorId);
+    } catch (e) {
+      print('Error fetching filmography: $e');
+      return {'movies': [], 'tv': []};
+    }
   }
 
   void toggleFavorite(Movie movie, {List<Movie>? history}) {
@@ -459,7 +533,11 @@ class MovieProvider with ChangeNotifier {
     if (_userId != null) {
       _syncFavoriteToFirestore(movie);
     }
-    fetchRecommendations(history: history);
+    if (movie.isTv) {
+      fetchTvRecommendations(history: history);
+    } else {
+      fetchRecommendations(history: history);
+    }
     notifyListeners();
   }
 
@@ -572,9 +650,9 @@ class MovieProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<List<Movie>> searchForHistory(String query) async {
+  Future<List<Movie>> searchForHistory(String query, {bool isTv = false}) async {
     try {
-      return await _apiService.searchMovies(query);
+      return await _apiService.searchMovies(query, isTv: isTv);
     } catch (e) {
       print(e);
       return [];

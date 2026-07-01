@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/movie_provider.dart';
-import '../models/movie.dart';
-import 'detail_page.dart';
 import 'search_page.dart';
 import 'tv_page.dart';
-import 'favorite_page.dart';
 import 'history_page.dart';
 import 'actors_page.dart';
 import '../widgets/movie_card.dart';
 import '../providers/history_provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/connectivity_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class HomePage extends StatefulWidget {
@@ -36,7 +34,6 @@ class _HomePageState extends State<HomePage> {
     _pages = [
       _isDramaMode ? const TvPage() : const MovieListScreen(),
       const SearchPage(),
-      const FavoritePage(),
       const HistoryPage(),
     ];
   }
@@ -47,7 +44,92 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: _buildAppBar(context),
       drawer: _buildDrawer(context),
-      body: _pages[_currentIndex],
+      body: Consumer<ConnectivityProvider>(
+        builder: (context, connectivity, _) {
+          return Stack(
+            children: [
+              // Konten halaman utama
+              _pages[_currentIndex],
+
+              // Overlay Offline hanya untuk area Body
+              if (!connectivity.isOnline)
+                Container(
+                  color: Colors.black, // Hitam pekat menutupi body
+                  width: double.infinity,
+                  height: double.infinity,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.cloud_off_outlined,
+                          color: Colors.white24,
+                          size: 90,
+                        ),
+                        const SizedBox(height: 24),
+                        const Text(
+                          'Looks like you\'re\noffline!',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            height: 1.2,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 50),
+                          child: const Text(
+                            'You\'ll see more ideas once you\'re back online.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white38,
+                              fontSize: 15,
+                              height: 1.5,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                        ElevatedButton(
+                          onPressed: () async {
+                            await connectivity.checkConnection();
+                            if (!context.mounted) return;
+                            if (connectivity.isOnline) {
+                              // If back online, refresh data
+                              final movieProvider = Provider.of<MovieProvider>(context, listen: false);
+                              final historyProvider = Provider.of<HistoryProvider>(context, listen: false);
+
+                              if (_isDramaMode) {
+                                movieProvider.fetchTvSeries(country: movieProvider.selectedCountry);
+                              } else {
+                                movieProvider.fetchNowPlaying();
+                                movieProvider.fetchRecommendations(history: historyProvider.history);
+                              }
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF5C6AC4),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Try Again',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           border: Border(top: BorderSide(color: Colors.white10, width: 0.5)),
@@ -85,13 +167,6 @@ class _HomePageState extends State<HomePage> {
             const BottomNavigationBarItem(
               icon: Padding(
                 padding: EdgeInsets.only(bottom: 4),
-                child: Icon(Icons.favorite_border),
-              ),
-              label: 'Favorites',
-            ),
-            const BottomNavigationBarItem(
-              icon: Padding(
-                padding: EdgeInsets.only(bottom: 4),
                 child: Icon(Icons.history),
               ),
               label: 'History',
@@ -104,8 +179,7 @@ class _HomePageState extends State<HomePage> {
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     final movieProvider = Provider.of<MovieProvider>(context);
-    final historyProvider = Provider.of<HistoryProvider>(context);
-    
+
     String title = _isDramaMode ? 'Drama Universe' : 'Movie Universe';
     List<Widget> actions = [
       IconButton(
@@ -146,7 +220,7 @@ class _HomePageState extends State<HomePage> {
                     hintStyle: const TextStyle(color: Colors.white24),
                     prefixIcon: const Icon(Icons.search, color: Colors.white24),
                     filled: true,
-                    fillColor: Colors.white.withOpacity(0.05),
+                    fillColor: Colors.white.withValues(alpha: 0.05),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),
                       borderSide: BorderSide.none,
@@ -158,7 +232,7 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(width: 8),
               Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFF5C6AC4).withOpacity(0.1),
+                  color: const Color(0xFF5C6AC4).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: IconButton(
@@ -170,38 +244,17 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       );
-    }
-else if (_currentIndex == 2) { // Favorites
-      title = _isDramaMode ? 'Favorite Stars' : 'Favorite Movies';
-    } else if (_currentIndex == 3) { // History
+    } else if (_currentIndex == 2) { // History
       title = _isDramaMode ? 'Drama History' : 'Movie History';
-      bottom = PreferredSize(
-        preferredSize: const Size.fromHeight(60),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-          child: TextField(
-            onChanged: (value) => historyProvider.setSearchQuery(value),
-            style: const TextStyle(color: Colors.white),
-            decoration: InputDecoration(
-              hintText: 'Search in history...',
-              hintStyle: const TextStyle(color: Colors.white24),
-              prefixIcon: const Icon(Icons.search, color: Colors.white24),
-              filled: true,
-              fillColor: Colors.white.withOpacity(0.05),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(15),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding: const EdgeInsets.symmetric(vertical: 0),
-            ),
-          ),
-        ),
-      );
+      bottom = null;
     }
 
     return AppBar(
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
       centerTitle: true,
+      elevation: 0,
+      backgroundColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
       leading: Builder(
         builder: (context) => IconButton(
           icon: const Icon(Icons.menu_open),
@@ -301,7 +354,7 @@ else if (_currentIndex == 2) { // Favorites
                                     duration: const Duration(milliseconds: 200),
                                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                                     decoration: BoxDecoration(
-                                      color: isSelected ? const Color(0xFF5C6AC4) : Colors.white.withOpacity(0.05),
+                                      color: isSelected ? const Color(0xFF5C6AC4) : Colors.white.withValues(alpha: 0.05),
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(color: isSelected ? Colors.transparent : Colors.white10),
                                     ),
@@ -333,7 +386,7 @@ else if (_currentIndex == 2) { // Favorites
                                     duration: const Duration(milliseconds: 200),
                                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                                     decoration: BoxDecoration(
-                                      color: isSelected ? const Color(0xFF5C6AC4) : Colors.white.withOpacity(0.05),
+                                      color: isSelected ? const Color(0xFF5C6AC4) : Colors.white.withValues(alpha: 0.05),
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(color: isSelected ? Colors.transparent : Colors.white10),
                                     ),
@@ -387,7 +440,7 @@ else if (_currentIndex == 2) { // Favorites
                               child: ElevatedButton(
                                 onPressed: () => Navigator.pop(context),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF5C6AC4).withOpacity(0.1),
+                                  backgroundColor: const Color(0xFF5C6AC4).withValues(alpha: 0.1),
                                   foregroundColor: const Color(0xFF5C6AC4),
                                   padding: const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(
@@ -410,9 +463,12 @@ else if (_currentIndex == 2) { // Favorites
     );
   }
 
-  void _showAvatarPicker(BuildContext context) {
+  void _showEditProfile(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    // Filtered seeds that look clean and professional in Lorelei style
+    final TextEditingController nameController = TextEditingController(text: authProvider.user?.displayName);
+    String? selectedPhotoUrl = authProvider.photoUrl;
+    bool isSaving = false;
+
     final List<String> seeds = [
       'Eden', 'Sasha', 'Willow', 'Aiden', 'Skylar', 'Nova', 'River', 'Jade',
       'Zion', 'Amara', 'Kiran', 'Lumi', 'Vesper', 'Aura', 'Orion', 'Ember'
@@ -420,99 +476,180 @@ else if (_currentIndex == 2) { // Favorites
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF1A1D2E), // Slightly lighter for contrast
+      backgroundColor: const Color(0xFF0B0E1E),
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(35)),
       ),
       builder: (context) {
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          decoration: BoxDecoration(
-            color: const Color(0xFF0B0E1E),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(35)),
-            border: Border.all(color: Colors.white.withOpacity(0.05)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 24),
-                decoration: BoxDecoration(
-                  color: Colors.white10,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom + 32,
+                top: 32,
+                left: 24,
+                right: 24,
               ),
-              const Text(
-                'Personalize Profile',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Select an avatar that represents you',
-                style: TextStyle(color: Colors.white38, fontSize: 14),
-              ),
-              const SizedBox(height: 32),
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  mainAxisSpacing: 20,
-                  crossAxisSpacing: 20,
-                ),
-                itemCount: seeds.length,
-                itemBuilder: (context, index) {
-                  // Using 'lorelei' style which is more artistic and proportional
-                  final url = 'https://api.dicebear.com/7.x/lorelei/png?seed=${seeds[index]}&backgroundColor=b6e3f4,c0aede,d1d4f9';
-                  final bool isSelected = authProvider.photoUrl == url;
-
-                  return GestureDetector(
-                    onTap: () async {
-                      await authProvider.updateProfilePhoto(url);
-                      if (context.mounted) Navigator.pop(context);
-                    },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 24),
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: isSelected ? const Color(0xFF5C6AC4) : Colors.transparent,
-                          width: 3,
-                        ),
-                        boxShadow: isSelected ? [
-                          BoxShadow(
-                            color: const Color(0xFF5C6AC4).withOpacity(0.4),
-                            blurRadius: 12,
-                            spreadRadius: 2,
-                          )
-                        ] : [],
-                      ),
-                      child: ClipOval(
-                        child: CachedNetworkImage(
-                          imageUrl: url,
-                          placeholder: (context, url) => Container(
-                            color: Colors.white.withOpacity(0.05),
-                            padding: const EdgeInsets.all(10),
-                            child: const CircularProgressIndicator(strokeWidth: 2, color: Colors.white10),
-                          ),
-                          errorWidget: (context, url, error) => const Icon(Icons.person, color: Colors.white10),
-                        ),
+                        color: Colors.white10,
+                        borderRadius: BorderRadius.circular(2),
                       ),
                     ),
-                  );
-                },
+                  ),
+                  const Text(
+                    'Edit Profile',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Display Name',
+                    style: TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: nameController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: 'Enter your name',
+                      hintStyle: const TextStyle(color: Colors.white24),
+                      filled: true,
+                      fillColor: Colors.white.withValues(alpha: 0.05),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Choose Avatar',
+                    style: TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    height: 220,
+                    child: GridView.builder(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 4,
+                        mainAxisSpacing: 16,
+                        crossAxisSpacing: 16,
+                      ),
+                      itemCount: seeds.length,
+                      itemBuilder: (context, index) {
+                        final url = 'https://api.dicebear.com/7.x/lorelei/png?seed=${seeds[index]}&backgroundColor=b6e3f4,c0aede,d1d4f9';
+                        final bool isSelected = selectedPhotoUrl == url;
+
+                        return GestureDetector(
+                          onTap: () {
+                            setModalState(() {
+                              selectedPhotoUrl = url;
+                            });
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 250),
+                            curve: Curves.easeInOut,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isSelected ? const Color(0xFF5C6AC4) : Colors.white12,
+                                width: isSelected ? 3 : 1,
+                              ),
+                              boxShadow: isSelected ? [
+                                BoxShadow(
+                                  color: const Color(0xFF5C6AC4).withValues(alpha: 0.4),
+                                  blurRadius: 10,
+                                  spreadRadius: 1,
+                                )
+                              ] : [],
+                            ),
+                            child: ClipOval(
+                              child: CachedNetworkImage(
+                                imageUrl: url,
+                                placeholder: (context, url) => Container(
+                                  color: Colors.white.withValues(alpha: 0.05),
+                                  child: const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
+                                ),
+                                errorWidget: (context, url, error) => const Icon(Icons.person, color: Colors.white24),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: isSaving ? null : () async {
+                        setModalState(() => isSaving = true);
+                        try {
+                          await authProvider.updateProfile(
+                            name: nameController.text.trim(),
+                            photoUrl: selectedPhotoUrl,
+                          );
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Profile updated successfully'),
+                                backgroundColor: Colors.green,
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Failed to update profile: $e'),
+                                backgroundColor: Colors.red,
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        } finally {
+                          if (context.mounted) setModalState(() => isSaving = false);
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF5C6AC4),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        disabledBackgroundColor: const Color(0xFF5C6AC4).withValues(alpha: 0.5),
+                      ),
+                      child: isSaving
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          )
+                        : const Text('Save Changes', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
-            ],
-          ),
+            );
+          },
         );
       },
     );
@@ -536,28 +673,45 @@ else if (_currentIndex == 2) { // Favorites
               ),
             ),
             currentAccountPicture: GestureDetector(
-              onTap: () => _showAvatarPicker(context),
-              child: Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFF5C6AC4), width: 2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 10,
-                      spreadRadius: 2,
-                    )
-                  ],
-                ),
-                child: CircleAvatar(
-                  backgroundColor: const Color(0xFF1A1D2E),
-                  backgroundImage: authProvider.photoUrl != null
-                      ? CachedNetworkImageProvider(authProvider.photoUrl!)
-                      : null,
-                  child: authProvider.photoUrl == null
-                      ? const Icon(Icons.person, color: Colors.white30, size: 40)
-                      : null,
-                ),
+              onTap: () => _showEditProfile(context),
+              child: Stack(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFF5C6AC4), width: 2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 10,
+                          spreadRadius: 2,
+                        )
+                      ],
+                    ),
+                    child: CircleAvatar(
+                      backgroundColor: const Color(0xFF1A1D2E),
+                      radius: 36,
+                      backgroundImage: authProvider.photoUrl != null
+                          ? CachedNetworkImageProvider(authProvider.photoUrl!)
+                          : null,
+                      child: authProvider.photoUrl == null
+                          ? const Icon(Icons.person, color: Colors.white30, size: 40)
+                          : null,
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF5C6AC4),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.edit, color: Colors.white, size: 14),
+                    ),
+                  ),
+                ],
               ),
             ),
             accountName: Text(
@@ -726,15 +880,27 @@ class _MovieListScreenState extends State<MovieListScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           
-          return SingleChildScrollView(
+          return CustomScrollView(
             controller: _scrollController,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 16), // Padding for missing AppBar
-                if (provider.recommendations.isNotEmpty) ...[
-                  _buildSectionTitle('For You', showSort: false, onCategory: () {}),
-                  SizedBox(
+            slivers: [
+              const SliverToBoxAdapter(child: SizedBox(height: 16)),
+
+              if (provider.recommendations.isNotEmpty) ...[
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(16, 16, 16, 12),
+                    child: Text(
+                      'For You',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: SizedBox(
                     height: 220,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
@@ -748,26 +914,43 @@ class _MovieListScreenState extends State<MovieListScreen> {
                       },
                     ),
                   ),
-                  const SizedBox(height: 12),
-                ],
-                _buildSectionTitle('Popular', showSort: true, onCategory: () => _showCategoryPicker(context)),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: provider.movies.length,
-                  itemBuilder: (context, index) {
-                    return MovieCard(movie: provider.movies[index]);
-                  },
                 ),
-                if (provider.isFetchingMore)
-                  const Padding(
+              ],
+
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(16, 24, 16, 12),
+                  child: Text(
+                    'Popular',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => MovieCard(movie: provider.movies[index]),
+                    childCount: provider.movies.length,
+                  ),
+                ),
+              ),
+
+              if (provider.isFetchingMore)
+                const SliverToBoxAdapter(
+                  child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 20),
                     child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
                   ),
-                const SizedBox(height: 16),
-              ],
-            ),
+                ),
+
+              const SliverToBoxAdapter(child: SizedBox(height: 16)),
+            ],
           );
         },
       ),

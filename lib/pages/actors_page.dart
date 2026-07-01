@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/movie_provider.dart';
 import '../models/movie.dart';
+import '../providers/connectivity_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'actor_detail_page.dart';
 
@@ -54,7 +55,7 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
                 hintStyle: const TextStyle(color: Colors.white24),
                 prefixIcon: const Icon(Icons.search, color: Colors.white24),
                 filled: true,
-                fillColor: Colors.white.withOpacity(0.05),
+                fillColor: Colors.white.withValues(alpha: 0.05),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(15),
                   borderSide: BorderSide.none,
@@ -75,41 +76,117 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
           ),
         ),
       ),
-      body: Consumer<MovieProvider>(
-        builder: (context, provider, child) {
-          final favorites = provider.filteredFavoriteActors;
-          final globalResults = provider.globalActorSearchResults;
-          final isSearching = _searchController.text.isNotEmpty;
-
-          if (provider.favoriteActors.isEmpty && !isSearching) {
-            return _buildEmptyState(true);
-          }
-
-          if (isSearching && favorites.isEmpty && globalResults.isEmpty && !provider.isActorLoading) {
-            return _buildEmptyState(false);
-          }
-
-          return ListView(
-            padding: const EdgeInsets.all(16),
+      body: Consumer<ConnectivityProvider>(
+        builder: (context, connectivity, _) {
+          return Stack(
             children: [
-              if (favorites.isNotEmpty) ...[
-                _buildSectionHeader('Your Favorites'),
-                ...favorites.map((actor) => _buildActorCard(actor, provider)).toList(),
-                const SizedBox(height: 20),
-              ],
-              if (isSearching) ...[
-                _buildSectionHeader('Discover New Stars'),
-                if (provider.isActorLoading)
-                  const Center(child: Padding(
-                    padding: EdgeInsets.all(20.0),
-                    child: CircularProgressIndicator(color: Color(0xFF5C6AC4)),
-                  ))
-                else
-                  ...globalResults
-                      .where((g) => !provider.isFavoriteActor(g.id))
-                      .map((actor) => _buildActorCard(actor, provider))
-                      .toList(),
-              ],
+              Consumer<MovieProvider>(
+                builder: (context, provider, child) {
+                  final favorites = provider.filteredFavoriteActors;
+                  final globalResults = provider.globalActorSearchResults;
+                  final isSearching = _searchController.text.isNotEmpty;
+
+                  if (provider.favoriteActors.isEmpty && !isSearching) {
+                    return _buildEmptyState(true);
+                  }
+
+                  if (isSearching && favorites.isEmpty && globalResults.isEmpty && !provider.isActorLoading) {
+                    return _buildEmptyState(false);
+                  }
+
+                  return CustomScrollView(
+                    slivers: [
+                      if (favorites.isNotEmpty) ...[
+                        SliverToBoxAdapter(child: _buildSectionHeader('Your Favorites')),
+                        SliverPadding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          sliver: SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) => _buildActorCard(favorites[index], provider),
+                              childCount: favorites.length,
+                            ),
+                          ),
+                        ),
+                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                      ],
+                      if (isSearching) ...[
+                        SliverToBoxAdapter(child: _buildSectionHeader('Discover New Stars')),
+                        if (provider.isActorLoading)
+                          const SliverToBoxAdapter(
+                            child: Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(20.0),
+                                child: CircularProgressIndicator(color: Color(0xFF5C6AC4)),
+                              ),
+                            ),
+                          )
+                        else
+                          SliverPadding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            sliver: SliverList(
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) {
+                                  final searchResults = globalResults
+                                      .where((g) => !provider.isFavoriteActor(g.id))
+                                      .toList();
+                                  return _buildActorCard(searchResults[index], provider);
+                                },
+                                childCount: globalResults
+                                    .where((g) => !provider.isFavoriteActor(g.id))
+                                    .length,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ],
+                  );
+                },
+              ),
+
+              // Overlay Offline
+              if (!connectivity.isOnline)
+                Container(
+                  color: Colors.black,
+                  width: double.infinity,
+                  height: double.infinity,
+                  child: const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.cloud_off_outlined,
+                          color: Colors.white24,
+                          size: 90,
+                        ),
+                        SizedBox(height: 24),
+                        Text(
+                          'Looks like you\'re\noffline!',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            height: 1.2,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 50),
+                          child: Text(
+                            'You\'ll see more stars once you\'re back online.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white38,
+                              fontSize: 15,
+                              height: 1.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
             ],
           );
         },
@@ -142,12 +219,12 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 20),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.02),
+          color: Colors.white.withValues(alpha: 0.02),
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white.withOpacity(0.05)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, 5),
             ),
@@ -164,6 +241,7 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
                     width: 110,
                     height: 140,
                     fit: BoxFit.cover,
+                    alignment: Alignment.topCenter,
                     placeholder: (context, url) => Container(color: Colors.white10),
                     errorWidget: (context, url, error) => const Icon(Icons.person, color: Colors.white10),
                   ),
@@ -225,7 +303,7 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.05),
+                          color: Colors.white.withValues(alpha: 0.05),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Row(
@@ -263,13 +341,13 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
           Container(
             padding: const EdgeInsets.all(30),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.02),
+              color: Colors.white.withValues(alpha: 0.02),
               shape: BoxShape.circle,
             ),
             child: Icon(
               isListEmpty ? Icons.auto_awesome_outlined : Icons.search_off_outlined,
               size: 80,
-              color: const Color(0xFF5C6AC4).withOpacity(0.2),
+              color: const Color(0xFF5C6AC4).withValues(alpha: 0.2),
             ),
           ),
           const SizedBox(height: 24),

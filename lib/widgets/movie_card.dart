@@ -65,12 +65,13 @@ class MovieCard extends StatelessWidget {
           children: [
             Expanded(
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                 child: Stack(
                   children: [
                     CachedNetworkImage(
                       imageUrl: movie.fullPosterPath,
                       fit: BoxFit.cover,
+                      alignment: Alignment.center,
                       width: double.infinity,
                       height: double.infinity,
                       placeholder: (context, url) => Container(color: Colors.white10),
@@ -135,20 +136,20 @@ class MovieCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 20),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.02),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white.withOpacity(0.05)),
+          color: Colors.white.withValues(alpha: 0.02),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, 5),
-                ),
-              ],
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(24),
-              child: Row(
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          child: Row(
                 children: [
                   Stack(
                     children: [
@@ -157,6 +158,7 @@ class MovieCard extends StatelessWidget {
                         width: 110,
                         height: 160,
                         fit: BoxFit.cover,
+                        alignment: Alignment.center,
                         placeholder: (context, url) => Container(color: Colors.white10),
                         errorWidget: (context, url, error) => const Icon(Icons.movie, color: Colors.white10),
                       ),
@@ -215,7 +217,7 @@ class MovieCard extends StatelessWidget {
                               _buildBadge(
                                 icon: movie.isTv ? Icons.tv : Icons.movie_filter,
                                 text: movie.isTv ? 'Drama' : 'Movie',
-                                color: const Color(0xFF5C6AC4).withOpacity(0.2),
+                                color: const Color(0xFF5C6AC4).withValues(alpha: 0.2),
                                 textColor: const Color(0xFF5C6AC4),
                               ),
                             ],
@@ -239,7 +241,7 @@ class MovieCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color ?? Colors.white.withOpacity(0.05),
+        color: color ?? Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
