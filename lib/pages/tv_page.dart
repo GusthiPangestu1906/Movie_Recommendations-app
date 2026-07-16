@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/movie_provider.dart';
 import '../providers/history_provider.dart';
 import '../widgets/movie_card.dart';
+import '../widgets/shimmer_loading.dart';
 
 class TvPage extends StatefulWidget {
   const TvPage({super.key});
@@ -19,6 +21,7 @@ class _TvPageState extends State<TvPage> {
   void initState() {
     super.initState();
     Future.microtask(() {
+      if (!mounted) return;
       final provider = Provider.of<MovieProvider>(context, listen: false);
       final historyProvider = Provider.of<HistoryProvider>(context, listen: false);
       provider.fetchTvSeries();
@@ -51,7 +54,42 @@ class _TvPageState extends State<TvPage> {
       body: Consumer<MovieProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading && provider.tvSeries.isEmpty && provider.tvSearchResults.isEmpty) {
-            return const Center(child: CircularProgressIndicator(color: Color(0xFF5C6AC4)));
+            return CustomScrollView(
+              slivers: [
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(16, 32, 16, 12),
+                    child: ShimmerLoading(width: 100, height: 20),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 220,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: 5,
+                      itemBuilder: (context, index) => const MovieCardShimmer(isHorizontal: true),
+                    ),
+                  ),
+                ),
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(16, 24, 16, 12),
+                    child: ShimmerLoading(width: 100, height: 20),
+                  ),
+                ),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => const MovieCardShimmer(),
+                      childCount: 5,
+                    ),
+                  ),
+                ),
+              ],
+            );
           }
 
           final list = _tvSearchController.text.isNotEmpty
@@ -87,7 +125,10 @@ class _TvPageState extends State<TvPage> {
                         return MovieCard(
                           movie: provider.tvRecommendations[index],
                           isHorizontal: true,
-                        );
+                        )
+                            .animate(delay: (index * 100).ms)
+                            .fadeIn(duration: 400.ms)
+                            .slideX(begin: 0.2);
                       },
                     ),
                   ),
@@ -123,17 +164,23 @@ class _TvPageState extends State<TvPage> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
-                      (context, index) => MovieCard(movie: list[index]),
+                      (context, index) => MovieCard(movie: list[index])
+                          .animate(delay: (index * 50).ms)
+                          .fadeIn(duration: 400.ms)
+                          .slideY(begin: 0.1),
                       childCount: list.length,
                     ),
                   ),
                 ),
 
               if (provider.isFetchingMore)
-                const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 20),
-                    child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => const MovieCardShimmer(),
+                      childCount: 2,
+                    ),
                   ),
                 ),
 

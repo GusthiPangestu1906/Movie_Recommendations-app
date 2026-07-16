@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -14,19 +15,34 @@ import 'pages/home_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load environment variables
-  await dotenv.load(fileName: ".env");
+  try {
+    // Load environment variables (Gunakan try-catch spesifik agar tidak menghentikan Firebase)
+    try {
+      await dotenv.load(fileName: ".env");
+    } catch (e) {
+      debugPrint("Dotenv Load Error: $e (Abaikan jika di Web dan API Key sudah di-hardcode)");
+    }
 
-  // Initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+    // Initialize Firebase secara aman
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
 
-  // Firestore Offline Persistence
-  FirebaseFirestore.instance.settings = Settings(
-    persistenceEnabled: true,
-    cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
-  );
+    // Firestore Persistence (Hanya untuk Mobile)
+    if (!kIsWeb &&
+        defaultTargetPlatform != TargetPlatform.windows &&
+        defaultTargetPlatform != TargetPlatform.linux &&
+        defaultTargetPlatform != TargetPlatform.macOS) {
+      FirebaseFirestore.instance.settings = const Settings(
+        persistenceEnabled: true,
+        cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+      );
+    }
+  } catch (e) {
+    debugPrint("Firebase Initialization Error: $e");
+  }
 
   runApp(
     MultiProvider(
@@ -84,17 +100,59 @@ class MyApp extends StatelessWidget {
         ),
       ),
       builder: (context, child) {
-        return child!;
+        return WebResponsiveWrapper(child: child!);
       },
-      // Use AuthProvider to decide initial page
       home: Consumer<AuthProvider>(
-        builder: (context, auth, _) {
-          if (auth.isAuthenticated) {
-            return const HomePage();
-          }
-          return const LoginPage();
-        },
+        builder: (context, auth, _) => auth.isAuthenticated ? const HomePage() : const LoginPage(),
       ),
+    );
+  }
+}
+
+class WebResponsiveWrapper extends StatelessWidget {
+  final Widget child;
+  const WebResponsiveWrapper({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    // Jika bukan Web, langsung tampilkan child
+    if (!kIsWeb) return child;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Breakpoint: jika lebar layar > 600px (Tablet/Laptop)
+        if (constraints.maxWidth > 600) {
+          return Container(
+            color: Colors.black, // Background luar "HP"
+            child: Center(
+              child: AspectRatio(
+                aspectRatio: 9 / 19, // Rasio layar HP modern
+                child: Container(
+                  margin: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0B0E1E),
+                    borderRadius: BorderRadius.circular(40), // Radius frame HP
+                    border: Border.all(color: Colors.grey.shade800, width: 8), // Frame luar
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.blueAccent.withValues(alpha: 0.2),
+                        blurRadius: 20,
+                        spreadRadius: 5,
+                      )
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(32),
+                    child: child,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+        // Jika di HP (lebar < 600px), tampilkan full screen biasa
+        return child;
+      },
     );
   }
 }

@@ -248,20 +248,9 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
                   Positioned(
                     top: 8,
                     left: 8,
-                    child: GestureDetector(
+                    child: _AnimatedFavoriteButton(
+                      isFavorite: isFav,
                       onTap: () => provider.toggleFavoriteActor(actor),
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: Colors.black45,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(
-                          isFav ? Icons.favorite : Icons.favorite_border,
-                          color: isFav ? Colors.redAccent : Colors.white,
-                          size: 14,
-                        ),
-                      ),
                     ),
                   ),
                 ],
@@ -310,7 +299,7 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(Icons.movie_outlined, color: Colors.white30, size: 12),
-                            const SizedBox(width: 6),
+                            SizedBox(width: 6),
                             Text(
                               'Tap to find movies',
                               style: TextStyle(color: Colors.white30, fontSize: 10, fontWeight: FontWeight.bold),
@@ -339,15 +328,15 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(30),
+            padding: const EdgeInsets.all(40),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.02),
+              color: Colors.white.withValues(alpha: 0.05),
               shape: BoxShape.circle,
             ),
             child: Icon(
-              isListEmpty ? Icons.auto_awesome_outlined : Icons.search_off_outlined,
+              Icons.star_outline_rounded,
               size: 80,
-              color: const Color(0xFF5C6AC4).withValues(alpha: 0.2),
+              color: Colors.white.withValues(alpha: 0.2),
             ),
           ),
           const SizedBox(height: 24),
@@ -361,6 +350,72 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
             style: const TextStyle(color: Colors.white38, fontSize: 14),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _AnimatedFavoriteButton extends StatefulWidget {
+  final bool isFavorite;
+  final VoidCallback onTap;
+
+  const _AnimatedFavoriteButton({required this.isFavorite, required this.onTap});
+
+  @override
+  State<_AnimatedFavoriteButton> createState() => _AnimatedFavoriteButtonState();
+}
+
+class _AnimatedFavoriteButtonState extends State<_AnimatedFavoriteButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+    _scaleAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.4), weight: 50),
+      TweenSequenceItem(tween: Tween(begin: 1.4, end: 1.0), weight: 50),
+    ]).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        widget.onTap();
+        _controller.forward(from: 0);
+      },
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: Colors.black45,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            transitionBuilder: (child, animation) =>
+                ScaleTransition(scale: animation, child: child),
+            child: Icon(
+              widget.isFavorite ? Icons.favorite : Icons.favorite_border,
+              key: ValueKey<bool>(widget.isFavorite),
+              color: widget.isFavorite ? Colors.redAccent : Colors.white,
+              size: 14,
+            ),
+          ),
+        ),
       ),
     );
   }
