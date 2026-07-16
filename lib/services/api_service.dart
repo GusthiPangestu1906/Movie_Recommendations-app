@@ -4,7 +4,12 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/movie.dart';
 
 class ApiService {
-  static String get _apiKey => dotenv.env['TMDB_API_KEY'] ?? '';
+  // Gunakan API Key dari .env, jika gagal gunakan hardcoded key sebagai fallback (Khusus Web)
+  static String get _apiKey {
+    final key = dotenv.env['TMDB_API_KEY'];
+    if (key != null && key.isNotEmpty) return key;
+    return '12d2377d20d4f51bf7c4c31f6b13a70b'; // API Key Anda
+  }
   static const String _baseUrl = 'https://api.themoviedb.org/3';
 
   // Simple in-memory cache
