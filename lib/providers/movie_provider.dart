@@ -354,13 +354,15 @@ class MovieProvider with ChangeNotifier {
     if (_debounce?.isActive ?? false) _debounce?.cancel();
     
     if (query.isEmpty) {
-      if (_selectedGenreIds.isNotEmpty) {
+      if (_isDramaMode) {
+        _tvSearchResults = [];
+      } else if (_selectedGenreIds.isNotEmpty) {
         applyGenreFilter();
       } else {
         _searchResults = [];
         _suggestions = [];
-        notifyListeners();
       }
+      notifyListeners();
       return;
     }
 
@@ -370,13 +372,22 @@ class MovieProvider with ChangeNotifier {
       _lastSearchQuery = query;
       notifyListeners();
       try {
-        final genreString = _selectedGenreIds.isEmpty ? null : _selectedGenreIds.join(',');
-        _searchResults = await _apiService.searchMovies(query, withGenres: genreString, page: _currentSearchPage);
-        
-        // If results are sparse and it's a long title, try a more aggressive approach if needed
-        // but typically searchMovies handles long titles well if encoded.
+        if (_isDramaMode) {
+          // Search for TV/Drama
+          List<Movie> results = await _apiService.searchMovies(query, isTv: true, page: _currentSearchPage);
 
-        _suggestions = _searchResults.take(5).toList(); // Top 5 as "guesses"
+          // Apply origin country filter if selected
+          if (_selectedCountry != null && _selectedCountry!.isNotEmpty) {
+            _tvSearchResults = results.where((m) => m.originCountry.contains(_selectedCountry)).toList();
+          } else {
+            _tvSearchResults = results;
+          }
+        } else {
+          // Search for Movies
+          final genreString = _selectedGenreIds.isEmpty ? null : _selectedGenreIds.join(',');
+          _searchResults = await _apiService.searchMovies(query, withGenres: genreString, page: _currentSearchPage);
+          _suggestions = _searchResults.take(5).toList();
+        }
       } catch (e) {
         print(e);
       } finally {

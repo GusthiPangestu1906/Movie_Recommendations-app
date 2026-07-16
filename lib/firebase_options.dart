@@ -10,9 +10,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -23,6 +21,15 @@ class DefaultFirebaseOptions {
         );
     }
   }
+
+  static FirebaseOptions get web => FirebaseOptions(
+    apiKey: 'AIzaSyDe_p6UZx3En2tMVVlJe_S7zniCUVj_7cY',
+    appId: '1:REDACTED_SENDER_ID:web:REDACTED_APP_ID',
+    messagingSenderId: 'REDACTED_SENDER_ID',
+    projectId: 'REDACTED_PROJECT_ID',
+    authDomain: 'REDACTED_PROJECT_ID.firebaseapp.com',
+    storageBucket: 'REDACTED_PROJECT_ID.firebasestorage.app',
+  );
 
   static FirebaseOptions get android => FirebaseOptions(
     apiKey: dotenv.env['FIREBASE_API_KEY'] ?? '',
