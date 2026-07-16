@@ -1,8 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/movie_provider.dart';
 import '../models/movie.dart';
 import 'detail_page.dart';
@@ -182,7 +184,10 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
               left: 16,
               child: _buildGlassButton(
                 icon: Icons.arrow_back_ios_new,
-                onTap: () => Navigator.of(context).pop(),
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  Navigator.of(context).pop();
+                },
               ),
             ),
             // Glassmorphism Favorite Button
@@ -196,6 +201,7 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
                     icon: isFav ? Icons.favorite : Icons.favorite_border,
                     iconColor: isFav ? Colors.redAccent : Colors.white,
                     onTap: () {
+                      HapticFeedback.mediumImpact();
                       if (_actorDetails != null) {
                         provider.toggleFavoriteActor(_actorDetails!);
                       }
@@ -221,7 +227,7 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
                         color: Colors.white,
                         letterSpacing: -0.5,
                       ),
-                    ),
+                    ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.2),
                   ),
                   if (_actorDetails?.instagramId != null && _actorDetails!.instagramId!.isNotEmpty)
                     GestureDetector(
@@ -313,11 +319,11 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(child: _buildStatTile(Icons.cake_rounded, 'BORN', _actorDetails!.birthday ?? 'N/A', const Color(0xFFFFAB40))),
+          Expanded(child: _buildStatTile(Icons.cake_rounded, 'BORN', _actorDetails!.birthday ?? 'N/A', const Color(0xFFFFAB40)).animate().fadeIn(delay: 100.ms).slideY(begin: 0.2)),
           const SizedBox(width: 10),
-          Expanded(child: _buildStatTile(Icons.location_on_rounded, 'FROM', _actorDetails!.placeOfBirth?.split(',').last.trim() ?? (isWikidata ? 'Wikidata' : 'N/A'), const Color(0xFF448AFF))),
+          Expanded(child: _buildStatTile(Icons.location_on_rounded, 'FROM', _actorDetails!.placeOfBirth?.split(',').last.trim() ?? (isWikidata ? 'Wikidata' : 'N/A'), const Color(0xFF448AFF)).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2)),
           const SizedBox(width: 10),
-          Expanded(child: _buildStatTile(Icons.trending_up_rounded, 'SOURCE', isWikidata ? 'W-DATA' : (_actorDetails!.popularity?.toStringAsFixed(1) ?? 'N/A'), const Color(0xFF64FFDA))),
+          Expanded(child: _buildStatTile(Icons.trending_up_rounded, 'SOURCE', isWikidata ? 'W-DATA' : (_actorDetails!.popularity?.toStringAsFixed(1) ?? 'N/A'), const Color(0xFF64FFDA)).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2)),
         ],
       ),
     );
@@ -425,7 +431,7 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
           ),
           crossFadeState: _isBiographyExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
           duration: const Duration(milliseconds: 300),
-        ),
+        ).animate().fadeIn(delay: 400.ms),
         if (canExpand)
           GestureDetector(
             onTap: () => setState(() => _isBiographyExpanded = !_isBiographyExpanded),
@@ -520,7 +526,12 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
             itemCount: list.length,
             itemBuilder: (context, index) {
               final item = list[index];
-              return _buildFilmographyCard(item);
+              return RepaintBoundary(
+                child: _buildFilmographyCard(item)
+                    .animate(delay: (index * 100).ms)
+                    .fadeIn(duration: 500.ms)
+                    .scale(begin: const Offset(0.9, 0.9)),
+              );
             },
           ),
         ),
@@ -531,6 +542,7 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
   Widget _buildFilmographyCard(Movie item) {
     return GestureDetector(
       onTap: () {
+        HapticFeedback.lightImpact();
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => DetailPage(movie: item)),

@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/movie_provider.dart';
 import 'search_page.dart';
 import 'tv_page.dart';
 import 'history_page.dart';
 import 'actors_page.dart';
-import '../widgets/movie_card.dart';
+import '../widgets/shimmer_loading.dart';
 import '../providers/history_provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/connectivity_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../widgets/movie_card.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -61,10 +64,17 @@ class _HomePageState extends State<HomePage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
-                          Icons.cloud_off_outlined,
-                          color: Colors.white24,
-                          size: 90,
+                        Container(
+                          padding: const EdgeInsets.all(40),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.05),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.cloud_off_rounded,
+                            size: 100,
+                            color: Colors.white.withValues(alpha: 0.2),
+                          ),
                         ),
                         const SizedBox(height: 24),
                         const Text(
@@ -89,37 +99,6 @@ class _HomePageState extends State<HomePage> {
                               fontSize: 15,
                               height: 1.5,
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-                        ElevatedButton(
-                          onPressed: () async {
-                            await connectivity.checkConnection();
-                            if (!context.mounted) return;
-                            if (connectivity.isOnline) {
-                              // If back online, refresh data
-                              final movieProvider = Provider.of<MovieProvider>(context, listen: false);
-                              final historyProvider = Provider.of<HistoryProvider>(context, listen: false);
-
-                              if (_isDramaMode) {
-                                movieProvider.fetchTvSeries(country: movieProvider.selectedCountry);
-                              } else {
-                                movieProvider.fetchNowPlaying();
-                                movieProvider.fetchRecommendations(history: historyProvider.history);
-                              }
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF5C6AC4),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text(
-                            'Try Again',
-                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                       ],
@@ -185,6 +164,7 @@ class _HomePageState extends State<HomePage> {
       IconButton(
         icon: Icon(_isDramaMode ? Icons.movie_outlined : Icons.tv_outlined),
         onPressed: () {
+          HapticFeedback.mediumImpact();
           setState(() {
             _isDramaMode = !_isDramaMode;
           });
@@ -208,11 +188,7 @@ class _HomePageState extends State<HomePage> {
               Expanded(
                 child: TextField(
                   onChanged: (value) {
-                    if (_isDramaMode) {
-                      movieProvider.searchTv(value);
-                    } else {
-                      movieProvider.search(value);
-                    }
+                    movieProvider.search(value);
                   },
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
@@ -237,7 +213,10 @@ class _HomePageState extends State<HomePage> {
                 ),
                 child: IconButton(
                   icon: Icon(_isDramaMode ? Icons.flag_outlined : Icons.tune, color: const Color(0xFF5C6AC4)),
-                  onPressed: () => _showFilterPicker(context),
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    _showFilterPicker(context);
+                  },
                 ),
               ),
             ],
@@ -296,7 +275,7 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: const Color(0xFF0B0E1E),
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (context) {
         return StatefulBuilder(
@@ -346,6 +325,7 @@ class _HomePageState extends State<HomePage> {
                                 final isSelected = (provider.selectedCountry ?? '') == country['value'];
                                 return GestureDetector(
                                   onTap: () {
+                                    HapticFeedback.selectionClick();
                                     setModalState(() {
                                       provider.fetchTvSeries(country: country['value']!.isEmpty ? null : country['value']);
                                     });
@@ -378,6 +358,7 @@ class _HomePageState extends State<HomePage> {
                                 final isSelected = provider.selectedGenreIds.contains(genre['value']);
                                 return GestureDetector(
                                   onTap: () {
+                                    HapticFeedback.selectionClick();
                                     setModalState(() {
                                       provider.toggleGenre(genre['value']!);
                                     });
@@ -479,7 +460,7 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: const Color(0xFF0B0E1E),
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(35)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (context) {
         return StatefulBuilder(
@@ -813,6 +794,7 @@ class _MovieListScreenState extends State<MovieListScreen> {
   void initState() {
     super.initState();
     Future.microtask(() {
+      if (!mounted) return;
       final provider = Provider.of<MovieProvider>(context, listen: false);
       final historyProvider = Provider.of<HistoryProvider>(context, listen: false);
       provider.fetchNowPlaying();
@@ -832,52 +814,49 @@ class _MovieListScreenState extends State<MovieListScreen> {
     super.dispose();
   }
 
-  void _showCategoryPicker(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF0B0E1E),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Text(
-                'Sort by Category',
-                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-            _buildCategoryItem(context, 'Now Playing', 'now_playing'),
-            _buildCategoryItem(context, 'Popular', 'popular'),
-            _buildCategoryItem(context, 'Top Rated', 'top_rated'),
-            _buildCategoryItem(context, 'Upcoming', 'upcoming'),
-            const SizedBox(height: 16),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildCategoryItem(BuildContext context, String label, String value) {
-    return ListTile(
-      title: Text(label, style: const TextStyle(color: Colors.white70)),
-      onTap: () {
-        Provider.of<MovieProvider>(context, listen: false).fetchByCategory(value);
-        Navigator.pop(context);
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Consumer<MovieProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading && provider.movies.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
+            return CustomScrollView(
+              slivers: [
+                const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(16, 16, 16, 12),
+                    child: ShimmerLoading(width: 100, height: 20),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 220,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: 5,
+                      itemBuilder: (context, index) => const MovieCardShimmer(isHorizontal: true),
+                    ),
+                  ),
+                ),
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(16, 24, 16, 12),
+                    child: ShimmerLoading(width: 100, height: 20),
+                  ),
+                ),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => const MovieCardShimmer(),
+                      childCount: 5,
+                    ),
+                  ),
+                ),
+              ],
+            );
           }
           
           return CustomScrollView(
@@ -907,9 +886,14 @@ class _MovieListScreenState extends State<MovieListScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       itemCount: provider.recommendations.length,
                       itemBuilder: (context, index) {
-                        return MovieCard(
-                          movie: provider.recommendations[index],
-                          isHorizontal: true,
+                        return RepaintBoundary(
+                          child: MovieCard(
+                            movie: provider.recommendations[index],
+                            isHorizontal: true,
+                          )
+                              .animate(delay: (index * 100).ms)
+                              .fadeIn(duration: 400.ms)
+                              .slideX(begin: 0.2),
                         );
                       },
                     ),
@@ -935,17 +919,25 @@ class _MovieListScreenState extends State<MovieListScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
-                    (context, index) => MovieCard(movie: provider.movies[index]),
+                    (context, index) => RepaintBoundary(
+                      child: MovieCard(movie: provider.movies[index])
+                          .animate(delay: (index * 50).ms)
+                          .fadeIn(duration: 400.ms)
+                          .slideY(begin: 0.1),
+                    ),
                     childCount: provider.movies.length,
                   ),
                 ),
               ),
 
               if (provider.isFetchingMore)
-                const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 20),
-                    child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => const MovieCardShimmer(),
+                      childCount: 2,
+                    ),
                   ),
                 ),
 
@@ -953,20 +945,6 @@ class _MovieListScreenState extends State<MovieListScreen> {
             ],
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title, {required bool showSort, required VoidCallback onCategory}) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
       ),
     );
   }

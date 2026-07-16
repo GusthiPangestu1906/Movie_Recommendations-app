@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'dart:async';
 import '../providers/history_provider.dart';
 import '../providers/movie_provider.dart';
 import '../providers/connectivity_provider.dart';
 import '../models/movie.dart';
-import 'detail_page.dart';
 import '../widgets/movie_card.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -32,7 +32,7 @@ class _HistoryPageState extends State<HistoryPage> {
       isScrollControlled: true,
       backgroundColor: const Color(0xFF1A1D2E),
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (context) => const AddHistoryBottomSheet(),
     );
@@ -55,19 +55,31 @@ class _HistoryPageState extends State<HistoryPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    provider.searchQuery.isEmpty 
-                        ? (isDramaMode ? Icons.tv : Icons.history) 
-                        : Icons.search_off,
-                    size: 64,
-                    color: Colors.white10,
+                  Container(
+                    padding: const EdgeInsets.all(40),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.history_rounded,
+                      size: 80,
+                      color: Colors.white.withValues(alpha: 0.2),
+                    ),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     provider.searchQuery.isEmpty
-                        ? 'No ${isDramaMode ? 'drama ' : 'movie '}history yet' 
-                        : 'No matching results found',
-                    style: const TextStyle(color: Colors.white38, fontSize: 16),
+                        ? 'Your ${isDramaMode ? 'drama ' : 'movie '}journal is empty'
+                        : 'No matches in your history',
+                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    provider.searchQuery.isEmpty
+                        ? 'Start adding what you\'ve watched!'
+                        : 'Try a different search term',
+                    style: const TextStyle(color: Colors.white38, fontSize: 14),
                   ),
                 ],
               ),
@@ -80,7 +92,12 @@ class _HistoryPageState extends State<HistoryPage> {
                 padding: const EdgeInsets.all(16),
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
-                    (context, index) => MovieCard(movie: history[index]),
+                    (context, index) => RepaintBoundary(
+                      child: MovieCard(movie: history[index])
+                          .animate(delay: (index * 50).ms)
+                          .fadeIn(duration: 400.ms)
+                          .slideY(begin: 0.1),
+                    ),
                     childCount: history.length,
                   ),
                 ),
@@ -185,8 +202,16 @@ class _AddHistoryBottomSheetState extends State<AddHistoryBottomSheet> {
               surface: Color(0xFF1A1D2E),
               onSurface: Colors.white,
             ),
+            dialogTheme: DialogThemeData(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            ),
           ),
-          child: child!,
+          child: Center(
+            child: FittedBox(
+              fit: BoxFit.contain,
+              child: child!,
+            ),
+          ),
         );
       },
     );
@@ -338,19 +363,6 @@ class _AddHistoryBottomSheetState extends State<AddHistoryBottomSheet> {
                           'Connect to search and add history.',
                           textAlign: TextAlign.center,
                           style: TextStyle(color: Colors.white38, fontSize: 13),
-                        ),
-                        const SizedBox(height: 24),
-                        ElevatedButton(
-                          onPressed: () => connectivity.checkConnection(),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF5C6AC4),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: const Text('Try Again', style: TextStyle(fontWeight: FontWeight.bold)),
                         ),
                       ],
                     ),
