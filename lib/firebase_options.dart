@@ -3,10 +3,8 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
-
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-/// Default [FirebaseOptions] for use with your Firebase apps.
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
@@ -22,8 +20,15 @@ class DefaultFirebaseOptions {
     }
   }
 
+  // KEAMANAN: Mengambil API Key dari environment variable untuk menghindari hardcoding
+  static String get _firebaseKey {
+    const keyFromEnv = String.fromEnvironment('FIREBASE_API_KEY');
+    if (keyFromEnv.isNotEmpty) return keyFromEnv;
+    return dotenv.env['FIREBASE_API_KEY'] ?? '';
+  }
+
   static FirebaseOptions get web => FirebaseOptions(
-    apiKey: 'AIzaSyDe_p6UZx3En2tMVVlJe_S7zniCUVj_7cY',
+    apiKey: _firebaseKey,
     appId: '1:REDACTED_SENDER_ID:web:REDACTED_APP_ID',
     messagingSenderId: 'REDACTED_SENDER_ID',
     projectId: 'REDACTED_PROJECT_ID',
@@ -32,7 +37,7 @@ class DefaultFirebaseOptions {
   );
 
   static FirebaseOptions get android => FirebaseOptions(
-    apiKey: dotenv.env['FIREBASE_API_KEY'] ?? '',
+    apiKey: _firebaseKey,
     appId: 'REDACTED_ANDROID_APP_ID',
     messagingSenderId: 'REDACTED_SENDER_ID',
     projectId: 'REDACTED_PROJECT_ID',

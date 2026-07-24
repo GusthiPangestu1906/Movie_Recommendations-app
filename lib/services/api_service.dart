@@ -1,17 +1,24 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/movie.dart';
 
 class ApiService {
-  // Hardcoded API Key untuk memastikan Web selalu jalan terlepas dari masalah .env
-  static const String _apiKey = '12d2377d20d4f51bf7c4c31f6b13a70b';
+  // KEAMANAN: Mengambil API Key dari Environment Variable saat build (--dart-define)
+  // atau dari file .env sebagai fallback. Tidak ada lagi hardcoded key di sini.
+  static String get _apiKey {
+    const keyFromEnv = String.fromEnvironment('TMDB_API_KEY');
+    if (keyFromEnv.isNotEmpty) return keyFromEnv;
+
+    return dotenv.env['TMDB_API_KEY'] ?? '';
+  }
+
   static const String _baseUrl = 'https://api.themoviedb.org/3';
 
   // Simple in-memory cache
   final Map<String, dynamic> _cache = {};
 
-  // Fungsi pusat untuk semua request agar memiliki Header dan Timeout yang konsisten
   Future<dynamic> _makeGetRequest(String url) async {
     try {
       final response = await http.get(
@@ -27,7 +34,8 @@ class ApiService {
       }
       return null;
     } catch (e) {
-      print('API Request Error: $e');
+      // KEAMANAN: Gunakan debugPrint agar log tidak muncul di versi Production/Release
+      debugPrint('API Request Error: $e');
       return null;
     }
   }
@@ -44,6 +52,7 @@ class ApiService {
   }
 
   Future<List<Movie>> getNowPlayingMovies() async {
+    if (_apiKey.isEmpty) throw Exception('API Key is missing');
     final data = await _getWithCache('$_baseUrl/movie/now_playing?api_key=$_apiKey');
     if (data != null) {
       final List results = data['results'];
@@ -255,7 +264,7 @@ class ApiService {
         return actors;
       }
     } catch (e) {
-      print('Wikidata search error: $e');
+      debugPrint('Wikidata search error: $e');
     }
     return [];
   }
