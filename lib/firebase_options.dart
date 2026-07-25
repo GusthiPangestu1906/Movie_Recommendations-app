@@ -20,15 +20,22 @@ class DefaultFirebaseOptions {
     }
   }
 
-  // KEAMANAN: Mengambil API Key dari environment variable untuk menghindari hardcoding
-  static String get _firebaseKey {
-    const keyFromEnv = String.fromEnvironment('FIREBASE_API_KEY');
-    if (keyFromEnv.isNotEmpty) return keyFromEnv;
+  // KEAMANAN: Memisahkan kunci Web dan Android untuk menghindari Error 403
+  static String get _webKey {
+    const key = String.fromEnvironment('FIREBASE_WEB_KEY');
+    if (key.isNotEmpty) return key;
+    // Fallback ke kunci asli Web Anda jika environment variable tidak ditemukan
+    return 'AIzaSyDe_p6UZx3En2tMVVlJe_S7zniCUVj_7cY';
+  }
+
+  static String get _androidKey {
+    const key = String.fromEnvironment('FIREBASE_ANDROID_KEY');
+    if (key.isNotEmpty) return key;
     return dotenv.env['FIREBASE_API_KEY'] ?? '';
   }
 
   static FirebaseOptions get web => FirebaseOptions(
-    apiKey: _firebaseKey,
+    apiKey: _webKey,
     appId: '1:REDACTED_SENDER_ID:web:REDACTED_APP_ID',
     messagingSenderId: 'REDACTED_SENDER_ID',
     projectId: 'REDACTED_PROJECT_ID',
@@ -37,7 +44,7 @@ class DefaultFirebaseOptions {
   );
 
   static FirebaseOptions get android => FirebaseOptions(
-    apiKey: _firebaseKey,
+    apiKey: _androidKey,
     appId: 'REDACTED_ANDROID_APP_ID',
     messagingSenderId: 'REDACTED_SENDER_ID',
     projectId: 'REDACTED_PROJECT_ID',
