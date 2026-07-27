@@ -51,7 +51,7 @@ class AuthProvider with ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      print('Error updating profile: $e');
+      debugPrint('Error updating profile: $e');
     }
   }
 
@@ -100,7 +100,7 @@ class AuthProvider with ChangeNotifier {
     try {
       await _auth.signOut();
     } catch (e) {
-      print('Error during sign out: $e');
+      debugPrint('Error during sign out: $e');
     }
   }
 }

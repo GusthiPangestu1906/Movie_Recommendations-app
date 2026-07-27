@@ -87,7 +87,7 @@ class HistoryProvider with ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      print('Error loading history from Firestore: $e');
+      debugPrint('Error loading history from Firestore: $e');
     }
   }
 

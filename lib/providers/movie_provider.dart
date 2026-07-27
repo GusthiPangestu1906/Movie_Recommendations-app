@@ -295,7 +295,7 @@ class MovieProvider with ChangeNotifier {
         notifyListeners();
         return;
       } catch (e) {
-        print('Error fetching favorite-based recommendations: $e');
+        debugPrint('Error fetching favorite-based recommendations: $e');
       }
     }
 
@@ -309,7 +309,7 @@ class MovieProvider with ChangeNotifier {
           notifyListeners();
           return;
         } catch (e) {
-          print('Error fetching history-based recommendations: $e');
+          debugPrint('Error fetching history-based recommendations: $e');
         }
       }
     }
@@ -327,7 +327,7 @@ class MovieProvider with ChangeNotifier {
         notifyListeners();
         return;
       } catch (e) {
-        print('Error fetching favorite-based TV recommendations: $e');
+        debugPrint('Error fetching favorite-based TV recommendations: $e');
       }
     }
 
@@ -341,7 +341,7 @@ class MovieProvider with ChangeNotifier {
           notifyListeners();
           return;
         } catch (e) {
-          print('Error fetching history-based TV recommendations: $e');
+          debugPrint('Error fetching history-based TV recommendations: $e');
         }
       }
     }
@@ -530,7 +530,7 @@ class MovieProvider with ChangeNotifier {
       // Namun untuk memastikannya, kita coba fetch TMDB, jika gagal, return null agar UI handle
       return await _apiService.getPersonDetails(actorId);
     } catch (e) {
-      print('Error fetching actor details from TMDB: $e');
+      debugPrint('Error fetching actor details from TMDB: $e');
       return null;
     }
   }
@@ -539,7 +539,7 @@ class MovieProvider with ChangeNotifier {
     try {
       return await _apiService.getVerifiedFilmography(actorId);
     } catch (e) {
-      print('Error fetching filmography: $e');
+      debugPrint('Error fetching filmography: $e');
       return {'movies': [], 'tv': []};
     }
   }
