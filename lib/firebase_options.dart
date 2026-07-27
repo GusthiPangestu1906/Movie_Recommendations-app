@@ -24,8 +24,8 @@ class DefaultFirebaseOptions {
   static String get _webKey {
     const key = String.fromEnvironment('FIREBASE_WEB_KEY');
     if (key.isNotEmpty) return key;
-    // Fallback ke kunci asli Web Anda jika environment variable tidak ditemukan
-    return 'AIzaSyDe_p6UZx3En2tMVVlJe_S7zniCUVj_7cY';
+    // KEAMANAN: Jangan biarkan kunci fallback di sini jika ingin keamanan maksimal
+    return '';
   }
 
   static String get _androidKey {

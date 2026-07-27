@@ -55,7 +55,7 @@ class MovieProvider with ChangeNotifier {
       try {
         _globalActorSearchResults = await _apiService.searchActors(query);
       } catch (e) {
-        print('Error searching actors: $e');
+        debugPrint('Error searching actors: $e');
       } finally {
         _isActorLoading = false;
         notifyListeners();
@@ -159,7 +159,7 @@ class MovieProvider with ChangeNotifier {
       fetchRecommendations();
       fetchTvRecommendations();
     } catch (e) {
-      print('Error loading from Firestore: $e');
+      debugPrint('Error loading from Firestore: $e');
     }
   }
 
@@ -180,7 +180,7 @@ class MovieProvider with ChangeNotifier {
     try {
       _tvSeries = await _apiService.getTvSeries(originCountry: country, page: _currentTvPage);
     } catch (e) {
-      print(e);
+      debugPrint('Error fetching TV series: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -197,7 +197,7 @@ class MovieProvider with ChangeNotifier {
       List<Movie> nextTv = await _apiService.getTvSeries(originCountry: _selectedCountry, page: _currentTvPage);
       _tvSeries.addAll(nextTv);
     } catch (e) {
-      print(e);
+      debugPrint('Error fetching more TV series: $e');
       _currentTvPage--;
     } finally {
       _isFetchingMore = false;
@@ -231,7 +231,7 @@ class MovieProvider with ChangeNotifier {
         _tvSearchResults = initialResults;
       }
     } catch (e) {
-      print(e);
+      debugPrint('Error searching TV: $e');
       _tvSearchResults = []; // Clear results on error
     } finally {
       _isLoading = false;
@@ -246,7 +246,7 @@ class MovieProvider with ChangeNotifier {
     try {
       _movies = await _apiService.getNowPlayingMovies();
     } catch (e) {
-      print(e);
+      debugPrint('Error fetching now playing: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -261,7 +261,7 @@ class MovieProvider with ChangeNotifier {
     try {
       _movies = await _apiService.getMoviesByCategory(category, page: _currentPage);
     } catch (e) {
-      print(e);
+      debugPrint('Error fetching category $category: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -278,7 +278,7 @@ class MovieProvider with ChangeNotifier {
       List<Movie> nextMovies = await _apiService.getMoviesByCategory(_currentCategory, page: _currentPage);
       _movies.addAll(nextMovies);
     } catch (e) {
-      print(e);
+      debugPrint('Error fetching next page: $e');
       _currentPage--;
     } finally {
       _isFetchingMore = false;
@@ -371,6 +371,7 @@ class MovieProvider with ChangeNotifier {
       _currentSearchPage = 1;
       _lastSearchQuery = query;
       notifyListeners();
+
       try {
         if (_isDramaMode) {
           // Search for TV/Drama
@@ -389,7 +390,7 @@ class MovieProvider with ChangeNotifier {
           _suggestions = _searchResults.take(5).toList();
         }
       } catch (e) {
-        print(e);
+        debugPrint('Error during search: $e');
       } finally {
         _isLoading = false;
         notifyListeners();
@@ -435,7 +436,7 @@ class MovieProvider with ChangeNotifier {
         _searchResults.addAll(nextResults);
       }
     } catch (e) {
-      print(e);
+      debugPrint('Error fetching more search results: $e');
       _currentSearchPage--;
     } finally {
       _isFetchingMore = false;
@@ -456,7 +457,7 @@ class MovieProvider with ChangeNotifier {
     try {
       _searchResults = await _apiService.getMoviesByCategory(category);
     } catch (e) {
-      print(e);
+      debugPrint('Error searching by category: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -490,7 +491,7 @@ class MovieProvider with ChangeNotifier {
       final genreString = _selectedGenreIds.join(',');
       _searchResults = await _apiService.discoverMovies(withGenres: genreString, page: _currentSearchPage);
     } catch (e) {
-      print(e);
+      debugPrint('Error applying genre filter: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -504,7 +505,7 @@ class MovieProvider with ChangeNotifier {
         _relatedMovies = await _apiService.getRecommendations(movie.id, isTv: movie.isTv);
         notifyListeners();
       } catch (e) {
-        print(e);
+        debugPrint('Error loading related movies: $e');
       }
       return;
     }
@@ -518,7 +519,7 @@ class MovieProvider with ChangeNotifier {
       movie.certification = certification;
       notifyListeners();
     } catch (e) {
-      print(e);
+      debugPrint('Error loading movie extras: $e');
     }
   }
 
@@ -676,7 +677,7 @@ class MovieProvider with ChangeNotifier {
     try {
       return await _apiService.searchMovies(query, isTv: isTv);
     } catch (e) {
-      print(e);
+      debugPrint('Error searching for history: $e');
       return [];
     }
   }

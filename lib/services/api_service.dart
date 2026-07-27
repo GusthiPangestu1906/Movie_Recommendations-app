@@ -19,14 +19,18 @@ class ApiService {
   // Simple in-memory cache
   final Map<String, dynamic> _cache = {};
 
-  Future<dynamic> _makeGetRequest(String url) async {
+  Future<dynamic> _makeGetRequest(String url, {bool isWikidata = false}) async {
     try {
+      final uri = Uri.parse(url);
       final response = await http.get(
-        Uri.parse(url),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
+        uri,
+        // Jika Wikidata, jangan kirim header apapun (bahkan map kosong) agar dianggap Simple Request oleh browser
+        headers: (uri.host.contains('wikidata.org') || isWikidata)
+            ? null
+            : {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+              },
       ).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
@@ -219,50 +223,67 @@ class ApiService {
   }
 
   Future<List<Cast>> searchWikidataActors(String query) async {
-    final encodedQuery = Uri.encodeComponent(query);
-    final searchUrl = 'https://www.wikidata.org/w/api.php?action=wbsearchentities&search=$encodedQuery&language=id&continue=0&format=json&uselang=id';
+    // Gunakan Uri.https untuk konstruksi URL yang lebih aman dan terhindar dari pemotongan parameter
+    final searchUri = Uri.https('www.wikidata.org', '/w/api.php', {
+      'origin': '*',
+      'action': 'wbsearchentities',
+      'search': query,
+      'language': 'id',
+      'format': 'json',
+    });
 
     try {
-      final data = await _makeGetRequest(searchUrl);
-      if (data != null) {
-        final List searchResults = data['search'] ?? [];
-        List<Cast> actors = [];
-        for (var item in searchResults.take(8)) {
-          final String qid = item['id'];
-          final String name = item['label'] ?? 'Unknown';
-          final String description = (item['description'] ?? '').toLowerCase();
+      final data = await _makeGetRequest(searchUri.toString(), isWikidata: true);
+      if (data == null) return [];
 
-          bool isLikelyPerson = description.contains('pemeran') ||
-                                description.contains('aktris') ||
-                                description.contains('aktor') ||
-                                description.contains('actor') ||
-                                description.contains('actress') ||
-                                description.contains('human');
+      final List searchResults = data['search'] ?? [];
+      final itemsToFetch = searchResults.take(5).toList();
 
-          if (isLikelyPerson) {
-            final detailUrl = 'https://www.wikidata.org/w/api.php?action=wbgetentities&ids=$qid&props=claims&format=json';
-            final detailData = await _makeGetRequest(detailUrl);
+      final results = await Future.wait(itemsToFetch.map((item) async {
+        final String qid = item['id'];
+        final String name = item['label'] ?? 'Unknown';
+        final String description = (item['description'] ?? '').toLowerCase();
 
-            String? imageUrl;
-            if (detailData != null && detailData['entities'] != null && detailData['entities'][qid] != null) {
-              final claims = detailData['entities'][qid]['claims'];
-              if (claims != null && claims['P18'] != null) {
-                final String imageName = claims['P18'][0]['mainsnak']['datavalue']['value'];
-                final encodedImage = Uri.encodeComponent(imageName.replaceAll(' ', '_'));
-                imageUrl = 'https://commons.wikimedia.org/wiki/Special:FilePath/$encodedImage?width=500';
-              }
-            }
+        bool isLikelyPerson = description.contains('pemeran') ||
+            description.contains('aktris') ||
+            description.contains('aktor') ||
+            description.contains('actor') ||
+            description.contains('actress') ||
+            description.contains('human') ||
+            description.contains('sutradara');
 
-            actors.add(Cast(
-              id: qid.hashCode,
-              name: name,
-              profilePath: imageUrl,
-              character: item['description'] ?? 'Wikidata Entity',
-            ));
+        if (!isLikelyPerson) return null;
+
+        final detailUri = Uri.https('www.wikidata.org', '/w/api.php', {
+          'origin': '*',
+          'action': 'wbgetentities',
+          'ids': qid,
+          'props': 'claims',
+          'format': 'json',
+        });
+
+        final detailData = await _makeGetRequest(detailUri.toString(), isWikidata: true);
+
+        String? imageUrl;
+        if (detailData != null && detailData['entities'] != null && detailData['entities'][qid] != null) {
+          final claims = detailData['entities'][qid]['claims'];
+          if (claims != null && claims['P18'] != null) {
+            final String imageName = claims['P18'][0]['mainsnak']['datavalue']['value'];
+            final encodedImage = Uri.encodeComponent(imageName.replaceAll(' ', '_'));
+            imageUrl = 'https://commons.wikimedia.org/wiki/Special:FilePath/$encodedImage?width=500';
           }
         }
-        return actors;
-      }
+
+        return Cast(
+          id: qid.hashCode,
+          name: name,
+          profilePath: imageUrl,
+          character: item['description'] ?? 'Wikidata Entity',
+        );
+      }));
+
+      // Hapus hasil null dan kembalikan list
+      return results.whereType<Cast>().toList();
     } catch (e) {
       debugPrint('Wikidata search error: $e');
     }
