@@ -1,1 +1,16 @@
-{\n  \"flutter\": {\n    \"platforms\": {\n      \"android\": {\n        \"default\": {\n          \"projectId\": \"${FIREBASE_PROJECT_ID}\",\n          \"appId\": \"${FIREBASE_ANDROID_APP_ID}\",\n          \"fileOutput\": \"android/app/google-services.json\"\n        }\n      },\n      \"dart\": {\n        \"lib/firebase_options.dart\": {\n          \"projectId\": \"${FIREBASE_PROJECT_ID}\",\n          \"configurations\": {\n            \"android\": \"${FIREBASE_ANDROID_APP_ID}\"\n          }\n        }\n      }\n    }\n  },\n  \"hosting\": {\n    \"public\": \"build/web\",\n    \"ignore\": [\n      \"firebase.json\",\n      \"**/.*\",\n      \"**/node_modules/**\"\n    ],\n    \"rewrites\": [\n      {\n        \"source\": \"**\",\n        \"destination\": \"/index.html\"\n      }\n    ]\n  }\n}\n
+{
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

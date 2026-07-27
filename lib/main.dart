@@ -20,8 +20,7 @@ void main() async {
     try {
       await dotenv.load(fileName: ".env");
     } catch (e) {
-      // Log info saja karena di CI/CD memang tidak ada file .env (menggunakan --dart-define)
-      debugPrint("[INFO] .env status: ${e.toString()}");
+      debugPrint("[INFO] .env not loaded: $e");
     }
 
     // Initialize Firebase secara aman
