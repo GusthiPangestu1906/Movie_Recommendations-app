@@ -20,34 +20,63 @@ class DefaultFirebaseOptions {
     }
   }
 
-  // KEAMANAN: Memisahkan kunci Web dan Android untuk menghindari Error 403
+  // KEAMANAN: Load semua Firebase config dari environment variables
+  // Tidak ada hardcoded values di source code
+  static String _getEnvVar(String key, {String? defaultValue}) {
+    const fromBuildEnv = String.fromEnvironment('FIREBASE_FROM_BUILD');
+    if (fromBuildEnv.isNotEmpty) {
+      const buildKey = String.fromEnvironment('FIREBASE_' + 'KEY');
+      if (buildKey.isNotEmpty) return buildKey;
+    }
+    return dotenv.env[key] ?? defaultValue ?? '';
+  }
+
   static String get _webKey {
-    const key = String.fromEnvironment('FIREBASE_WEB_KEY');
-    if (key.isNotEmpty) return key;
-    // KEAMANAN: Jangan biarkan kunci fallback di sini jika ingin keamanan maksimal
-    return '';
+    return _getEnvVar('FIREBASE_WEB_API_KEY');
   }
 
   static String get _androidKey {
-    const key = String.fromEnvironment('FIREBASE_ANDROID_KEY');
-    if (key.isNotEmpty) return key;
-    return dotenv.env['FIREBASE_API_KEY'] ?? '';
+    return _getEnvVar('FIREBASE_ANDROID_API_KEY');
+  }
+
+  static String get _webAppId {
+    return _getEnvVar('FIREBASE_WEB_APP_ID');
+  }
+
+  static String get _androidAppId {
+    return _getEnvVar('FIREBASE_ANDROID_APP_ID');
+  }
+
+  static String get _messagingSenderId {
+    return _getEnvVar('FIREBASE_MESSAGING_SENDER_ID');
+  }
+
+  static String get _projectId {
+    return _getEnvVar('FIREBASE_PROJECT_ID');
+  }
+
+  static String get _authDomain {
+    return _getEnvVar('FIREBASE_AUTH_DOMAIN');
+  }
+
+  static String get _storageBucket {
+    return _getEnvVar('FIREBASE_STORAGE_BUCKET');
   }
 
   static FirebaseOptions get web => FirebaseOptions(
     apiKey: _webKey,
-    appId: '1:REDACTED_SENDER_ID:web:REDACTED_APP_ID',
-    messagingSenderId: 'REDACTED_SENDER_ID',
-    projectId: 'REDACTED_PROJECT_ID',
-    authDomain: 'REDACTED_PROJECT_ID.firebaseapp.com',
-    storageBucket: 'REDACTED_PROJECT_ID.firebasestorage.app',
+    appId: _webAppId,
+    messagingSenderId: _messagingSenderId,
+    projectId: _projectId,
+    authDomain: _authDomain,
+    storageBucket: _storageBucket,
   );
 
   static FirebaseOptions get android => FirebaseOptions(
     apiKey: _androidKey,
-    appId: 'REDACTED_ANDROID_APP_ID',
-    messagingSenderId: 'REDACTED_SENDER_ID',
-    projectId: 'REDACTED_PROJECT_ID',
-    storageBucket: 'REDACTED_PROJECT_ID.firebasestorage.app',
+    appId: _androidAppId,
+    messagingSenderId: _messagingSenderId,
+    projectId: _projectId,
+    storageBucket: _storageBucket,
   );
 }

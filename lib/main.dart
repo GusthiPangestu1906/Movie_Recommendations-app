@@ -16,11 +16,15 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
-    // Load environment variables (Gunakan try-catch spesifik agar tidak menghentikan Firebase)
+    // KEAMANAN: Load environment variables dengan error handling yang proper
     try {
       await dotenv.load(fileName: ".env");
+    } on FileNotFoundException catch (e) {
+      // File tidak ditemukan adalah normal untuk beberapa konfigurasi (web, build flags)
+      debugPrint("[INFO] .env file not found. Using build environment variables.");
     } catch (e) {
-      debugPrint("Dotenv Load Error: $e (Abaikan jika di Web dan API Key sudah di-hardcode)");
+      // Log error tapi jangan expose path/details di production
+      debugPrint("[WARNING] Error loading .env: ${e.runtimeType}");
     }
 
     // Initialize Firebase secara aman
@@ -41,7 +45,7 @@ void main() async {
       );
     }
   } catch (e) {
-    debugPrint("Firebase Initialization Error: $e");
+    debugPrint("Firebase Initialization Error: ${e.runtimeType}");
   }
 
   runApp(
@@ -53,7 +57,8 @@ void main() async {
           create: (_) => MovieProvider(),
           update: (_, auth, movieProvider) => movieProvider!..update(auth),
         ),
-        ChangeNotifierProxyProvider2<AuthProvider, MovieProvider, HistoryProvider>(
+        ChangeNotifierProxyProvider2<AuthProvider, MovieProvider,
+            HistoryProvider>(
           create: (_) => HistoryProvider(),
           update: (_, auth, movieProvider, historyProvider) =>
               historyProvider!..update(auth, movieProvider),
@@ -94,8 +99,10 @@ class MyApp extends StatelessWidget {
           ),
         ),
         textTheme: const TextTheme(
-          headlineMedium: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          titleLarge: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          headlineMedium:
+              TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          titleLarge:
+              TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           bodyMedium: TextStyle(color: Colors.white70),
         ),
       ),
@@ -103,7 +110,8 @@ class MyApp extends StatelessWidget {
         return WebResponsiveWrapper(child: child!);
       },
       home: Consumer<AuthProvider>(
-        builder: (context, auth, _) => auth.isAuthenticated ? const HomePage() : const LoginPage(),
+        builder: (context, auth, _) =>
+            auth.isAuthenticated ? const HomePage() : const LoginPage(),
       ),
     );
   }
@@ -128,11 +136,13 @@ class WebResponsiveWrapper extends StatelessWidget {
               child: AspectRatio(
                 aspectRatio: 9 / 19, // Rasio layar HP modern
                 child: Container(
-                  margin: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+                  margin:
+                      const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
                   decoration: BoxDecoration(
                     color: const Color(0xFF0B0E1E),
                     borderRadius: BorderRadius.circular(40), // Radius frame HP
-                    border: Border.all(color: Colors.grey.shade800, width: 8), // Frame luar
+                    border: Border.all(
+                        color: Colors.grey.shade800, width: 8), // Frame luar
                     boxShadow: [
                       BoxShadow(
                         color: Colors.blueAccent.withValues(alpha: 0.2),
