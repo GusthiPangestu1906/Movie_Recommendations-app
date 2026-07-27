@@ -19,12 +19,9 @@ void main() async {
     // KEAMANAN: Load environment variables dengan error handling yang proper
     try {
       await dotenv.load(fileName: ".env");
-    } on FileNotFoundException catch (e) {
-      // File tidak ditemukan adalah normal untuk beberapa konfigurasi (web, build flags)
-      debugPrint("[INFO] .env file not found. Using build environment variables.");
     } catch (e) {
-      // Log error tapi jangan expose path/details di production
-      debugPrint("[WARNING] Error loading .env: ${e.runtimeType}");
+      // Log info saja karena di CI/CD memang tidak ada file .env (menggunakan --dart-define)
+      debugPrint("[INFO] .env status: ${e.toString()}");
     }
 
     // Initialize Firebase secara aman
