@@ -223,10 +223,10 @@ class _DetailPageState extends State<DetailPage> {
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                   decoration: BoxDecoration(
-                                    color: isWatched ? Colors.green.withValues(alpha: 0.8) : Colors.black45,
+                                    color: isWatched ? Colors.green.withOpacity(0.8) : Colors.black45,
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: isWatched ? Colors.greenAccent.withValues(alpha: 0.5) : Colors.white10,
+                                      color: isWatched ? Colors.greenAccent.withOpacity(0.5) : Colors.white10,
                                     ),
                                   ),
                                   child: Row(
@@ -302,9 +302,9 @@ class _DetailPageState extends State<DetailPage> {
                                 Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.2),
+                                    color: Colors.white.withOpacity(0.2),
                                     shape: BoxShape.circle,
-                                    border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                                    border: Border.all(color: Colors.white.withOpacity(0.3)),
                                   ),
                                   child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 48),
                                 ).animate(onPlay: (controller) => controller.repeat(reverse: true))
@@ -316,7 +316,7 @@ class _DetailPageState extends State<DetailPage> {
                                     filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                                      color: Colors.black.withValues(alpha: 0.24),
+                                      color: Colors.black.withOpacity(0.24),
                                       child: const Text(
                                         'Play Trailer',
                                         style: TextStyle(
@@ -392,9 +392,9 @@ class _DetailPageState extends State<DetailPage> {
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.05),
+                          color: Colors.white.withOpacity(0.05),
                           borderRadius: BorderRadius.circular(24),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                          border: Border.all(color: Colors.white.withOpacity(0.05)),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -453,7 +453,7 @@ class _DetailPageState extends State<DetailPage> {
                       Text(
                         widget.movie.overview,
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.6),
+                          color: Colors.white.withOpacity(0.6),
                           fontSize: 15,
                           height: 1.6,
                         ),
@@ -478,9 +478,9 @@ class _DetailPageState extends State<DetailPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFFDBE3FF).withValues(alpha: 0.1),
+        color: const Color(0xFFDBE3FF).withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF88A4E8).withValues(alpha: 0.2)),
+        border: Border.all(color: const Color(0xFF88A4E8).withOpacity(0.2)),
       ),
       child: Text(
         label,

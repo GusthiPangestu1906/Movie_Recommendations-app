@@ -16,8 +16,8 @@ class ShimmerLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: Colors.white.withValues(alpha: 0.05),
-      highlightColor: Colors.white.withValues(alpha: 0.1),
+      baseColor: Colors.white.withOpacity(0.05),
+      highlightColor: Colors.white.withOpacity(0.1),
       child: Container(
         width: width,
         height: height,
@@ -78,7 +78,7 @@ class MovieCardShimmer extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 16),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.02),
+          color: Colors.white.withOpacity(0.02),
           borderRadius: BorderRadius.circular(4),
         ),
         child: Row(

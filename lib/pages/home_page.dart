@@ -67,13 +67,13 @@ class _HomePageState extends State<HomePage> {
                         Container(
                           padding: const EdgeInsets.all(40),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.05),
+                            color: Colors.white.withOpacity(0.05),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
                             Icons.cloud_off_rounded,
                             size: 100,
-                            color: Colors.white.withValues(alpha: 0.2),
+                            color: Colors.white.withOpacity(0.2),
                           ),
                         ),
                         const SizedBox(height: 24),
@@ -196,7 +196,7 @@ class _HomePageState extends State<HomePage> {
                     hintStyle: const TextStyle(color: Colors.white24),
                     prefixIcon: const Icon(Icons.search, color: Colors.white24),
                     filled: true,
-                    fillColor: Colors.white.withValues(alpha: 0.05),
+                    fillColor: Colors.white.withOpacity(0.05),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),
                       borderSide: BorderSide.none,
@@ -208,7 +208,7 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(width: 8),
               Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFF5C6AC4).withValues(alpha: 0.1),
+                  color: const Color(0xFF5C6AC4).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: IconButton(
@@ -334,7 +334,7 @@ class _HomePageState extends State<HomePage> {
                                     duration: const Duration(milliseconds: 200),
                                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                                     decoration: BoxDecoration(
-                                      color: isSelected ? const Color(0xFF5C6AC4) : Colors.white.withValues(alpha: 0.05),
+                                      color: isSelected ? const Color(0xFF5C6AC4) : Colors.white.withOpacity(0.05),
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(color: isSelected ? Colors.transparent : Colors.white10),
                                     ),
@@ -367,7 +367,7 @@ class _HomePageState extends State<HomePage> {
                                     duration: const Duration(milliseconds: 200),
                                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                                     decoration: BoxDecoration(
-                                      color: isSelected ? const Color(0xFF5C6AC4) : Colors.white.withValues(alpha: 0.05),
+                                      color: isSelected ? const Color(0xFF5C6AC4) : Colors.white.withOpacity(0.05),
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(color: isSelected ? Colors.transparent : Colors.white10),
                                     ),
@@ -421,7 +421,7 @@ class _HomePageState extends State<HomePage> {
                               child: ElevatedButton(
                                 onPressed: () => Navigator.pop(context),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF5C6AC4).withValues(alpha: 0.1),
+                                  backgroundColor: const Color(0xFF5C6AC4).withOpacity(0.1),
                                   foregroundColor: const Color(0xFF5C6AC4),
                                   padding: const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(
@@ -509,7 +509,7 @@ class _HomePageState extends State<HomePage> {
                       hintText: 'Enter your name',
                       hintStyle: const TextStyle(color: Colors.white24),
                       filled: true,
-                      fillColor: Colors.white.withValues(alpha: 0.05),
+                      fillColor: Colors.white.withOpacity(0.05),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
                         borderSide: BorderSide.none,
@@ -553,7 +553,7 @@ class _HomePageState extends State<HomePage> {
                               ),
                               boxShadow: isSelected ? [
                                 BoxShadow(
-                                  color: const Color(0xFF5C6AC4).withValues(alpha: 0.4),
+                                  color: const Color(0xFF5C6AC4).withOpacity(0.4),
                                   blurRadius: 10,
                                   spreadRadius: 1,
                                 )
@@ -563,7 +563,7 @@ class _HomePageState extends State<HomePage> {
                               child: CachedNetworkImage(
                                 imageUrl: url,
                                 placeholder: (context, url) => Container(
-                                  color: Colors.white.withValues(alpha: 0.05),
+                                  color: Colors.white.withOpacity(0.05),
                                   child: const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
                                 ),
                                 errorWidget: (context, url, error) => const Icon(Icons.person, color: Colors.white24),
@@ -616,7 +616,7 @@ class _HomePageState extends State<HomePage> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        disabledBackgroundColor: const Color(0xFF5C6AC4).withValues(alpha: 0.5),
+                        disabledBackgroundColor: const Color(0xFF5C6AC4).withOpacity(0.5),
                       ),
                       child: isSaving
                         ? const SizedBox(
@@ -663,7 +663,7 @@ class _HomePageState extends State<HomePage> {
                       border: Border.all(color: const Color(0xFF5C6AC4), width: 2),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.3),
+                          color: Colors.black.withOpacity(0.3),
                           blurRadius: 10,
                           spreadRadius: 2,
                         )

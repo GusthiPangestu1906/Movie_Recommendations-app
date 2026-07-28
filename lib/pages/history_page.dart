@@ -58,13 +58,13 @@ class _HistoryPageState extends State<HistoryPage> {
                   Container(
                     padding: const EdgeInsets.all(40),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.05),
+                      color: Colors.white.withOpacity(0.05),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.history_rounded,
                       size: 80,
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: Colors.white.withOpacity(0.2),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -273,7 +273,7 @@ class _AddHistoryBottomSheetState extends State<AddHistoryBottomSheet> {
                             )
                           : null,
                       filled: true,
-                      fillColor: Colors.white.withValues(alpha: 0.05),
+                      fillColor: Colors.white.withOpacity(0.05),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
                         borderSide: BorderSide.none,
@@ -328,7 +328,7 @@ class _AddHistoryBottomSheetState extends State<AddHistoryBottomSheet> {
                                     ),
                                     subtitle: Text(
                                       watched ? 'Already in History' : (item.releaseDate.isNotEmpty ? item.releaseDate.split('-')[0] : 'N/A'),
-                                      style: TextStyle(color: watched ? Colors.green.withValues(alpha: 0.5) : Colors.white38),
+                                      style: TextStyle(color: watched ? Colors.green.withOpacity(0.5) : Colors.white38),
                                     ),
                                     onTap: () => _selectDateAndAdd(item),
                                   );

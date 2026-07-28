@@ -55,7 +55,7 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
                 hintStyle: const TextStyle(color: Colors.white24),
                 prefixIcon: const Icon(Icons.search, color: Colors.white24),
                 filled: true,
-                fillColor: Colors.white.withValues(alpha: 0.05),
+                fillColor: Colors.white.withOpacity(0.05),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(15),
                   borderSide: BorderSide.none,
@@ -219,12 +219,12 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 20),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.02),
+          color: Colors.white.withOpacity(0.02),
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+          border: Border.all(color: Colors.white.withOpacity(0.05)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
+              color: Colors.black.withOpacity(0.1),
               blurRadius: 10,
               offset: const Offset(0, 5),
             ),
@@ -292,7 +292,7 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.05),
+                          color: Colors.white.withOpacity(0.05),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Row(
@@ -330,13 +330,13 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
           Container(
             padding: const EdgeInsets.all(40),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
+              color: Colors.white.withOpacity(0.05),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.star_outline_rounded,
               size: 80,
-              color: Colors.white.withValues(alpha: 0.2),
+              color: Colors.white.withOpacity(0.2),
             ),
           ),
           const SizedBox(height: 24),

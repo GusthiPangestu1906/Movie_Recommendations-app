@@ -136,7 +136,7 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.4),
+            color: Colors.black.withOpacity(0.4),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -171,7 +171,7 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
                     end: Alignment.bottomCenter,
                     colors: [
                       Colors.transparent,
-                      const Color(0xFF0B0E1E).withValues(alpha: 0.8),
+                      const Color(0xFF0B0E1E).withOpacity(0.8),
                     ],
                     stops: const [0.6, 1.0],
                   ),
@@ -249,7 +249,7 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
+            color: Colors.black.withOpacity(0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -264,9 +264,9 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.25),
+                color: Colors.black.withOpacity(0.25),
                 borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                border: Border.all(color: Colors.white.withOpacity(0.1)),
               ),
               child: Icon(icon, color: iconColor, size: 22),
             ),
@@ -280,9 +280,9 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
+        color: Colors.white.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+        border: Border.all(color: Colors.white.withOpacity(0.2)),
       ),
       child: SvgPicture.asset(
         'assets/instagram.svg',
@@ -335,7 +335,7 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.4),
+            color: Colors.black.withOpacity(0.4),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
@@ -348,9 +348,9 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.06),
+              color: Colors.white.withOpacity(0.06),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+              border: Border.all(color: Colors.white.withOpacity(0.12)),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -358,7 +358,7 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: accentColor.withValues(alpha: 0.15),
+                    color: accentColor.withOpacity(0.15),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(icon, color: accentColor, size: 20),
@@ -367,12 +367,12 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
                 Text(
                   label,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.5),
+                    color: Colors.white.withOpacity(0.5),
                     fontSize: 9,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 1.2,
                     shadows: [
-                      Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 4, offset: const Offset(0, 1)),
+                      Shadow(color: Colors.black.withOpacity(0.5), blurRadius: 4, offset: const Offset(0, 1)),
                     ],
                   ),
                 ),
@@ -385,7 +385,7 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
                     fontWeight: FontWeight.bold,
                     fontSize: 12, // Reduced size slightly to accommodate more text
                     shadows: [
-                      Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 4, offset: const Offset(0, 1)),
+                      Shadow(color: Colors.black.withOpacity(0.5), blurRadius: 4, offset: const Offset(0, 1)),
                     ],
                   ),
                 ),
@@ -414,7 +414,7 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
               style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const Spacer(),
-            Icon(Icons.notes, color: Colors.white.withValues(alpha: 0.2), size: 20),
+            Icon(Icons.notes, color: Colors.white.withOpacity(0.2), size: 20),
           ],
         ),
         const SizedBox(height: 16),
@@ -476,7 +476,7 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
                 width: 140,
                 margin: const EdgeInsets.only(right: 16),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.03),
+                  color: Colors.white.withOpacity(0.03),
                   borderRadius: BorderRadius.circular(24),
                 ),
               ),
@@ -560,7 +560,7 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.2),
+                      color: Colors.black.withOpacity(0.2),
                       blurRadius: 10,
                       offset: const Offset(0, 5),
                     ),

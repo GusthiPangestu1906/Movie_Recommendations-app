@@ -170,7 +170,7 @@ class WebResponsiveWrapper extends StatelessWidget {
                       height: 400,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: const Color(0xFF4A56E2).withValues(alpha: 0.05),
+                        color: const Color(0xFF4A56E2).withOpacity(0.05),
                       ),
                     ),
                   ),
@@ -182,7 +182,7 @@ class WebResponsiveWrapper extends StatelessWidget {
                       height: 500,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: const Color(0xFF5C6AC4).withValues(alpha: 0.05),
+                        color: const Color(0xFF5C6AC4).withOpacity(0.05),
                       ),
                     ),
                   ),
@@ -401,10 +401,10 @@ class WebResponsiveWrapper extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.05),
+                                color: Colors.white.withOpacity(0.05),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.1)),
+                                    color: Colors.white.withOpacity(0.1)),
                               ),
                               child: const Icon(Icons.qr_code_2,
                                   color: Colors.white54, size: 50),
@@ -431,12 +431,12 @@ class WebResponsiveWrapper extends StatelessWidget {
                           ), // Frame fisik HP
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.blueAccent.withValues(alpha: 0.15),
+                              color: Colors.blueAccent.withOpacity(0.15),
                               blurRadius: 40,
                               spreadRadius: 10,
                             ),
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.5),
+                              color: Colors.black.withOpacity(0.5),
                               blurRadius: 20,
                               offset: const Offset(20, 20),
                             ),
@@ -485,7 +485,7 @@ class WebResponsiveWrapper extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
+        color: Colors.white.withOpacity(0.03),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(

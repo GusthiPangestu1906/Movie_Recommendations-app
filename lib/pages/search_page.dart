@@ -22,7 +22,7 @@ class SearchPage extends StatelessWidget {
               itemCount: 5,
               itemBuilder: (context, index) => const MovieCardShimmer()
                   .animate(onPlay: (controller) => controller.repeat())
-                  .shimmer(duration: 1200.ms, color: Colors.white.withValues(alpha: 0.05)),
+                  .shimmer(duration: 1200.ms, color: Colors.white.withOpacity(0.05)),
             );
           }
 
@@ -34,13 +34,13 @@ class SearchPage extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(40),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.05),
+                      color: Colors.white.withOpacity(0.05),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.search_rounded,
                       size: 80,
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: Colors.white.withOpacity(0.2),
                     ),
                   ),
                   const SizedBox(height: 24),
