@@ -24,16 +24,17 @@ void main() async {
       debugPrint("[CRITICAL] Failed to load .env: $e");
     }
 
-    // 2. Validasi Konfigurasi (Mencegah inisialisasi dengan data kosong)
-    final options = DefaultFirebaseOptions.currentPlatform;
-    if (options.apiKey.isEmpty) {
-      throw Exception("Firebase API Key is empty. Check your .env file.");
-    }
-
-    // 3. Initialize Firebase
+    // 2. Initialize Firebase
     if (Firebase.apps.isEmpty) {
-      await Firebase.initializeApp(options: options);
-      debugPrint("[SUCCESS] Firebase initialized");
+      final options = DefaultFirebaseOptions.currentPlatform;
+
+      // Hanya inisialisasi jika apiKey tersedia untuk menghindari crash kompilasi/startup
+      if (options.apiKey.isNotEmpty) {
+        await Firebase.initializeApp(options: options);
+        debugPrint("[SUCCESS] Firebase initialized");
+      } else {
+        debugPrint("[WARNING] Firebase API Key is empty. App will run in limited mode.");
+      }
     }
 
     // 4. Firestore Persistence
