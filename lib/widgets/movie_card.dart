@@ -251,39 +251,49 @@ class MovieCard extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              const Icon(Icons.star_rounded, color: Colors.amber, size: 20),
-                              const SizedBox(width: 4),
-                              Text(
-                                movie.voteAverage.toStringAsFixed(1),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.star_rounded, color: Colors.amber, size: 20),
+                                const SizedBox(width: 4),
+                                Text(
+                                  movie.voteAverage.toStringAsFixed(1),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
                                 ),
-                              ),
-                              const Text(
-                                ' / 10 TMDb',
-                                style: TextStyle(color: Colors.white30, fontSize: 12),
-                              ),
-                            ],
+                                const Text(
+                                  ' / 10 TMDb',
+                                  style: TextStyle(color: Colors.white30, fontSize: 12),
+                                ),
+                              ],
+                            ),
                           ),
                           const SizedBox(height: 16),
-                          Wrap(
-                            spacing: 8,
-                            children: [
-                              _buildBadge(
-                                icon: Icons.calendar_today,
-                                text: movie.releaseDate.isNotEmpty ? movie.releaseDate.split('-')[0] : 'N/A',
-                              ),
-                              _buildBadge(
-                                icon: movie.isTv ? Icons.tv : Icons.movie_filter,
-                                text: movie.isTv ? 'Drama' : 'Movie',
-                                color: const Color(0xFF5C6AC4).withValues(alpha: 0.2),
-                                textColor: const Color(0xFF5C6AC4),
-                              ),
-                            ],
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Wrap(
+                              spacing: 8,
+                              runSpacing: 4,
+                              children: [
+                                _buildBadge(
+                                  icon: Icons.calendar_today,
+                                  text: movie.releaseDate.isNotEmpty ? movie.releaseDate.split('-')[0] : 'N/A',
+                                ),
+                                _buildBadge(
+                                  icon: movie.isTv ? Icons.tv : Icons.movie_filter,
+                                  text: movie.isTv ? 'Drama' : 'Movie',
+                                  color: const Color(0xFF5C6AC4).withValues(alpha: 0.2),
+                                  textColor: const Color(0xFF5C6AC4),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
