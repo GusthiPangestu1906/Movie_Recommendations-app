@@ -11,7 +11,6 @@ import 'providers/auth_provider.dart';
 import 'providers/connectivity_provider.dart';
 import 'pages/login_page.dart';
 import 'pages/home_page.dart';
-import 'widgets/particle_background.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -477,28 +476,6 @@ class WebResponsiveWrapper extends StatelessWidget {
                 style: const TextStyle(color: Colors.white70, fontSize: 13)),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildFeatureTag(String label, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.03),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: Colors.blueAccent, size: 14),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: const TextStyle(
-                color: Colors.white54, fontSize: 10, fontWeight: FontWeight.bold),
-          ),
-        ],
       ),
     );
   }
