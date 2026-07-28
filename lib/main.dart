@@ -18,10 +18,11 @@ void main() async {
   try {
     // 1. Load Environment Variables
     try {
+      // Pastikan aplikasi tidak crash jika .env tidak ada (terutama di Web/CI)
       await dotenv.load(fileName: ".env");
       debugPrint("[SUCCESS] .env loaded");
     } catch (e) {
-      debugPrint("[CRITICAL] Failed to load .env: $e");
+      debugPrint("[INFO] .env load skipped (expected in CI): $e");
     }
 
     // 2. Initialize Firebase
