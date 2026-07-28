@@ -11,6 +11,9 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+
+      - name: Create dummy .env for build
+        run: touch .env
           
       - name: Build Web
         run: |
