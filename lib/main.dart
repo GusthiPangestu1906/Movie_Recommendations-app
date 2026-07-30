@@ -56,13 +56,18 @@ void main() async {
           ChangeNotifierProvider(create: (_) => AuthProvider()),
           ChangeNotifierProxyProvider<AuthProvider, MovieProvider>(
             create: (_) => MovieProvider(),
-            update: (_, auth, movieProvider) => movieProvider!..update(auth),
+            update: (_, auth, movieProvider) {
+              if (movieProvider == null) return MovieProvider()..update(auth);
+              return movieProvider..update(auth);
+            },
           ),
           ChangeNotifierProxyProvider2<AuthProvider, MovieProvider,
               HistoryProvider>(
             create: (_) => HistoryProvider(),
-            update: (_, auth, movieProvider, historyProvider) =>
-                historyProvider!..update(auth, movieProvider),
+            update: (_, auth, movieProvider, historyProvider) {
+              if (historyProvider == null) return HistoryProvider()..update(auth, movieProvider);
+              return historyProvider..update(auth, movieProvider);
+            },
           ),
         ],
         child: const MyApp(),
@@ -127,7 +132,8 @@ class MyApp extends StatelessWidget {
         ),
       ),
       builder: (context, child) {
-        return WebResponsiveWrapper(child: child!);
+        if (child == null) return const SizedBox.shrink();
+        return WebResponsiveWrapper(child: child);
       },
       home: Consumer<AuthProvider>(
         builder: (context, auth, _) =>
