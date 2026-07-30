@@ -13,6 +13,8 @@ class DefaultFirebaseOptions {
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return android;
+      case TargetPlatform.iOS:
+        return ios;
       default:
         throw UnsupportedError(
           'DefaultFirebaseOptions are not supported for this platform.',
@@ -76,5 +78,14 @@ class DefaultFirebaseOptions {
     messagingSenderId: _messagingSenderId,
     projectId: _projectId,
     storageBucket: _storageBucket,
+  );
+
+  static FirebaseOptions get ios => FirebaseOptions(
+    apiKey: _webKey, // Biasanya iOS menggunakan key yang mirip atau terpisah, kita amankan dengan webKey dulu jika belum ada
+    appId: _webAppId,
+    messagingSenderId: _messagingSenderId,
+    projectId: _projectId,
+    storageBucket: _storageBucket,
+    iosBundleId: 'com.example.movieApp',
   );
 }
