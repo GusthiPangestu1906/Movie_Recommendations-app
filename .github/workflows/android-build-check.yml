@@ -25,5 +25,8 @@ jobs:
       - name: Get Dependencies
         run: flutter pub get
 
+      - name: Create dummy .env for build
+        run: touch .env
+
       - name: Build Debug APK
         run: flutter build apk --debug

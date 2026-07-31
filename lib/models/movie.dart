@@ -100,15 +100,17 @@ class Cast {
   }
 
   String get fullProfilePath {
-    if (profilePath == null)
+    if (profilePath == null) {
       return 'https://via.placeholder.com/185x278?text=No+Image';
+    }
     if (profilePath!.startsWith('http')) return profilePath!;
     return 'https://image.tmdb.org/t/p/w185$profilePath';
   }
 
   String get fullProfilePathHD {
-    if (profilePath == null)
+    if (profilePath == null) {
       return 'https://via.placeholder.com/600x900?text=No+Image';
+    }
     if (profilePath!.startsWith('http')) return profilePath!;
     return 'https://image.tmdb.org/t/p/h632$profilePath';
   }

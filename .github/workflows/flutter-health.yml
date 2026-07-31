@@ -19,6 +19,9 @@ jobs:
       - name: Get Dependencies
         run: flutter pub get
 
+      - name: Create dummy .env for health check
+        run: touch .env
+
       - name: Verify Assets Existence
         run: |
           echo "🔍 Memverifikasi integritas file asset..."

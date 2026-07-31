@@ -719,8 +719,9 @@ class _HomePageState extends State<HomePage> {
                                   );
                                 }
                               } finally {
-                                if (context.mounted)
+                                if (context.mounted) {
                                   setModalState(() => isSaving = false);
+                                }
                               }
                             },
                       style: ElevatedButton.styleFrom(

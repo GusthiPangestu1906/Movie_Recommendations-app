@@ -22,6 +22,9 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
+      - name: Create dummy .env for analysis
+        run: touch .env
+
       - name: Check Formatting
         run: dart format --output=none --set-exit-if-changed .
         # Akan gagal jika kode tidak rapi (tidak di-format)
