@@ -25,43 +25,43 @@ class DefaultFirebaseOptions {
   // KEAMANAN: Menggunakan dart-define untuk injeksi CI/CD, dan dotenv untuk local development.
   static String get _webKey =>
       const String.fromEnvironment('FIREBASE_WEB_KEY').isNotEmpty
-          ? const String.fromEnvironment('FIREBASE_WEB_KEY')
-          : (dotenv.env['FIREBASE_WEB_API_KEY'] ?? '');
+      ? const String.fromEnvironment('FIREBASE_WEB_KEY')
+      : (dotenv.env['FIREBASE_WEB_API_KEY'] ?? '');
 
   static String get _androidKey =>
       const String.fromEnvironment('FIREBASE_ANDROID_KEY').isNotEmpty
-          ? const String.fromEnvironment('FIREBASE_ANDROID_KEY')
-          : (dotenv.env['FIREBASE_ANDROID_KEY'] ?? '');
+      ? const String.fromEnvironment('FIREBASE_ANDROID_KEY')
+      : (dotenv.env['FIREBASE_ANDROID_KEY'] ?? '');
 
   static String get _webAppId =>
       const String.fromEnvironment('FIREBASE_WEB_APP_ID').isNotEmpty
-          ? const String.fromEnvironment('FIREBASE_WEB_APP_ID')
-          : (dotenv.env['FIREBASE_WEB_APP_ID'] ?? '');
+      ? const String.fromEnvironment('FIREBASE_WEB_APP_ID')
+      : (dotenv.env['FIREBASE_WEB_APP_ID'] ?? '');
 
   static String get _androidAppId =>
       const String.fromEnvironment('FIREBASE_ANDROID_APP_ID').isNotEmpty
-          ? const String.fromEnvironment('FIREBASE_ANDROID_APP_ID')
-          : (dotenv.env['FIREBASE_ANDROID_APP_ID'] ?? '');
+      ? const String.fromEnvironment('FIREBASE_ANDROID_APP_ID')
+      : (dotenv.env['FIREBASE_ANDROID_APP_ID'] ?? '');
 
   static String get _messagingSenderId =>
       const String.fromEnvironment('FIREBASE_MESSAGING_SENDER_ID').isNotEmpty
-          ? const String.fromEnvironment('FIREBASE_MESSAGING_SENDER_ID')
-          : (dotenv.env['FIREBASE_MESSAGING_SENDER_ID'] ?? '');
+      ? const String.fromEnvironment('FIREBASE_MESSAGING_SENDER_ID')
+      : (dotenv.env['FIREBASE_MESSAGING_SENDER_ID'] ?? '');
 
   static String get _projectId =>
       const String.fromEnvironment('FIREBASE_PROJECT_ID').isNotEmpty
-          ? const String.fromEnvironment('FIREBASE_PROJECT_ID')
-          : (dotenv.env['FIREBASE_PROJECT_ID'] ?? '');
+      ? const String.fromEnvironment('FIREBASE_PROJECT_ID')
+      : (dotenv.env['FIREBASE_PROJECT_ID'] ?? '');
 
   static String get _authDomain =>
       const String.fromEnvironment('FIREBASE_AUTH_DOMAIN').isNotEmpty
-          ? const String.fromEnvironment('FIREBASE_AUTH_DOMAIN')
-          : (dotenv.env['FIREBASE_AUTH_DOMAIN'] ?? '');
+      ? const String.fromEnvironment('FIREBASE_AUTH_DOMAIN')
+      : (dotenv.env['FIREBASE_AUTH_DOMAIN'] ?? '');
 
   static String get _storageBucket =>
       const String.fromEnvironment('FIREBASE_STORAGE_BUCKET').isNotEmpty
-          ? const String.fromEnvironment('FIREBASE_STORAGE_BUCKET')
-          : (dotenv.env['FIREBASE_STORAGE_BUCKET'] ?? '');
+      ? const String.fromEnvironment('FIREBASE_STORAGE_BUCKET')
+      : (dotenv.env['FIREBASE_STORAGE_BUCKET'] ?? '');
 
   static FirebaseOptions get web => FirebaseOptions(
     apiKey: _webKey,
@@ -81,7 +81,8 @@ class DefaultFirebaseOptions {
   );
 
   static FirebaseOptions get ios => FirebaseOptions(
-    apiKey: _webKey, // Biasanya iOS menggunakan key yang mirip atau terpisah, kita amankan dengan webKey dulu jika belum ada
+    apiKey:
+        _webKey, // Biasanya iOS menggunakan key yang mirip atau terpisah, kita amankan dengan webKey dulu jika belum ada
     appId: _webAppId,
     messagingSenderId: _messagingSenderId,
     projectId: _projectId,

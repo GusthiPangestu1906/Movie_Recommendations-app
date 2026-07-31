@@ -46,12 +46,12 @@ class Movie {
     );
   }
 
-  String get fullPosterPath => posterPath.isNotEmpty 
-      ? 'https://image.tmdb.org/t/p/w500$posterPath' 
+  String get fullPosterPath => posterPath.isNotEmpty
+      ? 'https://image.tmdb.org/t/p/w500$posterPath'
       : 'https://via.placeholder.com/500x750?text=No+Image';
-      
-  String get fullBackdropPath => backdropPath.isNotEmpty 
-      ? 'https://image.tmdb.org/t/p/w780$backdropPath' 
+
+  String get fullBackdropPath => backdropPath.isNotEmpty
+      ? 'https://image.tmdb.org/t/p/w780$backdropPath'
       : 'https://via.placeholder.com/780x440?text=No+Image';
 }
 
@@ -71,8 +71,8 @@ class Cast {
   List<Movie>? tvCredits;
 
   Cast({
-    required this.id, 
-    required this.name, 
+    required this.id,
+    required this.name,
     this.profilePath,
     this.character,
     this.biography,
@@ -100,13 +100,15 @@ class Cast {
   }
 
   String get fullProfilePath {
-    if (profilePath == null) return 'https://via.placeholder.com/185x278?text=No+Image';
+    if (profilePath == null)
+      return 'https://via.placeholder.com/185x278?text=No+Image';
     if (profilePath!.startsWith('http')) return profilePath!;
     return 'https://image.tmdb.org/t/p/w185$profilePath';
   }
 
   String get fullProfilePathHD {
-    if (profilePath == null) return 'https://via.placeholder.com/600x900?text=No+Image';
+    if (profilePath == null)
+      return 'https://via.placeholder.com/600x900?text=No+Image';
     if (profilePath!.startsWith('http')) return profilePath!;
     return 'https://image.tmdb.org/t/p/h632$profilePath';
   }

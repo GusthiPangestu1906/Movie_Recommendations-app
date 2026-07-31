@@ -11,6 +11,7 @@ import 'providers/auth_provider.dart';
 import 'providers/connectivity_provider.dart';
 import 'pages/login_page.dart';
 import 'pages/home_page.dart';
+import 'pages/booting_page.dart';
 
 void main() {
   // Pastikan binding siap secepat mungkin
@@ -27,11 +28,15 @@ void main() {
             return (movieProvider ?? MovieProvider())..update(auth);
           },
         ),
-        ChangeNotifierProxyProvider2<AuthProvider, MovieProvider,
-            HistoryProvider>(
+        ChangeNotifierProxyProvider2<
+          AuthProvider,
+          MovieProvider,
+          HistoryProvider
+        >(
           create: (_) => HistoryProvider(),
           update: (_, auth, movieProvider, historyProvider) {
-            return (historyProvider ?? HistoryProvider())..update(auth, movieProvider);
+            return (historyProvider ?? HistoryProvider())
+              ..update(auth, movieProvider);
           },
         ),
       ],
@@ -111,8 +116,15 @@ class _MyAppState extends State<MyApp> {
         );
       },
       home: Consumer<AuthProvider>(
-        builder: (context, auth, _) =>
-            auth.isAuthenticated ? const HomePage() : const LoginPage(),
+        builder: (context, auth, _) {
+          if (!auth.isAuthenticated) {
+            return const LoginPage();
+          }
+          if (!auth.hasBooted) {
+            return BootingPage(onComplete: () => auth.setBooted(true));
+          }
+          return const HomePage();
+        },
       ),
     );
   }
@@ -135,43 +147,41 @@ class WebResponsiveWrapper extends StatelessWidget {
               decoration: const BoxDecoration(
                 image: DecorationImage(
                   // Menggunakan resolusi yang lebih kecil & format webp untuk Speed Index
-                  image: NetworkImage('https://images.unsplash.com/photo-1477346611705-65d1883cee1e?q=80&w=1000&auto=format,webp&fit=crop'),
+                  image: NetworkImage(
+                    'https://images.unsplash.com/photo-1477346611705-65d1883cee1e?q=80&w=1000&auto=format,webp&fit=crop',
+                  ),
                   fit: BoxFit.cover,
-                  colorFilter: ColorFilter.mode(Colors.black87, BlendMode.darken),
+                  colorFilter: ColorFilter.mode(
+                    Colors.black87,
+                    BlendMode.darken,
+                  ),
                 ),
               ),
-              child: Stack(
-                children: [
-                  // Sederhanakan dekorasi untuk mengurangi beban render (TBT)
-                  Positioned(
-                    top: 40, left: 40,
-                    child: Row(
-                      children: [
-                        Image.asset('assets/Group 3.png', width: 50, height: 50),
-                        const SizedBox(width: 12),
-                        const Text('MY MOVIES', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 2)),
+              child: Center(
+                child: AspectRatio(
+                  aspectRatio: 9 / 19.5,
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(
+                      vertical: 30,
+                      horizontal: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0B0E1E),
+                      borderRadius: BorderRadius.circular(40),
+                      border: Border.all(
+                        color: const Color(0xFF1F2235),
+                        width: 8,
+                      ),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black54, blurRadius: 20),
                       ],
                     ),
-                  ),
-                  Center(
-                    child: AspectRatio(
-                      aspectRatio: 9 / 19.5,
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(vertical: 30, horizontal: 10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF0B0E1E),
-                          borderRadius: BorderRadius.circular(40),
-                          border: Border.all(color: const Color(0xFF1F2235), width: 8),
-                          boxShadow: [BoxShadow(color: Colors.black54, blurRadius: 20)],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(32),
-                          child: child,
-                        ),
-                      ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(32),
+                      child: child,
                     ),
                   ),
-                ],
+                ),
               ),
             ),
           );

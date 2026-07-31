@@ -25,7 +25,7 @@ class ApiService {
   }) async {
     try {
       final uri = Uri.parse(url);
-      
+
       // KEAMANAN: Persiapkan headers dengan aman
       Map<String, String>? headers;
       if (!uri.host.contains('wikidata.org') && !isWikidata) {
@@ -38,10 +38,9 @@ class ApiService {
         }
       }
 
-      final response = await http.get(
-        uri,
-        headers: headers,
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .get(uri, headers: headers)
+          .timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
         return json.decode(response.body);
@@ -103,8 +102,10 @@ class ApiService {
     }
   }
 
-  Future<List<Movie>> getMoviesByCategory(String category,
-      {int page = 1}) async {
+  Future<List<Movie>> getMoviesByCategory(
+    String category, {
+    int page = 1,
+  }) async {
     if (_apiKey.isEmpty) throw Exception('API Key is missing');
     final params = {'page': page.toString()};
     final url = _buildTmdbUrl('/movie/$category', params: params);
@@ -117,11 +118,12 @@ class ApiService {
     }
   }
 
-  Future<List<Movie>> discoverMovies(
-      {int page = 1,
-      String? releaseDateGte,
-      String? releaseDateLte,
-      String? withGenres}) async {
+  Future<List<Movie>> discoverMovies({
+    int page = 1,
+    String? releaseDateGte,
+    String? releaseDateLte,
+    String? withGenres,
+  }) async {
     if (_apiKey.isEmpty) throw Exception('API Key is missing');
     final params = {
       'page': page.toString(),
@@ -141,7 +143,10 @@ class ApiService {
     }
   }
 
-  Future<List<Movie>> getRecommendations(int movieId, {bool isTv = false}) async {
+  Future<List<Movie>> getRecommendations(
+    int movieId, {
+    bool isTv = false,
+  }) async {
     if (_apiKey.isEmpty) throw Exception('API Key is missing');
     final type = isTv ? 'tv' : 'movie';
     final url = _buildTmdbUrl('/$type/$movieId/recommendations');
@@ -166,8 +171,12 @@ class ApiService {
     }
   }
 
-  Future<List<Movie>> searchMovies(String query,
-      {String? withGenres, bool isTv = false, int page = 1}) async {
+  Future<List<Movie>> searchMovies(
+    String query, {
+    String? withGenres,
+    bool isTv = false,
+    int page = 1,
+  }) async {
     if (_apiKey.isEmpty) throw Exception('API Key is missing');
     final type = isTv ? 'tv' : 'movie';
     final params = {
@@ -188,10 +197,13 @@ class ApiService {
             .whereType<int>()
             .toSet();
 
-        return results.where((item) {
-          final List<dynamic> genreIds = item['genre_ids'] ?? [];
-          return genreIds.any((id) => genreSet.contains(id));
-        }).map((item) => Movie.fromJson(item, isTv: isTv)).toList();
+        return results
+            .where((item) {
+              final List<dynamic> genreIds = item['genre_ids'] ?? [];
+              return genreIds.any((id) => genreSet.contains(id));
+            })
+            .map((item) => Movie.fromJson(item, isTv: isTv))
+            .toList();
       }
 
       return results.map((item) => Movie.fromJson(item, isTv: isTv)).toList();
@@ -230,7 +242,10 @@ class ApiService {
     }
   }
 
-  Future<String?> getMovieCertification(int movieId, {bool isTv = false}) async {
+  Future<String?> getMovieCertification(
+    int movieId, {
+    bool isTv = false,
+  }) async {
     if (isTv) return 'TV-PG';
     if (_apiKey.isEmpty) throw Exception('API Key is missing');
     final url = _buildTmdbUrl('/movie/$movieId/release_dates');
@@ -286,60 +301,69 @@ class ApiService {
     });
 
     try {
-      final data = await _makeGetRequest(searchUri.toString(), isWikidata: true);
+      final data = await _makeGetRequest(
+        searchUri.toString(),
+        isWikidata: true,
+      );
       if (data == null) return [];
 
       final List searchResults = data['search'] ?? [];
       final itemsToFetch = searchResults.take(5).toList();
 
-      final results = await Future.wait(itemsToFetch.map((item) async {
-        final String qid = item['id'];
-        final String name = item['label'] ?? 'Unknown';
-        final String description = (item['description'] ?? '').toLowerCase();
+      final results = await Future.wait(
+        itemsToFetch.map((item) async {
+          final String qid = item['id'];
+          final String name = item['label'] ?? 'Unknown';
+          final String description = (item['description'] ?? '').toLowerCase();
 
-        bool isLikelyPerson = description.contains('pemeran') ||
-            description.contains('aktris') ||
-            description.contains('aktor') ||
-            description.contains('actor') ||
-            description.contains('actress') ||
-            description.contains('human') ||
-            description.contains('sutradara');
+          bool isLikelyPerson =
+              description.contains('pemeran') ||
+              description.contains('aktris') ||
+              description.contains('aktor') ||
+              description.contains('actor') ||
+              description.contains('actress') ||
+              description.contains('human') ||
+              description.contains('sutradara');
 
-        if (!isLikelyPerson) return null;
+          if (!isLikelyPerson) return null;
 
-        final detailUri = Uri.https('www.wikidata.org', '/w/api.php', {
-          'origin': '*',
-          'action': 'wbgetentities',
-          'ids': qid,
-          'props': 'claims',
-          'format': 'json',
-        });
+          final detailUri = Uri.https('www.wikidata.org', '/w/api.php', {
+            'origin': '*',
+            'action': 'wbgetentities',
+            'ids': qid,
+            'props': 'claims',
+            'format': 'json',
+          });
 
-        final detailData =
-            await _makeGetRequest(detailUri.toString(), isWikidata: true);
+          final detailData = await _makeGetRequest(
+            detailUri.toString(),
+            isWikidata: true,
+          );
 
-        String? imageUrl;
-        if (detailData != null &&
-            detailData['entities'] != null &&
-            detailData['entities'][qid] != null) {
-          final claims = detailData['entities'][qid]['claims'];
-          if (claims != null && claims['P18'] != null) {
-            final String imageName =
-                claims['P18'][0]['mainsnak']['datavalue']['value'];
-            final encodedImage =
-                Uri.encodeComponent(imageName.replaceAll(' ', '_'));
-            imageUrl =
-                'https://commons.wikimedia.org/wiki/Special:FilePath/$encodedImage?width=500';
+          String? imageUrl;
+          if (detailData != null &&
+              detailData['entities'] != null &&
+              detailData['entities'][qid] != null) {
+            final claims = detailData['entities'][qid]['claims'];
+            if (claims != null && claims['P18'] != null) {
+              final String imageName =
+                  claims['P18'][0]['mainsnak']['datavalue']['value'];
+              final encodedImage = Uri.encodeComponent(
+                imageName.replaceAll(' ', '_'),
+              );
+              imageUrl =
+                  'https://commons.wikimedia.org/wiki/Special:FilePath/$encodedImage?width=500';
+            }
           }
-        }
 
-        return Cast(
-          id: qid.hashCode,
-          name: name,
-          profilePath: imageUrl,
-          character: item['description'] ?? 'Wikidata Entity',
-        );
-      }));
+          return Cast(
+            id: qid.hashCode,
+            name: name,
+            profilePath: imageUrl,
+            character: item['description'] ?? 'Wikidata Entity',
+          );
+        }),
+      );
 
       return results.whereType<Cast>().toList();
     } catch (e) {
@@ -379,8 +403,7 @@ class ApiService {
     return null;
   }
 
-  Future<Map<String, List<Movie>>> getVerifiedFilmography(
-      int personId) async {
+  Future<Map<String, List<Movie>>> getVerifiedFilmography(int personId) async {
     if (_apiKey.isEmpty) throw Exception('API Key is missing');
     final url = _buildTmdbUrl('/person/$personId/combined_credits');
     final data = await _makeGetRequest(url);

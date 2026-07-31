@@ -10,7 +10,9 @@ class ConnectivityProvider with ChangeNotifier {
 
   ConnectivityProvider() {
     _checkInitialConnection();
-    _subscription = Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> results) {
+    _subscription = Connectivity().onConnectivityChanged.listen((
+      List<ConnectivityResult> results,
+    ) {
       // connectivity_plus 6.0.0+ returns a List
       _updateConnectionStatus(results);
     });
@@ -30,8 +32,8 @@ class ConnectivityProvider with ChangeNotifier {
     bool previousStatus = _isOnline;
 
     // Check if there's any active connection
-    _isOnline = results.isNotEmpty &&
-                !results.contains(ConnectivityResult.none);
+    _isOnline =
+        results.isNotEmpty && !results.contains(ConnectivityResult.none);
 
     debugPrint('=== NETWORK STATUS: ${_isOnline ? "ONLINE" : "OFFLINE"} ===');
     debugPrint('Results: $results');

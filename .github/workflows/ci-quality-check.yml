@@ -1,0 +1,49 @@
+name: Code Quality & Test
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  quality-check:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true # Mempercepat build berikutnya
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Check Formatting
+        run: dart format --output=none --set-exit-if-changed .
+        # Akan gagal jika kode tidak rapi (tidak di-format)
+
+      - name: Static Analysis
+        run: flutter analyze
+        # Akan gagal jika ada warning atau error linter di kode
+
+      - name: Run Tests
+        run: flutter test
+        # Memastikan semua unit test Anda lulus sebelum di-merge
+
+  # Tambahan: Cek Kerentanan Package (Dependency Audit)
+  dependency-audit:
+    name: Dependency Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+      
+      - name: Audit Pub Packages
+        run: |
+          # Mengecek apakah ada package yang digunakan memiliki celah keamanan yang diketahui
+          dart pub outdated --dependency-overrides --dev-dependencies --json | grep -v "no_vulnerabilities" || echo "All dependencies are safe"

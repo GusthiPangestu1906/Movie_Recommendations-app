@@ -1,0 +1,12 @@
+version: 2
+updates:
+  - package-ecosystem: "pub" # Untuk Flutter/Dart
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: "github-actions" # Untuk update versi workflow
+    directory: "/"
+    schedule:
+      interval: "weekly"

@@ -20,7 +20,10 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<MovieProvider>(context, listen: false).setActorSearchQuery('');
+      Provider.of<MovieProvider>(
+        context,
+        listen: false,
+      ).setActorSearchQuery('');
     });
   }
 
@@ -35,7 +38,10 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
     return Scaffold(
       backgroundColor: const Color(0xFF0B0E1E),
       appBar: AppBar(
-        title: const Text('Stars Galaxy', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Stars Galaxy',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.transparent,
@@ -46,7 +52,10 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
             child: TextField(
               controller: _searchController,
               onChanged: (value) {
-                Provider.of<MovieProvider>(context, listen: false).setActorSearchQuery(value);
+                Provider.of<MovieProvider>(
+                  context,
+                  listen: false,
+                ).setActorSearchQuery(value);
                 setState(() {});
               },
               style: const TextStyle(color: Colors.white),
@@ -63,10 +72,17 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
                 contentPadding: const EdgeInsets.symmetric(vertical: 0),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear, color: Colors.white54, size: 20),
+                        icon: const Icon(
+                          Icons.clear,
+                          color: Colors.white54,
+                          size: 20,
+                        ),
                         onPressed: () {
                           _searchController.clear();
-                          Provider.of<MovieProvider>(context, listen: false).setActorSearchQuery('');
+                          Provider.of<MovieProvider>(
+                            context,
+                            listen: false,
+                          ).setActorSearchQuery('');
                           setState(() {});
                         },
                       )
@@ -90,19 +106,25 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
                     return _buildEmptyState(true);
                   }
 
-                  if (isSearching && favorites.isEmpty && globalResults.isEmpty && !provider.isActorLoading) {
+                  if (isSearching &&
+                      favorites.isEmpty &&
+                      globalResults.isEmpty &&
+                      !provider.isActorLoading) {
                     return _buildEmptyState(false);
                   }
 
                   return CustomScrollView(
                     slivers: [
                       if (favorites.isNotEmpty) ...[
-                        SliverToBoxAdapter(child: _buildSectionHeader('Your Favorites')),
+                        SliverToBoxAdapter(
+                          child: _buildSectionHeader('Your Favorites'),
+                        ),
                         SliverPadding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           sliver: SliverList(
                             delegate: SliverChildBuilderDelegate(
-                              (context, index) => _buildActorCard(favorites[index], provider),
+                              (context, index) =>
+                                  _buildActorCard(favorites[index], provider),
                               childCount: favorites.length,
                             ),
                           ),
@@ -110,13 +132,17 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
                         const SliverToBoxAdapter(child: SizedBox(height: 20)),
                       ],
                       if (isSearching) ...[
-                        SliverToBoxAdapter(child: _buildSectionHeader('Discover New Stars')),
+                        SliverToBoxAdapter(
+                          child: _buildSectionHeader('Discover New Stars'),
+                        ),
                         if (provider.isActorLoading)
                           const SliverToBoxAdapter(
                             child: Center(
                               child: Padding(
                                 padding: EdgeInsets.all(20.0),
-                                child: CircularProgressIndicator(color: Color(0xFF5C6AC4)),
+                                child: CircularProgressIndicator(
+                                  color: Color(0xFF5C6AC4),
+                                ),
                               ),
                             ),
                           )
@@ -127,12 +153,19 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
                               delegate: SliverChildBuilderDelegate(
                                 (context, index) {
                                   final searchResults = globalResults
-                                      .where((g) => !provider.isFavoriteActor(g.id))
+                                      .where(
+                                        (g) => !provider.isFavoriteActor(g.id),
+                                      )
                                       .toList();
-                                  return _buildActorCard(searchResults[index], provider);
+                                  return _buildActorCard(
+                                    searchResults[index],
+                                    provider,
+                                  );
                                 },
                                 childCount: globalResults
-                                    .where((g) => !provider.isFavoriteActor(g.id))
+                                    .where(
+                                      (g) => !provider.isFavoriteActor(g.id),
+                                    )
                                     .length,
                               ),
                             ),
@@ -199,7 +232,11 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
       padding: const EdgeInsets.fromLTRB(4, 8, 0, 16),
       child: Text(
         title,
-        style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
@@ -212,7 +249,8 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ActorDetailPage(actorId: actor.id, actorName: actor.name),
+            builder: (context) =>
+                ActorDetailPage(actorId: actor.id, actorName: actor.name),
           ),
         );
       },
@@ -242,8 +280,10 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
                     height: 140,
                     fit: BoxFit.cover,
                     alignment: Alignment.topCenter,
-                    placeholder: (context, url) => Container(color: Colors.white10),
-                    errorWidget: (context, url, error) => const Icon(Icons.person, color: Colors.white10),
+                    placeholder: (context, url) =>
+                        Container(color: Colors.white10),
+                    errorWidget: (context, url, error) =>
+                        const Icon(Icons.person, color: Colors.white10),
                   ),
                   Positioned(
                     top: 8,
@@ -258,7 +298,10 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
               const SizedBox(width: 16),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 16,
+                    horizontal: 8,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -276,7 +319,11 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
                       const SizedBox(height: 12),
                       Row(
                         children: [
-                          const Icon(Icons.auto_awesome, color: Color(0xFF5C6AC4), size: 16),
+                          const Icon(
+                            Icons.auto_awesome,
+                            color: Color(0xFF5C6AC4),
+                            size: 16,
+                          ),
                           const SizedBox(width: 6),
                           const Text(
                             'Star Profile',
@@ -290,7 +337,10 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
                       ),
                       const SizedBox(height: 16),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.05),
                           borderRadius: BorderRadius.circular(8),
@@ -298,11 +348,19 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.movie_outlined, color: Colors.white30, size: 12),
+                            Icon(
+                              Icons.movie_outlined,
+                              color: Colors.white30,
+                              size: 12,
+                            ),
                             SizedBox(width: 6),
                             Text(
                               'Tap to find movies',
-                              style: TextStyle(color: Colors.white30, fontSize: 10, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                color: Colors.white30,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
                         ),
@@ -342,11 +400,17 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
           const SizedBox(height: 24),
           Text(
             isListEmpty ? 'No Stars in Your Galaxy' : 'No matches found',
-            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
-            isListEmpty ? 'Add your favorite actors to see them here!' : 'Try searching with a different name',
+            isListEmpty
+                ? 'Add your favorite actors to see them here!'
+                : 'Try searching with a different name',
             style: const TextStyle(color: Colors.white38, fontSize: 14),
           ),
         ],
@@ -359,10 +423,14 @@ class _AnimatedFavoriteButton extends StatefulWidget {
   final bool isFavorite;
   final VoidCallback onTap;
 
-  const _AnimatedFavoriteButton({required this.isFavorite, required this.onTap});
+  const _AnimatedFavoriteButton({
+    required this.isFavorite,
+    required this.onTap,
+  });
 
   @override
-  State<_AnimatedFavoriteButton> createState() => _AnimatedFavoriteButtonState();
+  State<_AnimatedFavoriteButton> createState() =>
+      _AnimatedFavoriteButtonState();
 }
 
 class _AnimatedFavoriteButtonState extends State<_AnimatedFavoriteButton>

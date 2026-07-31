@@ -32,7 +32,10 @@ class Particle {
     position += velocity;
 
     // Random jitter
-    position += Offset((Random().nextDouble() - 0.5) * 0.5, (Random().nextDouble() - 0.5) * 0.5);
+    position += Offset(
+      (Random().nextDouble() - 0.5) * 0.5,
+      (Random().nextDouble() - 0.5) * 0.5,
+    );
 
     // Screen wrap
     if (position.dx < 0) position = Offset(canvasSize.width, position.dy);
@@ -74,18 +77,20 @@ class _ParticleBackgroundState extends State<ParticleBackground>
   void _initParticles() {
     final size = MediaQuery.of(context).size;
     for (int i = 0; i < 60; i++) {
-      _particles.add(Particle(
-        position: Offset(
-          _random.nextDouble() * size.width,
-          _random.nextDouble() * size.height,
+      _particles.add(
+        Particle(
+          position: Offset(
+            _random.nextDouble() * size.width,
+            _random.nextDouble() * size.height,
+          ),
+          velocity: Offset(
+            (_random.nextDouble() - 0.5) * 2,
+            (_random.nextDouble() - 0.5) * 2,
+          ),
+          size: _random.nextDouble() * 2 + 1,
+          opacity: _random.nextDouble() * 0.4 + 0.1,
         ),
-        velocity: Offset(
-          (_random.nextDouble() - 0.5) * 2,
-          (_random.nextDouble() - 0.5) * 2,
-        ),
-        size: _random.nextDouble() * 2 + 1,
-        opacity: _random.nextDouble() * 0.4 + 0.1,
-      ));
+      );
     }
   }
 
@@ -119,7 +124,10 @@ class _ParticleBackgroundState extends State<ParticleBackground>
               }
               return CustomPaint(
                 size: Size.infinite,
-                painter: ParticlePainter(particles: _particles, mousePos: _mousePosition),
+                painter: ParticlePainter(
+                  particles: _particles,
+                  mousePos: _mousePosition,
+                ),
               );
             },
           ),
@@ -148,7 +156,9 @@ class ParticlePainter extends CustomPainter {
       for (var other in particles) {
         double dist = (p.position - other.position).distance;
         if (dist < 120) {
-          paint.color = const Color(0xFF4A56E2).withOpacity(0.15 * (1 - dist / 120));
+          paint.color = const Color(
+            0xFF4A56E2,
+          ).withOpacity(0.15 * (1 - dist / 120));
           paint.strokeWidth = 0.5;
           canvas.drawLine(p.position, other.position, paint);
         }
@@ -157,7 +167,9 @@ class ParticlePainter extends CustomPainter {
       // Draw lines to mouse
       double distToMouse = (p.position - mousePos).distance;
       if (distToMouse < 200) {
-        paint.color = Colors.blueAccent.withOpacity(0.3 * (1 - distToMouse / 200));
+        paint.color = Colors.blueAccent.withOpacity(
+          0.3 * (1 - distToMouse / 200),
+        );
         paint.strokeWidth = 1.0;
         canvas.drawLine(p.position, mousePos, paint);
       }

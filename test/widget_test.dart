@@ -5,11 +5,7 @@ void main() {
   testWidgets('Basic UI rendering test', (WidgetTester tester) async {
     // Build a simple widget to verify the test environment is working.
     await tester.pumpWidget(
-      const MaterialApp(
-        home: Scaffold(
-          body: Text('My Movies'),
-        ),
-      ),
+      const MaterialApp(home: Scaffold(body: Text('My Movies'))),
     );
 
     // Verify that the text is found.

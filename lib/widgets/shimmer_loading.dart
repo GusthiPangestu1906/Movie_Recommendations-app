@@ -91,7 +91,10 @@ class MovieCardShimmer extends StatelessWidget {
             const SizedBox(width: 16),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 16,
+                  horizontal: 12,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -101,9 +104,17 @@ class MovieCardShimmer extends StatelessWidget {
                     const SizedBox(height: 16),
                     Row(
                       children: [
-                        ShimmerLoading(width: 60, height: 24, borderRadius: BorderRadius.circular(8)),
+                        ShimmerLoading(
+                          width: 60,
+                          height: 24,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                         const SizedBox(width: 8),
-                        ShimmerLoading(width: 60, height: 24, borderRadius: BorderRadius.circular(8)),
+                        ShimmerLoading(
+                          width: 60,
+                          height: 24,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ],
                     ),
                   ],

@@ -48,7 +48,9 @@ class _HistoryPageState extends State<HistoryPage> {
       body: Consumer<HistoryProvider>(
         builder: (context, provider, child) {
           // Dynamically select history based on global app mode
-          final history = isDramaMode ? provider.filteredTvHistory : provider.filteredHistory;
+          final history = isDramaMode
+              ? provider.filteredTvHistory
+              : provider.filteredHistory;
 
           if (history.isEmpty) {
             return Center(
@@ -72,7 +74,11 @@ class _HistoryPageState extends State<HistoryPage> {
                     provider.searchQuery.isEmpty
                         ? 'Your ${isDramaMode ? 'drama ' : 'movie '}journal is empty'
                         : 'No matches in your history',
-                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -155,7 +161,7 @@ class _AddHistoryBottomSheetState extends State<AddHistoryBottomSheet> {
 
     setState(() => _isSearching = true);
     final provider = Provider.of<MovieProvider>(context, listen: false);
-    
+
     try {
       final results = await provider.searchForHistory(query, isTv: isTv);
       if (mounted) {
@@ -172,15 +178,22 @@ class _AddHistoryBottomSheetState extends State<AddHistoryBottomSheet> {
   }
 
   void _selectDateAndAdd(Movie movie) async {
-    final historyProvider = Provider.of<HistoryProvider>(context, listen: false);
-    
+    final historyProvider = Provider.of<HistoryProvider>(
+      context,
+      listen: false,
+    );
+
     if (historyProvider.isWatched(movie.id)) {
       final watchDate = historyProvider.getWatchDate(movie.id);
-      final dateStr = watchDate != null ? DateFormat('MMM dd, yyyy').format(watchDate) : 'Unknown date';
-      
+      final dateStr = watchDate != null
+          ? DateFormat('MMM dd, yyyy').format(watchDate)
+          : 'Unknown date';
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('"${movie.title}" is already in history (Watched on $dateStr)'),
+          content: Text(
+            '"${movie.title}" is already in history (Watched on $dateStr)',
+          ),
           backgroundColor: Colors.orange,
           behavior: SnackBarBehavior.floating,
         ),
@@ -203,14 +216,13 @@ class _AddHistoryBottomSheetState extends State<AddHistoryBottomSheet> {
               onSurface: Colors.white,
             ),
             dialogTheme: DialogThemeData(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
             ),
           ),
           child: Center(
-            child: FittedBox(
-              fit: BoxFit.contain,
-              child: child!,
-            ),
+            child: FittedBox(fit: BoxFit.contain, child: child!),
           ),
         );
       },
@@ -218,7 +230,10 @@ class _AddHistoryBottomSheetState extends State<AddHistoryBottomSheet> {
 
     if (picked != null) {
       if (!mounted) return;
-      Provider.of<HistoryProvider>(context, listen: false).addToHistory(movie, picked);
+      Provider.of<HistoryProvider>(
+        context,
+        listen: false,
+      ).addToHistory(movie, picked);
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -251,7 +266,11 @@ class _AddHistoryBottomSheetState extends State<AddHistoryBottomSheet> {
                 children: [
                   Text(
                     'Add to ${isTv ? 'Drama' : 'Movie'} History',
-                    style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 20),
                   TextField(
@@ -262,10 +281,16 @@ class _AddHistoryBottomSheetState extends State<AddHistoryBottomSheet> {
                     decoration: InputDecoration(
                       hintText: 'Search ${isTv ? 'drama' : 'movie'} title...',
                       hintStyle: const TextStyle(color: Colors.white24),
-                      prefixIcon: const Icon(Icons.search, color: Colors.white24),
+                      prefixIcon: const Icon(
+                        Icons.search,
+                        color: Colors.white24,
+                      ),
                       suffixIcon: _searchController.text.isNotEmpty
                           ? IconButton(
-                              icon: const Icon(Icons.clear, color: Colors.white24),
+                              icon: const Icon(
+                                Icons.clear,
+                                color: Colors.white24,
+                              ),
                               onPressed: () {
                                 _searchController.clear();
                                 _searchData('', isTv);
@@ -283,57 +308,91 @@ class _AddHistoryBottomSheetState extends State<AddHistoryBottomSheet> {
                   const SizedBox(height: 20),
                   Expanded(
                     child: _isSearching
-                        ? const Center(child: CircularProgressIndicator(color: Color(0xFF5C6AC4)))
-                        : _searchResults.isEmpty && _searchController.text.isNotEmpty
-                            ? const Center(child: Text('No results found', style: TextStyle(color: Colors.white38)))
-                            : ListView.builder(
-                                itemCount: _searchResults.length,
-                                itemBuilder: (context, index) {
-                                  final item = _searchResults[index];
-                                  final bool watched = Provider.of<HistoryProvider>(context, listen: false).isWatched(item.id);
+                        ? const Center(
+                            child: CircularProgressIndicator(
+                              color: Color(0xFF5C6AC4),
+                            ),
+                          )
+                        : _searchResults.isEmpty &&
+                              _searchController.text.isNotEmpty
+                        ? const Center(
+                            child: Text(
+                              'No results found',
+                              style: TextStyle(color: Colors.white38),
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: _searchResults.length,
+                            itemBuilder: (context, index) {
+                              final item = _searchResults[index];
+                              final bool watched = Provider.of<HistoryProvider>(
+                                context,
+                                listen: false,
+                              ).isWatched(item.id);
 
-                                  return ListTile(
-                                    contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                                    leading: Stack(
-                                      children: [
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.circular(8),
-                                          child: CachedNetworkImage(
-                                            imageUrl: item.fullPosterPath,
-                                            width: 50,
-                                            height: 75,
-                                            fit: BoxFit.cover,
-                                            errorWidget: (context, url, error) => const Icon(Icons.movie),
-                                          ),
-                                        ),
-                                        if (watched)
-                                          Positioned.fill(
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                color: Colors.black45,
-                                                borderRadius: BorderRadius.circular(8),
-                                              ),
-                                              child: const Icon(Icons.check_circle, color: Colors.green, size: 30),
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                    title: Text(
-                                      item.title,
-                                      style: TextStyle(
-                                        color: watched ? Colors.white38 : Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        decoration: watched ? TextDecoration.lineThrough : null,
+                              return ListTile(
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 8,
+                                ),
+                                leading: Stack(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: CachedNetworkImage(
+                                        imageUrl: item.fullPosterPath,
+                                        width: 50,
+                                        height: 75,
+                                        fit: BoxFit.cover,
+                                        errorWidget: (context, url, error) =>
+                                            const Icon(Icons.movie),
                                       ),
                                     ),
-                                    subtitle: Text(
-                                      watched ? 'Already in History' : (item.releaseDate.isNotEmpty ? item.releaseDate.split('-')[0] : 'N/A'),
-                                      style: TextStyle(color: watched ? Colors.green.withOpacity(0.5) : Colors.white38),
-                                    ),
-                                    onTap: () => _selectDateAndAdd(item),
-                                  );
-                                },
-                              ),
+                                    if (watched)
+                                      Positioned.fill(
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.black45,
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                          ),
+                                          child: const Icon(
+                                            Icons.check_circle,
+                                            color: Colors.green,
+                                            size: 30,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                title: Text(
+                                  item.title,
+                                  style: TextStyle(
+                                    color: watched
+                                        ? Colors.white38
+                                        : Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    decoration: watched
+                                        ? TextDecoration.lineThrough
+                                        : null,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  watched
+                                      ? 'Already in History'
+                                      : (item.releaseDate.isNotEmpty
+                                            ? item.releaseDate.split('-')[0]
+                                            : 'N/A'),
+                                  style: TextStyle(
+                                    color: watched
+                                        ? Colors.green.withOpacity(0.5)
+                                        : Colors.white38,
+                                  ),
+                                ),
+                                onTap: () => _selectDateAndAdd(item),
+                              );
+                            },
+                          ),
                   ),
                 ],
               ),
@@ -356,7 +415,11 @@ class _AddHistoryBottomSheetState extends State<AddHistoryBottomSheet> {
                         const SizedBox(height: 20),
                         const Text(
                           'Offline Mode',
-                          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         const Text(

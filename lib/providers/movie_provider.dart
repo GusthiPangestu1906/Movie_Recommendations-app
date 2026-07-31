@@ -35,8 +35,11 @@ class MovieProvider with ChangeNotifier {
   List<Cast> get filteredFavoriteActors {
     if (_actorSearchQuery.isEmpty) return _favoriteActors;
     return _favoriteActors
-        .where((actor) =>
-            actor.name.toLowerCase().contains(_actorSearchQuery.toLowerCase()))
+        .where(
+          (actor) => actor.name.toLowerCase().contains(
+            _actorSearchQuery.toLowerCase(),
+          ),
+        )
         .toList();
   }
 
@@ -74,8 +77,11 @@ class MovieProvider with ChangeNotifier {
   List<Movie> get filteredFavorites {
     if (_favoriteSearchQuery.isEmpty) return _favoriteMovies;
     return _favoriteMovies
-        .where((movie) =>
-            movie.title.toLowerCase().contains(_favoriteSearchQuery.toLowerCase()))
+        .where(
+          (movie) => movie.title.toLowerCase().contains(
+            _favoriteSearchQuery.toLowerCase(),
+          ),
+        )
         .toList();
   }
 
@@ -146,14 +152,29 @@ class MovieProvider with ChangeNotifier {
     if (_userId == null) return;
     try {
       // Load Movies & TV Favorites
-      final favSnapshot = await _firestore.collection('users').doc(_userId).collection('favorites').get();
-      final allFavs = favSnapshot.docs.map((doc) => Movie.fromJson(doc.data(), isTv: doc.data()['isTv'] ?? false)).toList();
+      final favSnapshot = await _firestore
+          .collection('users')
+          .doc(_userId)
+          .collection('favorites')
+          .get();
+      final allFavs = favSnapshot.docs
+          .map(
+            (doc) =>
+                Movie.fromJson(doc.data(), isTv: doc.data()['isTv'] ?? false),
+          )
+          .toList();
       _favoriteMovies = allFavs.where((m) => !m.isTv).toList();
       _favoriteTv = allFavs.where((m) => m.isTv).toList();
 
       // Load Favorite Actors
-      final actorSnapshot = await _firestore.collection('users').doc(_userId).collection('favorite_actors').get();
-      _favoriteActors = actorSnapshot.docs.map((doc) => Cast.fromJson(doc.data())).toList();
+      final actorSnapshot = await _firestore
+          .collection('users')
+          .doc(_userId)
+          .collection('favorite_actors')
+          .get();
+      _favoriteActors = actorSnapshot.docs
+          .map((doc) => Cast.fromJson(doc.data()))
+          .toList();
 
       notifyListeners();
       fetchRecommendations();
@@ -178,7 +199,10 @@ class MovieProvider with ChangeNotifier {
     _tvSearchResults = []; // Clear search results when switching country
     notifyListeners();
     try {
-      _tvSeries = await _apiService.getTvSeries(originCountry: country, page: _currentTvPage);
+      _tvSeries = await _apiService.getTvSeries(
+        originCountry: country,
+        page: _currentTvPage,
+      );
     } catch (e) {
       debugPrint('Error fetching TV series: $e');
     } finally {
@@ -194,7 +218,10 @@ class MovieProvider with ChangeNotifier {
 
     _currentTvPage++;
     try {
-      List<Movie> nextTv = await _apiService.getTvSeries(originCountry: _selectedCountry, page: _currentTvPage);
+      List<Movie> nextTv = await _apiService.getTvSeries(
+        originCountry: _selectedCountry,
+        page: _currentTvPage,
+      );
       _tvSeries.addAll(nextTv);
     } catch (e) {
       debugPrint('Error fetching more TV series: $e');
@@ -220,7 +247,11 @@ class MovieProvider with ChangeNotifier {
     notifyListeners();
     try {
       // Fetch results from API
-      List<Movie> initialResults = await _apiService.searchMovies(query, isTv: true, page: _currentSearchPage);
+      List<Movie> initialResults = await _apiService.searchMovies(
+        query,
+        isTv: true,
+        page: _currentSearchPage,
+      );
 
       // Apply client-side filter if a country is selected
       if (_selectedCountry != null && _selectedCountry!.isNotEmpty) {
@@ -259,7 +290,10 @@ class MovieProvider with ChangeNotifier {
     _currentCategory = category;
     notifyListeners();
     try {
-      _movies = await _apiService.getMoviesByCategory(category, page: _currentPage);
+      _movies = await _apiService.getMoviesByCategory(
+        category,
+        page: _currentPage,
+      );
     } catch (e) {
       debugPrint('Error fetching category $category: $e');
     } finally {
@@ -275,7 +309,10 @@ class MovieProvider with ChangeNotifier {
 
     _currentPage++;
     try {
-      List<Movie> nextMovies = await _apiService.getMoviesByCategory(_currentCategory, page: _currentPage);
+      List<Movie> nextMovies = await _apiService.getMoviesByCategory(
+        _currentCategory,
+        page: _currentPage,
+      );
       _movies.addAll(nextMovies);
     } catch (e) {
       debugPrint('Error fetching next page: $e');
@@ -291,7 +328,10 @@ class MovieProvider with ChangeNotifier {
     if (_favoriteMovies.isNotEmpty) {
       try {
         final latestFavorite = _favoriteMovies.first;
-        _recommendations = await _apiService.getRecommendations(latestFavorite.id, isTv: false);
+        _recommendations = await _apiService.getRecommendations(
+          latestFavorite.id,
+          isTv: false,
+        );
         notifyListeners();
         return;
       } catch (e) {
@@ -305,7 +345,10 @@ class MovieProvider with ChangeNotifier {
       if (movieHistory.isNotEmpty) {
         try {
           final latestHistory = movieHistory.first;
-          _recommendations = await _apiService.getRecommendations(latestHistory.id, isTv: false);
+          _recommendations = await _apiService.getRecommendations(
+            latestHistory.id,
+            isTv: false,
+          );
           notifyListeners();
           return;
         } catch (e) {
@@ -323,7 +366,10 @@ class MovieProvider with ChangeNotifier {
     if (_favoriteTv.isNotEmpty) {
       try {
         final latestFavorite = _favoriteTv.first;
-        _tvRecommendations = await _apiService.getRecommendations(latestFavorite.id, isTv: true);
+        _tvRecommendations = await _apiService.getRecommendations(
+          latestFavorite.id,
+          isTv: true,
+        );
         notifyListeners();
         return;
       } catch (e) {
@@ -337,7 +383,10 @@ class MovieProvider with ChangeNotifier {
       if (tvHistory.isNotEmpty) {
         try {
           final latestHistory = tvHistory.first;
-          _tvRecommendations = await _apiService.getRecommendations(latestHistory.id, isTv: true);
+          _tvRecommendations = await _apiService.getRecommendations(
+            latestHistory.id,
+            isTv: true,
+          );
           notifyListeners();
           return;
         } catch (e) {
@@ -352,7 +401,7 @@ class MovieProvider with ChangeNotifier {
 
   Future<void> search(String query) async {
     if (_debounce?.isActive ?? false) _debounce?.cancel();
-    
+
     if (query.isEmpty) {
       if (_isDramaMode) {
         _tvSearchResults = [];
@@ -375,18 +424,30 @@ class MovieProvider with ChangeNotifier {
       try {
         if (_isDramaMode) {
           // Search for TV/Drama
-          List<Movie> results = await _apiService.searchMovies(query, isTv: true, page: _currentSearchPage);
+          List<Movie> results = await _apiService.searchMovies(
+            query,
+            isTv: true,
+            page: _currentSearchPage,
+          );
 
           // Apply origin country filter if selected
           if (_selectedCountry != null && _selectedCountry!.isNotEmpty) {
-            _tvSearchResults = results.where((m) => m.originCountry.contains(_selectedCountry)).toList();
+            _tvSearchResults = results
+                .where((m) => m.originCountry.contains(_selectedCountry))
+                .toList();
           } else {
             _tvSearchResults = results;
           }
         } else {
           // Search for Movies
-          final genreString = _selectedGenreIds.isEmpty ? null : _selectedGenreIds.join(',');
-          _searchResults = await _apiService.searchMovies(query, withGenres: genreString, page: _currentSearchPage);
+          final genreString = _selectedGenreIds.isEmpty
+              ? null
+              : _selectedGenreIds.join(',');
+          _searchResults = await _apiService.searchMovies(
+            query,
+            withGenres: genreString,
+            page: _currentSearchPage,
+          );
           _suggestions = _searchResults.take(5).toList();
         }
       } catch (e) {
@@ -403,7 +464,8 @@ class MovieProvider with ChangeNotifier {
 
     // Determine if we are paging a query search or a genre discover
     final bool isQuerySearch = _lastSearchQuery.isNotEmpty;
-    final bool isGenreDiscover = _selectedGenreIds.isNotEmpty && _lastSearchQuery.isEmpty;
+    final bool isGenreDiscover =
+        _selectedGenreIds.isNotEmpty && _lastSearchQuery.isEmpty;
 
     if (!isQuerySearch && !isGenreDiscover) return;
 
@@ -414,7 +476,9 @@ class MovieProvider with ChangeNotifier {
     try {
       List<Movie> nextResults;
       if (isQuerySearch) {
-        final genreString = _selectedGenreIds.isEmpty ? null : _selectedGenreIds.join(',');
+        final genreString = _selectedGenreIds.isEmpty
+            ? null
+            : _selectedGenreIds.join(',');
         nextResults = await _apiService.searchMovies(
           _lastSearchQuery,
           withGenres: genreString,
@@ -470,7 +534,7 @@ class MovieProvider with ChangeNotifier {
     } else {
       _selectedGenreIds.add(genreId);
     }
-    
+
     // Auto-apply if there's an active search or if query is empty
     // This allows "combining" genres with the current search query
     notifyListeners();
@@ -482,14 +546,17 @@ class MovieProvider with ChangeNotifier {
       notifyListeners();
       return;
     }
-    
+
     _isLoading = true;
     _currentSearchPage = 1;
     _lastSearchQuery = ''; // Reset search query when applying pure genre filter
     notifyListeners();
     try {
       final genreString = _selectedGenreIds.join(',');
-      _searchResults = await _apiService.discoverMovies(withGenres: genreString, page: _currentSearchPage);
+      _searchResults = await _apiService.discoverMovies(
+        withGenres: genreString,
+        page: _currentSearchPage,
+      );
     } catch (e) {
       debugPrint('Error applying genre filter: $e');
     } finally {
@@ -499,10 +566,15 @@ class MovieProvider with ChangeNotifier {
   }
 
   Future<void> loadMovieExtras(Movie movie) async {
-    if (movie.cast != null && movie.trailerKey != null && movie.certification != null) {
+    if (movie.cast != null &&
+        movie.trailerKey != null &&
+        movie.certification != null) {
       // Still need to fetch related items for the specific detail page context
       try {
-        _relatedMovies = await _apiService.getRecommendations(movie.id, isTv: movie.isTv);
+        _relatedMovies = await _apiService.getRecommendations(
+          movie.id,
+          isTv: movie.isTv,
+        );
         notifyListeners();
       } catch (e) {
         debugPrint('Error loading related movies: $e');
@@ -511,9 +583,18 @@ class MovieProvider with ChangeNotifier {
     }
     try {
       final cast = await _apiService.getMovieCast(movie.id, isTv: movie.isTv);
-      final trailer = await _apiService.getMovieTrailer(movie.id, isTv: movie.isTv);
-      final certification = await _apiService.getMovieCertification(movie.id, isTv: movie.isTv);
-      _relatedMovies = await _apiService.getRecommendations(movie.id, isTv: movie.isTv);
+      final trailer = await _apiService.getMovieTrailer(
+        movie.id,
+        isTv: movie.isTv,
+      );
+      final certification = await _apiService.getMovieCertification(
+        movie.id,
+        isTv: movie.isTv,
+      );
+      _relatedMovies = await _apiService.getRecommendations(
+        movie.id,
+        isTv: movie.isTv,
+      );
       movie.cast = cast;
       movie.trailerKey = trailer;
       movie.certification = certification;
@@ -566,7 +647,11 @@ class MovieProvider with ChangeNotifier {
 
   Future<void> _syncFavoriteToFirestore(Movie movie) async {
     final isFav = isFavorite(movie.id);
-    final docRef = _firestore.collection('users').doc(_userId).collection('favorites').doc(movie.id.toString());
+    final docRef = _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('favorites')
+        .doc(movie.id.toString());
     if (isFav) {
       await docRef.set(_movieToMap(movie));
     } else {
@@ -590,7 +675,11 @@ class MovieProvider with ChangeNotifier {
 
   Future<void> _syncActorToFirestore(Cast actor) async {
     final isFav = isFavoriteActor(actor.id);
-    final docRef = _firestore.collection('users').doc(_userId).collection('favorite_actors').doc(actor.id.toString());
+    final docRef = _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('favorite_actors')
+        .doc(actor.id.toString());
     if (isFav) {
       await docRef.set({
         'id': actor.id,
@@ -609,11 +698,11 @@ class MovieProvider with ChangeNotifier {
   Future<void> saveFavoriteActors() async {
     final prefs = await SharedPreferences.getInstance();
     final String encodedData = json.encode(
-      _favoriteActors.map((a) => {
-        'id': a.id,
-        'name': a.name,
-        'profile_path': a.profilePath,
-      }).toList(),
+      _favoriteActors
+          .map(
+            (a) => {'id': a.id, 'name': a.name, 'profile_path': a.profilePath},
+          )
+          .toList(),
     );
     await prefs.setString('favorite_actors', encodedData);
   }
@@ -629,7 +718,8 @@ class MovieProvider with ChangeNotifier {
   }
 
   bool isFavorite(int movieId) {
-    return _favoriteMovies.any((m) => m.id == movieId) || _favoriteTv.any((m) => m.id == movieId);
+    return _favoriteMovies.any((m) => m.id == movieId) ||
+        _favoriteTv.any((m) => m.id == movieId);
   }
 
   Future<void> saveFavorites() async {
@@ -661,19 +751,26 @@ class MovieProvider with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final String? encodedMovies = prefs.getString('favorites');
     final String? encodedTv = prefs.getString('favorites_tv');
-    
+
     if (encodedMovies != null) {
       final List decodedData = json.decode(encodedMovies);
-      _favoriteMovies = decodedData.map((m) => Movie.fromJson(m, isTv: false)).toList();
+      _favoriteMovies = decodedData
+          .map((m) => Movie.fromJson(m, isTv: false))
+          .toList();
     }
     if (encodedTv != null) {
       final List decodedData = json.decode(encodedTv);
-      _favoriteTv = decodedData.map((m) => Movie.fromJson(m, isTv: true)).toList();
+      _favoriteTv = decodedData
+          .map((m) => Movie.fromJson(m, isTv: true))
+          .toList();
     }
     notifyListeners();
   }
 
-  Future<List<Movie>> searchForHistory(String query, {bool isTv = false}) async {
+  Future<List<Movie>> searchForHistory(
+    String query, {
+    bool isTv = false,
+  }) async {
     try {
       return await _apiService.searchMovies(query, isTv: isTv);
     } catch (e) {

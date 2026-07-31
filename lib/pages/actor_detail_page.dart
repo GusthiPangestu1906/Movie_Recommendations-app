@@ -14,7 +14,11 @@ class ActorDetailPage extends StatefulWidget {
   final int actorId;
   final String actorName;
 
-  const ActorDetailPage({super.key, required this.actorId, required this.actorName});
+  const ActorDetailPage({
+    super.key,
+    required this.actorId,
+    required this.actorName,
+  });
 
   @override
   State<ActorDetailPage> createState() => _ActorDetailPageState();
@@ -36,7 +40,7 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
 
   Future<void> _loadInitialData() async {
     final provider = Provider.of<MovieProvider>(context, listen: false);
-    
+
     // Phase 1: Try to load from TMDB Basic Info
     try {
       final details = await provider.getFullActorDetails(widget.actorId);
@@ -62,13 +66,17 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
 
           // Try to find in favorites
           try {
-            fallbackActor = provider.favoriteActors.firstWhere((a) => a.id == widget.actorId);
+            fallbackActor = provider.favoriteActors.firstWhere(
+              (a) => a.id == widget.actorId,
+            );
           } catch (_) {}
 
           // Try to find in global results if not in favorites
           if (fallbackActor == null) {
             try {
-              fallbackActor = provider.globalActorSearchResults.firstWhere((a) => a.id == widget.actorId);
+              fallbackActor = provider.globalActorSearchResults.firstWhere(
+                (a) => a.id == widget.actorId,
+              );
             } catch (_) {}
           }
 
@@ -102,9 +110,9 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open link')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Could not open link')));
       }
     }
   }
@@ -113,25 +121,37 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0B0E1E),
-      body: _isLoadingBasic 
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF5C6AC4)))
+      body: _isLoadingBasic
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF5C6AC4)),
+            )
           : _actorDetails == null
-              ? const Center(child: Text('Failed to load actor details', style: TextStyle(color: Colors.white38)))
-              : CustomScrollView(
-                  slivers: [
-                    SliverToBoxAdapter(child: _buildHeader()),
-                    SliverPadding(
-                      padding: const EdgeInsets.symmetric(horizontal: 0),
-                      sliver: SliverToBoxAdapter(child: _buildContent()),
-                    ),
-                  ],
+          ? const Center(
+              child: Text(
+                'Failed to load actor details',
+                style: TextStyle(color: Colors.white38),
+              ),
+            )
+          : CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(child: _buildHeader()),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 0),
+                  sliver: SliverToBoxAdapter(child: _buildContent()),
                 ),
+              ],
+            ),
     );
   }
 
   Widget _buildHeader() {
     return Container(
-      margin: EdgeInsets.fromLTRB(16, MediaQuery.of(context).padding.top + 16, 16, 0),
+      margin: EdgeInsets.fromLTRB(
+        16,
+        MediaQuery.of(context).padding.top + 16,
+        16,
+        0,
+      ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
@@ -158,7 +178,11 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
                 errorWidget: (context, url, error) => Container(
                   height: 500,
                   color: Colors.white10,
-                  child: const Icon(Icons.person, color: Colors.white30, size: 80),
+                  child: const Icon(
+                    Icons.person,
+                    color: Colors.white30,
+                    size: 80,
+                  ),
                 ),
               ),
             ),
@@ -229,9 +253,12 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
                       ),
                     ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.2),
                   ),
-                  if (_actorDetails?.instagramId != null && _actorDetails!.instagramId!.isNotEmpty)
+                  if (_actorDetails?.instagramId != null &&
+                      _actorDetails!.instagramId!.isNotEmpty)
                     GestureDetector(
-                      onTap: () => _launchSocial('https://instagram.com/${_actorDetails!.instagramId}'),
+                      onTap: () => _launchSocial(
+                        'https://instagram.com/${_actorDetails!.instagramId}',
+                      ),
                       child: _buildBootstrapInstagramIcon(),
                     ),
                 ],
@@ -243,7 +270,11 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
     );
   }
 
-  Widget _buildGlassButton({required IconData icon, required VoidCallback onTap, Color iconColor = Colors.white}) {
+  Widget _buildGlassButton({
+    required IconData icon,
+    required VoidCallback onTap,
+    Color iconColor = Colors.white,
+  }) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15),
@@ -313,23 +344,54 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
   }
 
   Widget _buildQuickStatsBar() {
-    final bool isWikidata = _actorDetails!.id.toString().length > 9; // Simple heuristic for hashed IDs
+    final bool isWikidata =
+        _actorDetails!.id.toString().length >
+        9; // Simple heuristic for hashed IDs
 
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(child: _buildStatTile(Icons.cake_rounded, 'BORN', _actorDetails!.birthday ?? 'N/A', const Color(0xFFFFAB40)).animate().fadeIn(delay: 100.ms).slideY(begin: 0.2)),
+          Expanded(
+            child: _buildStatTile(
+              Icons.cake_rounded,
+              'BORN',
+              _actorDetails!.birthday ?? 'N/A',
+              const Color(0xFFFFAB40),
+            ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.2),
+          ),
           const SizedBox(width: 10),
-          Expanded(child: _buildStatTile(Icons.location_on_rounded, 'FROM', _actorDetails!.placeOfBirth?.split(',').last.trim() ?? (isWikidata ? 'Wikidata' : 'N/A'), const Color(0xFF448AFF)).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2)),
+          Expanded(
+            child: _buildStatTile(
+              Icons.location_on_rounded,
+              'FROM',
+              _actorDetails!.placeOfBirth?.split(',').last.trim() ??
+                  (isWikidata ? 'Wikidata' : 'N/A'),
+              const Color(0xFF448AFF),
+            ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2),
+          ),
           const SizedBox(width: 10),
-          Expanded(child: _buildStatTile(Icons.trending_up_rounded, 'SOURCE', isWikidata ? 'W-DATA' : (_actorDetails!.popularity?.toStringAsFixed(1) ?? 'N/A'), const Color(0xFF64FFDA)).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2)),
+          Expanded(
+            child: _buildStatTile(
+              Icons.trending_up_rounded,
+              'SOURCE',
+              isWikidata
+                  ? 'W-DATA'
+                  : (_actorDetails!.popularity?.toStringAsFixed(1) ?? 'N/A'),
+              const Color(0xFF64FFDA),
+            ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildStatTile(IconData icon, String label, String value, Color accentColor) {
+  Widget _buildStatTile(
+    IconData icon,
+    String label,
+    String value,
+    Color accentColor,
+  ) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
@@ -372,7 +434,11 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
                     fontWeight: FontWeight.w900,
                     letterSpacing: 1.2,
                     shadows: [
-                      Shadow(color: Colors.black.withOpacity(0.5), blurRadius: 4, offset: const Offset(0, 1)),
+                      Shadow(
+                        color: Colors.black.withOpacity(0.5),
+                        blurRadius: 4,
+                        offset: const Offset(0, 1),
+                      ),
                     ],
                   ),
                 ),
@@ -383,9 +449,14 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontSize: 12, // Reduced size slightly to accommodate more text
+                    fontSize:
+                        12, // Reduced size slightly to accommodate more text
                     shadows: [
-                      Shadow(color: Colors.black.withOpacity(0.5), blurRadius: 4, offset: const Offset(0, 1)),
+                      Shadow(
+                        color: Colors.black.withOpacity(0.5),
+                        blurRadius: 4,
+                        offset: const Offset(0, 1),
+                      ),
                     ],
                   ),
                 ),
@@ -398,10 +469,10 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
   }
 
   Widget _buildBiography() {
-    final bio = _actorDetails!.biography?.isNotEmpty == true 
-        ? _actorDetails!.biography! 
+    final bio = _actorDetails!.biography?.isNotEmpty == true
+        ? _actorDetails!.biography!
         : 'No biography available for this actor.';
-    
+
     final bool canExpand = bio.length > 300;
 
     return Column(
@@ -411,7 +482,11 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
           children: [
             const Text(
               'Biography',
-              style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const Spacer(),
             Icon(Icons.notes, color: Colors.white.withOpacity(0.2), size: 20),
@@ -423,29 +498,46 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
             bio,
             maxLines: 4,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: Colors.white70, height: 1.6, fontSize: 15),
+            style: const TextStyle(
+              color: Colors.white70,
+              height: 1.6,
+              fontSize: 15,
+            ),
           ),
           secondChild: Text(
             bio,
-            style: const TextStyle(color: Colors.white70, height: 1.6, fontSize: 15),
+            style: const TextStyle(
+              color: Colors.white70,
+              height: 1.6,
+              fontSize: 15,
+            ),
           ),
-          crossFadeState: _isBiographyExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+          crossFadeState: _isBiographyExpanded
+              ? CrossFadeState.showSecond
+              : CrossFadeState.showFirst,
           duration: const Duration(milliseconds: 300),
         ).animate().fadeIn(delay: 400.ms),
         if (canExpand)
           GestureDetector(
-            onTap: () => setState(() => _isBiographyExpanded = !_isBiographyExpanded),
+            onTap: () =>
+                setState(() => _isBiographyExpanded = !_isBiographyExpanded),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Row(
                 children: [
                   Text(
                     _isBiographyExpanded ? 'Show Less' : 'Read Full Bio',
-                    style: const TextStyle(color: Color(0xFF5C6AC4), fontWeight: FontWeight.bold, fontSize: 14),
+                    style: const TextStyle(
+                      color: Color(0xFF5C6AC4),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                   ),
                   const SizedBox(width: 4),
                   Icon(
-                    _isBiographyExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                    _isBiographyExpanded
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
                     color: const Color(0xFF5C6AC4),
                     size: 18,
                   ),
@@ -464,7 +556,11 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
         children: [
           const Text(
             'Filmography',
-            style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -510,7 +606,11 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
           children: [
             Text(
               title,
-              style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             Text(
               '${list.length} items',
@@ -573,8 +673,10 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
                     fit: BoxFit.cover,
                     width: double.infinity,
                     alignment: Alignment.topCenter,
-                    placeholder: (context, url) => Container(color: Colors.white10),
-                    errorWidget: (context, url, error) => const Icon(Icons.movie, color: Colors.white10),
+                    placeholder: (context, url) =>
+                        Container(color: Colors.white10),
+                    errorWidget: (context, url, error) =>
+                        const Icon(Icons.movie, color: Colors.white10),
                   ),
                 ),
               ),
@@ -584,7 +686,11 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
               item.title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 4),
             Row(
@@ -593,11 +699,17 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
                 const SizedBox(width: 4),
                 Text(
                   item.voteAverage.toStringAsFixed(1),
-                  style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const Spacer(),
                 Text(
-                  item.releaseDate.isNotEmpty ? item.releaseDate.split('-')[0] : 'N/A',
+                  item.releaseDate.isNotEmpty
+                      ? item.releaseDate.split('-')[0]
+                      : 'N/A',
                   style: const TextStyle(color: Colors.white24, fontSize: 11),
                 ),
               ],
@@ -609,7 +721,11 @@ class _ActorDetailPageState extends State<ActorDetailPage> {
                   item.character!,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Color(0xFF5C6AC4), fontSize: 11, fontWeight: FontWeight.w500),
+                  style: const TextStyle(
+                    color: Color(0xFF5C6AC4),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
           ],

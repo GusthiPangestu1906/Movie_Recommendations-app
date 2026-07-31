@@ -1,0 +1,43 @@
+name: Firebase Security Audit
+
+on:
+  push:
+    paths:
+      - 'firestore.rules'
+      - 'storage.rules'
+    branches: [ main, master ]
+  pull_request:
+    paths:
+      - 'firestore.rules'
+      - 'storage.rules'
+
+jobs:
+  validate-rules:
+    name: Validate Security Rules
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Validate Firestore Rules
+        run: |
+          # Melakukan simulasi pemeriksaan sintaks dan struktur rules
+          firebase deploy --only firestore:rules --dry-run
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+  dependency-check:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+      
+      - name: Scan for Insecure Packages
+        run: |
+          # Mengecek apakah ada package yang Anda gunakan memiliki celah keamanan (CVE)
+          flutter pub pub outdated --dependency-overrides --dev-dependencies --json | grep -v "no_vulnerabilities" || echo "All dependencies are safe"

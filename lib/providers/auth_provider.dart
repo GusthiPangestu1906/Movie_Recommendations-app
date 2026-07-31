@@ -10,6 +10,14 @@ class AuthProvider with ChangeNotifier {
   User? get user => _user;
   bool get isAuthenticated => _user != null;
 
+  bool _hasBooted = false;
+  bool get hasBooted => _hasBooted;
+
+  void setBooted(bool value) {
+    _hasBooted = value;
+    notifyListeners();
+  }
+
   String? _photoUrl;
   String? get photoUrl => _photoUrl;
 
@@ -72,7 +80,10 @@ class AuthProvider with ChangeNotifier {
 
   Future<String?> signUp(String email, String password, String name) async {
     try {
-      UserCredential result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      UserCredential result = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
       User? user = result.user;
       if (user != null) {
         await user.updateDisplayName(name);
@@ -98,7 +109,9 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> signOut() async {
     try {
+      _hasBooted = false;
       await _auth.signOut();
+      notifyListeners();
     } catch (e) {
       debugPrint('Error during sign out: $e');
     }

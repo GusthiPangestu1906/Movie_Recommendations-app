@@ -90,10 +90,7 @@ class _LoginPageState extends State<LoginPage> {
                   _isLoginMode
                       ? 'Sign in to continue exploring movies'
                       : 'Join our universe of movies and stars',
-                  style: const TextStyle(
-                    color: Colors.white38,
-                    fontSize: 14,
-                  ),
+                  style: const TextStyle(color: Colors.white38, fontSize: 14),
                 ),
                 const SizedBox(height: 48),
                 if (!_isLoginMode) ...[
@@ -155,14 +152,17 @@ class _LoginPageState extends State<LoginPage> {
                             height: 24,
                             width: 24,
                             child: CircularProgressIndicator(
-                                color: Colors.white, strokeWidth: 2.5),
+                              color: Colors.white,
+                              strokeWidth: 2.5,
+                            ),
                           )
                         : Text(
                             _isLoginMode ? 'Login' : 'Sign Up',
                             style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold),
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                   ),
                 ),
@@ -176,12 +176,16 @@ class _LoginPageState extends State<LoginPage> {
                     },
                     child: RichText(
                       text: TextSpan(
-                        style: const TextStyle(color: Colors.white38, fontSize: 13),
+                        style: const TextStyle(
+                          color: Colors.white38,
+                          fontSize: 13,
+                        ),
                         children: [
                           TextSpan(
-                              text: _isLoginMode
-                                  ? "Don't have an account? "
-                                  : "Already have an account? "),
+                            text: _isLoginMode
+                                ? "Don't have an account? "
+                                : "Already have an account? ",
+                          ),
                           TextSpan(
                             text: _isLoginMode ? 'Sign Up' : 'Login',
                             style: const TextStyle(
@@ -238,8 +242,10 @@ class _LoginPageState extends State<LoginPage> {
                 )
               : null,
           border: InputBorder.none,
-          contentPadding:
-              const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 18,
+            horizontal: 16,
+          ),
         ),
       ),
     );

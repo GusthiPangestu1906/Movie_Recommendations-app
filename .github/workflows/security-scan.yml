@@ -1,0 +1,45 @@
+name: Security & Secret Scan
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  secret-scan:
+    name: Gitleaks Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # scan all history
+
+      - name: Check for hardcoded secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  leak-check:
+    name: Check for Sensitive Files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify no secret files are committed
+        run: |
+          # List of files that should never be in git history
+          FORBIDDEN_FILES=$(git ls-files | grep -E "\.env$|google-services\.json$|key\.properties$|\.keystore$|\.jks$" || true)
+          
+          if [ -n "$FORBIDDEN_FILES" ]; then
+            echo "❌ ERROR: Sensitive files detected in repository tracking:"
+            echo "$FORBIDDEN_FILES"
+            echo ""
+            echo "To fix this:"
+            echo "1. Run locally: git rm --cached <filename>"
+            echo "2. Ensure the filename is in .gitignore"
+            echo "3. Commit and push again."
+            exit 1
+          else
+            echo "✅ Clean. No sensitive files detected in tracking."
+          fi

@@ -19,15 +19,37 @@ class HistoryProvider with ChangeNotifier {
 
   String _searchQuery = '';
   String get searchQuery => _searchQuery;
-  
+
   List<Movie> get filteredHistory {
-    final list = _searchQuery.isEmpty ? _history : _history.where((movie) => movie.title.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
-    return list..sort((a, b) => (b.watchDate ?? DateTime(0)).compareTo(a.watchDate ?? DateTime(0)));
+    final list = _searchQuery.isEmpty
+        ? _history
+        : _history
+              .where(
+                (movie) => movie.title.toLowerCase().contains(
+                  _searchQuery.toLowerCase(),
+                ),
+              )
+              .toList();
+    return list..sort(
+      (a, b) =>
+          (b.watchDate ?? DateTime(0)).compareTo(a.watchDate ?? DateTime(0)),
+    );
   }
 
   List<Movie> get filteredTvHistory {
-    final list = _searchQuery.isEmpty ? _tvHistory : _tvHistory.where((movie) => movie.title.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
-    return list..sort((a, b) => (b.watchDate ?? DateTime(0)).compareTo(a.watchDate ?? DateTime(0)));
+    final list = _searchQuery.isEmpty
+        ? _tvHistory
+        : _tvHistory
+              .where(
+                (movie) => movie.title.toLowerCase().contains(
+                  _searchQuery.toLowerCase(),
+                ),
+              )
+              .toList();
+    return list..sort(
+      (a, b) =>
+          (b.watchDate ?? DateTime(0)).compareTo(a.watchDate ?? DateTime(0)),
+    );
   }
 
   void setSearchQuery(String query) {
@@ -36,12 +58,16 @@ class HistoryProvider with ChangeNotifier {
   }
 
   bool isWatched(int movieId) {
-    return _history.any((movie) => movie.id == movieId) || _tvHistory.any((movie) => movie.id == movieId);
+    return _history.any((movie) => movie.id == movieId) ||
+        _tvHistory.any((movie) => movie.id == movieId);
   }
 
   DateTime? getWatchDate(int movieId) {
     try {
-      return [..._history, ..._tvHistory].firstWhere((movie) => movie.id == movieId).watchDate;
+      return [
+        ..._history,
+        ..._tvHistory,
+      ].firstWhere((movie) => movie.id == movieId).watchDate;
     } catch (_) {
       return null;
     }
@@ -95,7 +121,7 @@ class HistoryProvider with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final String? movieData = prefs.getString('watch_history');
     final String? tvData = prefs.getString('watch_history_tv');
-    
+
     if (movieData != null) {
       final List<dynamic> decoded = json.decode(movieData);
       _history = decoded.map((item) => _mapToMovie(item, false)).toList();
@@ -118,14 +144,18 @@ class HistoryProvider with ChangeNotifier {
   Future<void> addToHistory(Movie movie, DateTime watchDate) async {
     final list = movie.isTv ? _tvHistory : _history;
     final existingIndex = list.indexWhere((item) => item.id == movie.id);
-    
+
     if (existingIndex != -1) {
       list.removeAt(existingIndex);
     }
-    
+
     movie.watchDate = watchDate;
     list.insert(0, movie);
-    list.sort((a, b) => (b.watchDate ?? DateTime.now()).compareTo(a.watchDate ?? DateTime.now()));
+    list.sort(
+      (a, b) => (b.watchDate ?? DateTime.now()).compareTo(
+        a.watchDate ?? DateTime.now(),
+      ),
+    );
 
     notifyListeners();
     await _saveHistory();
@@ -163,8 +193,14 @@ class HistoryProvider with ChangeNotifier {
 
   Future<void> _saveHistory() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('watch_history', json.encode(_history.map((m) => _movieToMap(m)).toList()));
-    await prefs.setString('watch_history_tv', json.encode(_tvHistory.map((m) => _movieToMap(m)).toList()));
+    await prefs.setString(
+      'watch_history',
+      json.encode(_history.map((m) => _movieToMap(m)).toList()),
+    );
+    await prefs.setString(
+      'watch_history_tv',
+      json.encode(_tvHistory.map((m) => _movieToMap(m)).toList()),
+    );
   }
 
   Map<String, dynamic> _movieToMap(Movie m) {
@@ -190,7 +226,9 @@ class HistoryProvider with ChangeNotifier {
       'backdrop_path': m.backdropPath,
       'vote_average': m.voteAverage,
       'release_date': m.releaseDate,
-      'watch_date': m.watchDate != null ? Timestamp.fromDate(m.watchDate!) : null,
+      'watch_date': m.watchDate != null
+          ? Timestamp.fromDate(m.watchDate!)
+          : null,
       'isTv': m.isTv,
     };
   }

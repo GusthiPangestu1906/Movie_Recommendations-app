@@ -15,7 +15,8 @@ class FavoriteButton extends StatefulWidget {
   State<FavoriteButton> createState() => _FavoriteButtonState();
 }
 
-class _FavoriteButtonState extends State<FavoriteButton> with SingleTickerProviderStateMixin {
+class _FavoriteButtonState extends State<FavoriteButton>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
@@ -59,7 +60,8 @@ class _FavoriteButtonState extends State<FavoriteButton> with SingleTickerProvid
               ),
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
-                transitionBuilder: (child, animation) => ScaleTransition(scale: animation, child: child),
+                transitionBuilder: (child, animation) =>
+                    ScaleTransition(scale: animation, child: child),
                 child: Icon(
                   isFavorite ? Icons.favorite : Icons.favorite_border,
                   key: ValueKey<bool>(isFavorite),
@@ -79,15 +81,13 @@ class MovieCard extends StatelessWidget {
   final Movie movie;
   final bool isHorizontal;
 
-  const MovieCard({
-    super.key,
-    required this.movie,
-    this.isHorizontal = false,
-  });
+  const MovieCard({super.key, required this.movie, this.isHorizontal = false});
 
   @override
   Widget build(BuildContext context) {
-    return isHorizontal ? _buildHorizontalCard(context) : _buildStandardCard(context);
+    return isHorizontal
+        ? _buildHorizontalCard(context)
+        : _buildStandardCard(context);
   }
 
   Widget _buildHorizontalCard(BuildContext context) {
@@ -120,8 +120,10 @@ class MovieCard extends StatelessWidget {
                           alignment: Alignment.center,
                           width: double.infinity,
                           height: double.infinity,
-                          placeholder: (context, url) => Container(color: Colors.white10),
-                          errorWidget: (context, url, error) => const Icon(Icons.movie, color: Colors.white10),
+                          placeholder: (context, url) =>
+                              Container(color: Colors.white10),
+                          errorWidget: (context, url, error) =>
+                              const Icon(Icons.movie, color: Colors.white10),
                         ),
                         Positioned(
                           top: 8,
@@ -132,7 +134,10 @@ class MovieCard extends StatelessWidget {
                           top: 8,
                           right: 8,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.black54,
                               borderRadius: BorderRadius.circular(8),
@@ -140,11 +145,19 @@ class MovieCard extends StatelessWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.star_rounded, color: Colors.amber, size: 12),
+                                const Icon(
+                                  Icons.star_rounded,
+                                  color: Colors.amber,
+                                  size: 12,
+                                ),
                                 const SizedBox(width: 2),
                                 Text(
                                   movie.voteAverage.toStringAsFixed(1),
-                                  style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ],
                             ),
@@ -164,12 +177,22 @@ class MovieCard extends StatelessWidget {
                         movie.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.white),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          color: Colors.white,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        movie.releaseDate.isNotEmpty ? movie.releaseDate.split('-')[0] : 'N/A',
-                        style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600),
+                        movie.releaseDate.isNotEmpty
+                            ? movie.releaseDate.split('-')[0]
+                            : 'N/A',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
@@ -222,8 +245,10 @@ class MovieCard extends StatelessWidget {
                         height: 180,
                         fit: BoxFit.cover,
                         alignment: Alignment.center,
-                        placeholder: (context, url) => Container(color: Colors.white10),
-                        errorWidget: (context, url, error) => const Icon(Icons.movie, color: Colors.white10),
+                        placeholder: (context, url) =>
+                            Container(color: Colors.white10),
+                        errorWidget: (context, url, error) =>
+                            const Icon(Icons.movie, color: Colors.white10),
                       ),
                       Positioned(
                         top: 8,
@@ -235,7 +260,10 @@ class MovieCard extends StatelessWidget {
                   const SizedBox(width: 16),
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 16,
+                        horizontal: 8,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -257,7 +285,11 @@ class MovieCard extends StatelessWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.star_rounded, color: Colors.amber, size: 20),
+                                const Icon(
+                                  Icons.star_rounded,
+                                  color: Colors.amber,
+                                  size: 20,
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   movie.voteAverage.toStringAsFixed(1),
@@ -269,7 +301,10 @@ class MovieCard extends StatelessWidget {
                                 ),
                                 const Text(
                                   ' / 10 TMDb',
-                                  style: TextStyle(color: Colors.white30, fontSize: 12),
+                                  style: TextStyle(
+                                    color: Colors.white30,
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ],
                             ),
@@ -284,12 +319,18 @@ class MovieCard extends StatelessWidget {
                               children: [
                                 _buildBadge(
                                   icon: Icons.calendar_today,
-                                  text: movie.releaseDate.isNotEmpty ? movie.releaseDate.split('-')[0] : 'N/A',
+                                  text: movie.releaseDate.isNotEmpty
+                                      ? movie.releaseDate.split('-')[0]
+                                      : 'N/A',
                                 ),
                                 _buildBadge(
-                                  icon: movie.isTv ? Icons.tv : Icons.movie_filter,
+                                  icon: movie.isTv
+                                      ? Icons.tv
+                                      : Icons.movie_filter,
                                   text: movie.isTv ? 'Drama' : 'Movie',
-                                  color: const Color(0xFF5C6AC4).withOpacity(0.2),
+                                  color: const Color(
+                                    0xFF5C6AC4,
+                                  ).withOpacity(0.2),
                                   textColor: const Color(0xFF5C6AC4),
                                 ),
                               ],
@@ -312,7 +353,12 @@ class MovieCard extends StatelessWidget {
     );
   }
 
-  Widget _buildBadge({required IconData icon, required String text, Color? color, Color? textColor}) {
+  Widget _buildBadge({
+    required IconData icon,
+    required String text,
+    Color? color,
+    Color? textColor,
+  }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
@@ -326,7 +372,11 @@ class MovieCard extends StatelessWidget {
           const SizedBox(width: 4),
           Text(
             text,
-            style: TextStyle(color: textColor ?? Colors.white30, fontSize: 10, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: textColor ?? Colors.white30,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),

@@ -27,7 +27,10 @@ class _DetailPageState extends State<DetailPage> {
     super.initState();
     Future.microtask(() {
       if (!mounted) return;
-      Provider.of<MovieProvider>(context, listen: false).loadMovieExtras(widget.movie);
+      Provider.of<MovieProvider>(
+        context,
+        listen: false,
+      ).loadMovieExtras(widget.movie);
     });
   }
 
@@ -39,9 +42,9 @@ class _DetailPageState extends State<DetailPage> {
       }
     } else {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Trailer not available')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Trailer not available')));
     }
   }
 
@@ -83,14 +86,13 @@ class _DetailPageState extends State<DetailPage> {
               onSurface: Colors.white,
             ),
             dialogTheme: DialogThemeData(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
             ),
           ),
           child: Center(
-            child: FittedBox(
-              fit: BoxFit.contain,
-              child: child!,
-            ),
+            child: FittedBox(fit: BoxFit.contain, child: child!),
           ),
         );
       },
@@ -98,10 +100,15 @@ class _DetailPageState extends State<DetailPage> {
 
     if (picked != null) {
       if (!context.mounted) return;
-      Provider.of<HistoryProvider>(context, listen: false).addToHistory(widget.movie, picked);
+      Provider.of<HistoryProvider>(
+        context,
+        listen: false,
+      ).addToHistory(widget.movie, picked);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Added to History: ${DateFormat('yyyy-MM-dd').format(picked)}'),
+          content: Text(
+            'Added to History: ${DateFormat('yyyy-MM-dd').format(picked)}',
+          ),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
         ),
@@ -139,7 +146,11 @@ class _DetailPageState extends State<DetailPage> {
                         ),
                         child: IconButton(
                           padding: EdgeInsets.zero,
-                          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+                          icon: const Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
                           onPressed: () => Navigator.pop(context),
                         ),
                       ),
@@ -165,7 +176,9 @@ class _DetailPageState extends State<DetailPage> {
                                       context: context,
                                       backgroundColor: const Color(0xFF1A1D2E),
                                       shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                                        borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(28),
+                                        ),
                                       ),
                                       builder: (context) => Column(
                                         mainAxisSize: MainAxisSize.min,
@@ -176,7 +189,8 @@ class _DetailPageState extends State<DetailPage> {
                                             height: 4,
                                             decoration: BoxDecoration(
                                               color: Colors.white24,
-                                              borderRadius: BorderRadius.circular(2),
+                                              borderRadius:
+                                                  BorderRadius.circular(2),
                                             ),
                                           ),
                                           const SizedBox(height: 20),
@@ -190,24 +204,49 @@ class _DetailPageState extends State<DetailPage> {
                                           ),
                                           const SizedBox(height: 12),
                                           ListTile(
-                                            leading: const Icon(Icons.edit_calendar, color: Colors.blueAccent),
-                                            title: const Text('Change Watch Date', style: TextStyle(color: Colors.white)),
+                                            leading: const Icon(
+                                              Icons.edit_calendar,
+                                              color: Colors.blueAccent,
+                                            ),
+                                            title: const Text(
+                                              'Change Watch Date',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                              ),
+                                            ),
                                             onTap: () {
                                               Navigator.pop(context);
                                               _selectWatchDate(context);
                                             },
                                           ),
                                           ListTile(
-                                            leading: const Icon(Icons.delete_outline, color: Colors.redAccent),
-                                            title: const Text('Unmark Watched', style: TextStyle(color: Colors.white)),
+                                            leading: const Icon(
+                                              Icons.delete_outline,
+                                              color: Colors.redAccent,
+                                            ),
+                                            title: const Text(
+                                              'Unmark Watched',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                              ),
+                                            ),
                                             onTap: () {
                                               Navigator.pop(context);
-                                              history.removeFromHistory(widget.movie.id, isTv: widget.movie.isTv);
-                                              ScaffoldMessenger.of(context).showSnackBar(
+                                              history.removeFromHistory(
+                                                widget.movie.id,
+                                                isTv: widget.movie.isTv,
+                                              );
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
                                                 const SnackBar(
-                                                  content: Text('Removed from history'),
-                                                  backgroundColor: Colors.redAccent,
-                                                  behavior: SnackBarBehavior.floating,
+                                                  content: Text(
+                                                    'Removed from history',
+                                                  ),
+                                                  backgroundColor:
+                                                      Colors.redAccent,
+                                                  behavior:
+                                                      SnackBarBehavior.floating,
                                                 ),
                                               );
                                             },
@@ -221,19 +260,28 @@ class _DetailPageState extends State<DetailPage> {
                                   }
                                 },
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: isWatched ? Colors.green.withOpacity(0.8) : Colors.black45,
+                                    color: isWatched
+                                        ? Colors.green.withOpacity(0.8)
+                                        : Colors.black45,
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: isWatched ? Colors.greenAccent.withOpacity(0.5) : Colors.white10,
+                                      color: isWatched
+                                          ? Colors.greenAccent.withOpacity(0.5)
+                                          : Colors.white10,
                                     ),
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Icon(
-                                        isWatched ? Icons.check_circle_rounded : Icons.add_task_rounded,
+                                        isWatched
+                                            ? Icons.check_circle_rounded
+                                            : Icons.add_task_rounded,
                                         color: Colors.white,
                                         size: 16,
                                       ),
@@ -274,17 +322,17 @@ class _DetailPageState extends State<DetailPage> {
                           height: double.infinity,
                           borderRadius: BorderRadius.zero,
                         ),
-                        errorWidget: (context, url, error) => const Icon(Icons.broken_image, color: Colors.white10),
+                        errorWidget: (context, url, error) => const Icon(
+                          Icons.broken_image,
+                          color: Colors.white10,
+                        ),
                       ),
                       const DecoratedBox(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Color(0xFF0B0E1E),
-                            ],
+                            colors: [Colors.transparent, Color(0xFF0B0E1E)],
                             stops: [0.6, 1.0],
                           ),
                         ),
@@ -300,22 +348,43 @@ class _DetailPageState extends State<DetailPage> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.2),
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: Colors.white.withOpacity(0.3)),
-                                  ),
-                                  child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 48),
-                                ).animate(onPlay: (controller) => controller.repeat(reverse: true))
-                                 .scale(begin: const Offset(1, 1), end: const Offset(1.1, 1.1), duration: 1000.ms, curve: Curves.easeInOut),
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.2),
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: Colors.white.withOpacity(0.3),
+                                        ),
+                                      ),
+                                      child: const Icon(
+                                        Icons.play_arrow_rounded,
+                                        color: Colors.white,
+                                        size: 48,
+                                      ),
+                                    )
+                                    .animate(
+                                      onPlay: (controller) =>
+                                          controller.repeat(reverse: true),
+                                    )
+                                    .scale(
+                                      begin: const Offset(1, 1),
+                                      end: const Offset(1.1, 1.1),
+                                      duration: 1000.ms,
+                                      curve: Curves.easeInOut,
+                                    ),
                                 const SizedBox(height: 12),
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(20),
                                   child: BackdropFilter(
-                                    filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                                    filter: ImageFilter.blur(
+                                      sigmaX: 5,
+                                      sigmaY: 5,
+                                    ),
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 6,
+                                      ),
                                       color: Colors.black.withOpacity(0.24),
                                       child: const Text(
                                         'Play Trailer',
@@ -347,21 +416,28 @@ class _DetailPageState extends State<DetailPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Expanded(
-                            child: Text(
-                              widget.movie.title,
-                              style: const TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                letterSpacing: -0.5,
-                              ),
-                            ).animate().fadeIn(duration: 400.ms).slideX(begin: -0.1),
+                            child:
+                                Text(
+                                      widget.movie.title,
+                                      style: const TextStyle(
+                                        fontSize: 28,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                        letterSpacing: -0.5,
+                                      ),
+                                    )
+                                    .animate()
+                                    .fadeIn(duration: 400.ms)
+                                    .slideX(begin: -0.1),
                           ),
                           Row(
                             children: [
                               _AnimatedFavoriteButton(
-                                isFavorite: provider.isFavorite(widget.movie.id),
-                                onToggle: () => provider.toggleFavorite(widget.movie),
+                                isFavorite: provider.isFavorite(
+                                  widget.movie.id,
+                                ),
+                                onToggle: () =>
+                                    provider.toggleFavorite(widget.movie),
                               ),
                             ],
                           ),
@@ -370,11 +446,19 @@ class _DetailPageState extends State<DetailPage> {
                       const SizedBox(height: 12),
                       Row(
                         children: [
-                          const Icon(Icons.star_rounded, color: Colors.amber, size: 18),
+                          const Icon(
+                            Icons.star_rounded,
+                            color: Colors.amber,
+                            size: 18,
+                          ),
                           const SizedBox(width: 6),
                           Text(
                             '${widget.movie.voteAverage.toStringAsFixed(1)} / 10 IMDb',
-                            style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w600),
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ],
                       ).animate().fadeIn(delay: 200.ms),
@@ -390,21 +474,31 @@ class _DetailPageState extends State<DetailPage> {
                       ).animate().fadeIn(delay: 300.ms),
                       const SizedBox(height: 28),
                       Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.05),
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(color: Colors.white.withOpacity(0.05)),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            _buildInfoItem('Length', '2h 28min'),
-                            _buildInfoItem('Language', 'English'),
-                            _buildInfoItem('Rating', _getFormattedRating(widget.movie.certification)),
-                          ],
-                        ),
-                      ).animate().fadeIn(delay: 400.ms).scale(begin: const Offset(0.9, 0.9)),
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.05),
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.05),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                _buildInfoItem('Length', '2h 28min'),
+                                _buildInfoItem('Language', 'English'),
+                                _buildInfoItem(
+                                  'Rating',
+                                  _getFormattedRating(
+                                    widget.movie.certification,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                          .animate()
+                          .fadeIn(delay: 400.ms)
+                          .scale(begin: const Offset(0.9, 0.9)),
                       const SizedBox(height: 32),
                       // Watch Now Button
                       SizedBox(
@@ -413,9 +507,14 @@ class _DetailPageState extends State<DetailPage> {
                         child: GestureDetector(
                           onTapDown: (_) => HapticFeedback.mediumImpact(),
                           child: ElevatedButton(
-                            onPressed: () => _watchOnPlatform(widget.movie.title, widget.movie.isTv),
+                            onPressed: () => _watchOnPlatform(
+                              widget.movie.title,
+                              widget.movie.isTv,
+                            ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: widget.movie.isTv ? Colors.orange : Colors.redAccent,
+                              backgroundColor: widget.movie.isTv
+                                  ? Colors.orange
+                                  : Colors.redAccent,
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(20),
@@ -425,10 +524,15 @@ class _DetailPageState extends State<DetailPage> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.play_circle_fill_rounded, size: 28),
+                                const Icon(
+                                  Icons.play_circle_fill_rounded,
+                                  size: 28,
+                                ),
                                 const SizedBox(width: 12),
                                 Text(
-                                  widget.movie.isTv ? 'Watch on WeTV' : 'Watch on Netflix',
+                                  widget.movie.isTv
+                                      ? 'Watch on WeTV'
+                                      : 'Watch on Netflix',
                                   style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
@@ -484,7 +588,12 @@ class _DetailPageState extends State<DetailPage> {
       ),
       child: Text(
         label,
-        style: const TextStyle(color: Color(0xFF88A4E8), fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+        style: const TextStyle(
+          color: Color(0xFF88A4E8),
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.5,
+        ),
       ),
     );
   }
@@ -500,7 +609,11 @@ class _DetailPageState extends State<DetailPage> {
         const SizedBox(height: 6),
         Text(
           value,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
         ),
       ],
     );
@@ -530,7 +643,11 @@ class _DetailPageState extends State<DetailPage> {
                     margin: const EdgeInsets.only(right: 16),
                     child: const Column(
                       children: [
-                        ShimmerLoading(width: 60, height: 60, borderRadius: BorderRadius.all(Radius.circular(30))),
+                        ShimmerLoading(
+                          width: 60,
+                          height: 60,
+                          borderRadius: BorderRadius.all(Radius.circular(30)),
+                        ),
                         SizedBox(height: 12),
                         ShimmerLoading(width: 50, height: 10),
                       ],
@@ -562,7 +679,10 @@ class _DetailPageState extends State<DetailPage> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ActorDetailPage(actorId: castMember.id, actorName: castMember.name),
+                builder: (context) => ActorDetailPage(
+                  actorId: castMember.id,
+                  actorName: castMember.name,
+                ),
               ),
             );
           },
@@ -585,8 +705,10 @@ class _DetailPageState extends State<DetailPage> {
                           width: 60,
                           height: 60,
                           fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(color: Colors.white10),
-                          errorWidget: (context, url, error) => const Icon(Icons.person, color: Colors.white30),
+                          placeholder: (context, url) =>
+                              Container(color: Colors.white10),
+                          errorWidget: (context, url, error) =>
+                              const Icon(Icons.person, color: Colors.white30),
                         ),
                       ),
                     ),
@@ -606,7 +728,9 @@ class _DetailPageState extends State<DetailPage> {
                             border: Border.all(color: Colors.white10),
                           ),
                           child: Icon(
-                            isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                            isFav
+                                ? Icons.favorite_rounded
+                                : Icons.favorite_border_rounded,
                             color: isFav ? Colors.redAccent : Colors.white70,
                             size: 12,
                           ),
@@ -621,7 +745,11 @@ class _DetailPageState extends State<DetailPage> {
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Colors.white70, fontSize: 11, height: 1.2),
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 11,
+                    height: 1.2,
+                  ),
                 ),
               ],
             ),
@@ -650,7 +778,8 @@ class _DetailPageState extends State<DetailPage> {
               ? ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: 5,
-                  itemBuilder: (context, index) => const MovieCardShimmer(isHorizontal: true),
+                  itemBuilder: (context, index) =>
+                      const MovieCardShimmer(isHorizontal: true),
                 )
               : ListView.builder(
                   scrollDirection: Axis.horizontal,
@@ -658,13 +787,11 @@ class _DetailPageState extends State<DetailPage> {
                   itemCount: related.length,
                   itemBuilder: (context, index) {
                     return RepaintBoundary(
-                      child: MovieCard(
-                        movie: related[index],
-                        isHorizontal: true,
-                      )
-                          .animate(delay: (index * 100).ms)
-                          .fadeIn(duration: 500.ms)
-                          .scale(begin: const Offset(0.9, 0.9)),
+                      child:
+                          MovieCard(movie: related[index], isHorizontal: true)
+                              .animate(delay: (index * 100).ms)
+                              .fadeIn(duration: 500.ms)
+                              .scale(begin: const Offset(0.9, 0.9)),
                     );
                   },
                 ),
@@ -695,9 +822,10 @@ class _AnimatedFavoriteButton extends StatelessWidget {
         transitionBuilder: (Widget child, Animation<double> animation) {
           return ScaleTransition(
             scale: animation.drive(
-              Tween<double>(begin: 0.7, end: 1.0).chain(
-                CurveTween(curve: Curves.elasticOut),
-              ),
+              Tween<double>(
+                begin: 0.7,
+                end: 1.0,
+              ).chain(CurveTween(curve: Curves.elasticOut)),
             ),
             child: child,
           );

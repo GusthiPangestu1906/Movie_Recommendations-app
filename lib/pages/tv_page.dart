@@ -23,13 +23,17 @@ class _TvPageState extends State<TvPage> {
     Future.microtask(() {
       if (!mounted) return;
       final provider = Provider.of<MovieProvider>(context, listen: false);
-      final historyProvider = Provider.of<HistoryProvider>(context, listen: false);
+      final historyProvider = Provider.of<HistoryProvider>(
+        context,
+        listen: false,
+      );
       provider.fetchTvSeries();
       provider.fetchTvRecommendations(history: historyProvider.history);
     });
 
     _scrollController.addListener(() {
-      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 200) {
         final provider = Provider.of<MovieProvider>(context, listen: false);
         if (_tvSearchController.text.isEmpty) {
           provider.fetchMoreTvSeries();
@@ -53,7 +57,9 @@ class _TvPageState extends State<TvPage> {
       backgroundColor: const Color(0xFF0B0E1E),
       body: Consumer<MovieProvider>(
         builder: (context, provider, child) {
-          if (provider.isLoading && provider.tvSeries.isEmpty && provider.tvSearchResults.isEmpty) {
+          if (provider.isLoading &&
+              provider.tvSeries.isEmpty &&
+              provider.tvSearchResults.isEmpty) {
             return CustomScrollView(
               slivers: [
                 const SliverToBoxAdapter(
@@ -69,7 +75,8 @@ class _TvPageState extends State<TvPage> {
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       itemCount: 5,
-                      itemBuilder: (context, index) => const MovieCardShimmer(isHorizontal: true),
+                      itemBuilder: (context, index) =>
+                          const MovieCardShimmer(isHorizontal: true),
                     ),
                   ),
                 ),
@@ -100,7 +107,8 @@ class _TvPageState extends State<TvPage> {
             controller: _scrollController,
             slivers: [
               // Recommendation Section Header
-              if (_tvSearchController.text.isEmpty && provider.tvRecommendations.isNotEmpty) ...[
+              if (_tvSearchController.text.isEmpty &&
+                  provider.tvRecommendations.isNotEmpty) ...[
                 const SliverToBoxAdapter(
                   child: Padding(
                     padding: EdgeInsets.fromLTRB(16, 32, 16, 12),
@@ -123,9 +131,9 @@ class _TvPageState extends State<TvPage> {
                       itemCount: provider.tvRecommendations.length,
                       itemBuilder: (context, index) {
                         return MovieCard(
-                          movie: provider.tvRecommendations[index],
-                          isHorizontal: true,
-                        )
+                              movie: provider.tvRecommendations[index],
+                              isHorizontal: true,
+                            )
                             .animate(delay: (index * 100).ms)
                             .fadeIn(duration: 400.ms)
                             .slideX(begin: 0.2);
@@ -140,7 +148,9 @@ class _TvPageState extends State<TvPage> {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
                   child: Text(
-                    _tvSearchController.text.isNotEmpty ? 'Search Results' : 'Popular Dramas',
+                    _tvSearchController.text.isNotEmpty
+                        ? 'Search Results'
+                        : 'Popular Dramas',
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -155,7 +165,10 @@ class _TvPageState extends State<TvPage> {
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 40),
                     child: Center(
-                      child: Text('No dramas found', style: TextStyle(color: Colors.white38)),
+                      child: Text(
+                        'No dramas found',
+                        style: TextStyle(color: Colors.white38),
+                      ),
                     ),
                   ),
                 )

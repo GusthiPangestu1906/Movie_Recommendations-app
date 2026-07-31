@@ -1,0 +1,46 @@
+name: Flutter Health Check
+
+on:
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  health-check:
+    name: Asset & Code Health
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      - name: Verify Assets Existence
+        run: |
+          echo "🔍 Memverifikasi integritas file asset..."
+          # Mencoba memuat project, jika ada asset yang terdaftar di pubspec tapi filenya tidak ada, build biasanya akan memberi warning/error
+          flutter build bundle || (echo "❌ ERROR: Ada asset yang terdaftar di pubspec.yaml tapi filenya tidak ditemukan!" && exit 1)
+
+      - name: Detect Production Prints
+        run: |
+          echo "🔍 Mencari print() statements yang tertinggal..."
+          # Mencari print() di folder lib/, mengabaikan folder build/ atau .dart_tool/
+          PRINTS=$(grep -r "print(" lib/ --exclude-dir=.dart_tool || true)
+          if [ -n "$PRINTS" ]; then
+            echo "⚠️ PERINGATAN: Ditemukan penggunaan print() di kode berikut:"
+            echo "$PRINTS"
+            echo ""
+            echo "Tips Aman: Gunakan 'debugPrint()' atau library logger agar log tidak muncul di versi Production (Release)."
+            # exit 1 # Ubah jadi exit 1 jika ingin mewajibkan penghapusan print
+          else
+            echo "✅ Tidak ada print() yang ditemukan."
+          fi
+
+      - name: Check for Obsolete Dependencies
+        run: |
+          echo "🔍 Mengecek package yang sudah usang..."
+          flutter pub outdated

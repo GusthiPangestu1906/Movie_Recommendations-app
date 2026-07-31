@@ -175,9 +175,11 @@ class _HomePageState extends State<HomePage> {
     ];
     PreferredSizeWidget? bottom;
 
-    if (_currentIndex == 0) { // Home
+    if (_currentIndex == 0) {
+      // Home
       // Icons removed as requested
-    } else if (_currentIndex == 1) { // Search
+    } else if (_currentIndex == 1) {
+      // Search
       title = _isDramaMode ? 'Search Dramas' : 'Search Movies';
       bottom = PreferredSize(
         preferredSize: const Size.fromHeight(60),
@@ -192,7 +194,9 @@ class _HomePageState extends State<HomePage> {
                   },
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
-                    hintText: _isDramaMode ? 'Search Drama & TV...' : 'Search Movies...',
+                    hintText: _isDramaMode
+                        ? 'Search Drama & TV...'
+                        : 'Search Movies...',
                     hintStyle: const TextStyle(color: Colors.white24),
                     prefixIcon: const Icon(Icons.search, color: Colors.white24),
                     filled: true,
@@ -212,7 +216,10 @@ class _HomePageState extends State<HomePage> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: IconButton(
-                  icon: Icon(_isDramaMode ? Icons.flag_outlined : Icons.tune, color: const Color(0xFF5C6AC4)),
+                  icon: Icon(
+                    _isDramaMode ? Icons.flag_outlined : Icons.tune,
+                    color: const Color(0xFF5C6AC4),
+                  ),
                   onPressed: () {
                     HapticFeedback.lightImpact();
                     _showFilterPicker(context);
@@ -223,7 +230,8 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       );
-    } else if (_currentIndex == 2) { // History
+    } else if (_currentIndex == 2) {
+      // History
       title = _isDramaMode ? 'Drama History' : 'Movie History';
       bottom = null;
     }
@@ -313,8 +321,14 @@ class _HomePageState extends State<HomePage> {
                           ),
                           const SizedBox(height: 24),
                           Text(
-                            _isDramaMode ? 'Select Origin Country' : 'Select Movie Genres',
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                            _isDramaMode
+                                ? 'Select Origin Country'
+                                : 'Select Movie Genres',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
                           ),
                           const SizedBox(height: 12),
                           if (_isDramaMode)
@@ -322,28 +336,47 @@ class _HomePageState extends State<HomePage> {
                               spacing: 10,
                               runSpacing: 10,
                               children: _countries.map((country) {
-                                final isSelected = (provider.selectedCountry ?? '') == country['value'];
+                                final isSelected =
+                                    (provider.selectedCountry ?? '') ==
+                                    country['value'];
                                 return GestureDetector(
                                   onTap: () {
                                     HapticFeedback.selectionClick();
                                     setModalState(() {
-                                      provider.fetchTvSeries(country: country['value']!.isEmpty ? null : country['value']);
+                                      provider.fetchTvSeries(
+                                        country: country['value']!.isEmpty
+                                            ? null
+                                            : country['value'],
+                                      );
                                     });
                                   },
                                   child: AnimatedContainer(
                                     duration: const Duration(milliseconds: 200),
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 10,
+                                    ),
                                     decoration: BoxDecoration(
-                                      color: isSelected ? const Color(0xFF5C6AC4) : Colors.white.withOpacity(0.05),
+                                      color: isSelected
+                                          ? const Color(0xFF5C6AC4)
+                                          : Colors.white.withOpacity(0.05),
                                       borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: isSelected ? Colors.transparent : Colors.white10),
+                                      border: Border.all(
+                                        color: isSelected
+                                            ? Colors.transparent
+                                            : Colors.white10,
+                                      ),
                                     ),
                                     child: Text(
                                       country['label']!,
                                       style: TextStyle(
-                                        color: isSelected ? Colors.white : Colors.white70,
+                                        color: isSelected
+                                            ? Colors.white
+                                            : Colors.white70,
                                         fontSize: 13,
-                                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                        fontWeight: isSelected
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
                                       ),
                                     ),
                                   ),
@@ -355,7 +388,8 @@ class _HomePageState extends State<HomePage> {
                               spacing: 10,
                               runSpacing: 10,
                               children: _genres.map((genre) {
-                                final isSelected = provider.selectedGenreIds.contains(genre['value']);
+                                final isSelected = provider.selectedGenreIds
+                                    .contains(genre['value']);
                                 return GestureDetector(
                                   onTap: () {
                                     HapticFeedback.selectionClick();
@@ -365,18 +399,31 @@ class _HomePageState extends State<HomePage> {
                                   },
                                   child: AnimatedContainer(
                                     duration: const Duration(milliseconds: 200),
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 10,
+                                    ),
                                     decoration: BoxDecoration(
-                                      color: isSelected ? const Color(0xFF5C6AC4) : Colors.white.withOpacity(0.05),
+                                      color: isSelected
+                                          ? const Color(0xFF5C6AC4)
+                                          : Colors.white.withOpacity(0.05),
                                       borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: isSelected ? Colors.transparent : Colors.white10),
+                                      border: Border.all(
+                                        color: isSelected
+                                            ? Colors.transparent
+                                            : Colors.white10,
+                                      ),
                                     ),
                                     child: Text(
                                       genre['label']!,
                                       style: TextStyle(
-                                        color: isSelected ? Colors.white : Colors.white70,
+                                        color: isSelected
+                                            ? Colors.white
+                                            : Colors.white70,
                                         fontSize: 13,
-                                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                        fontWeight: isSelected
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
                                       ),
                                     ),
                                   ),
@@ -401,12 +448,17 @@ class _HomePageState extends State<HomePage> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF5C6AC4),
                                   foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(16),
                                   ),
                                 ),
-                                child: const Text('Apply Combined Filter', style: TextStyle(fontWeight: FontWeight.bold)),
+                                child: const Text(
+                                  'Apply Combined Filter',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
                               ),
                             ),
                           ],
@@ -421,14 +473,21 @@ class _HomePageState extends State<HomePage> {
                               child: ElevatedButton(
                                 onPressed: () => Navigator.pop(context),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF5C6AC4).withOpacity(0.1),
+                                  backgroundColor: const Color(
+                                    0xFF5C6AC4,
+                                  ).withOpacity(0.1),
                                   foregroundColor: const Color(0xFF5C6AC4),
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(16),
                                   ),
                                 ),
-                                child: const Text('Close', style: TextStyle(fontWeight: FontWeight.bold)),
+                                child: const Text(
+                                  'Close',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
                               ),
                             ),
                           ],
@@ -446,13 +505,29 @@ class _HomePageState extends State<HomePage> {
 
   void _showEditProfile(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final TextEditingController nameController = TextEditingController(text: authProvider.user?.displayName);
+    final TextEditingController nameController = TextEditingController(
+      text: authProvider.user?.displayName,
+    );
     String? selectedPhotoUrl = authProvider.photoUrl;
     bool isSaving = false;
 
     final List<String> seeds = [
-      'Eden', 'Sasha', 'Willow', 'Aiden', 'Skylar', 'Nova', 'River', 'Jade',
-      'Zion', 'Amara', 'Kiran', 'Lumi', 'Vesper', 'Aura', 'Orion', 'Ember'
+      'Eden',
+      'Sasha',
+      'Willow',
+      'Aiden',
+      'Skylar',
+      'Nova',
+      'River',
+      'Jade',
+      'Zion',
+      'Amara',
+      'Kiran',
+      'Lumi',
+      'Vesper',
+      'Aura',
+      'Orion',
+      'Ember',
     ];
 
     showModalBottomSheet(
@@ -499,7 +574,11 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(height: 24),
                   const Text(
                     'Display Name',
-                    style: TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   TextField(
@@ -514,26 +593,35 @@ class _HomePageState extends State<HomePage> {
                         borderRadius: BorderRadius.circular(15),
                         borderSide: BorderSide.none,
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 24),
                   const Text(
                     'Choose Avatar',
-                    style: TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 20),
                   SizedBox(
                     height: 220,
                     child: GridView.builder(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 4,
-                        mainAxisSpacing: 16,
-                        crossAxisSpacing: 16,
-                      ),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 4,
+                            mainAxisSpacing: 16,
+                            crossAxisSpacing: 16,
+                          ),
                       itemCount: seeds.length,
                       itemBuilder: (context, index) {
-                        final url = 'https://api.dicebear.com/7.x/lorelei/png?seed=${seeds[index]}&backgroundColor=b6e3f4,c0aede,d1d4f9';
+                        final url =
+                            'https://api.dicebear.com/7.x/lorelei/png?seed=${seeds[index]}&backgroundColor=b6e3f4,c0aede,d1d4f9';
                         final bool isSelected = selectedPhotoUrl == url;
 
                         return GestureDetector(
@@ -548,25 +636,43 @@ class _HomePageState extends State<HomePage> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: isSelected ? const Color(0xFF5C6AC4) : Colors.white12,
+                                color: isSelected
+                                    ? const Color(0xFF5C6AC4)
+                                    : Colors.white12,
                                 width: isSelected ? 3 : 1,
                               ),
-                              boxShadow: isSelected ? [
-                                BoxShadow(
-                                  color: const Color(0xFF5C6AC4).withOpacity(0.4),
-                                  blurRadius: 10,
-                                  spreadRadius: 1,
-                                )
-                              ] : [],
+                              boxShadow: isSelected
+                                  ? [
+                                      BoxShadow(
+                                        color: const Color(
+                                          0xFF5C6AC4,
+                                        ).withOpacity(0.4),
+                                        blurRadius: 10,
+                                        spreadRadius: 1,
+                                      ),
+                                    ]
+                                  : [],
                             ),
                             child: ClipOval(
                               child: CachedNetworkImage(
                                 imageUrl: url,
                                 placeholder: (context, url) => Container(
                                   color: Colors.white.withOpacity(0.05),
-                                  child: const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
+                                  child: const Center(
+                                    child: SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                                errorWidget: (context, url, error) => const Icon(Icons.person, color: Colors.white24),
+                                errorWidget: (context, url, error) =>
+                                    const Icon(
+                                      Icons.person,
+                                      color: Colors.white24,
+                                    ),
                               ),
                             ),
                           ),
@@ -579,52 +685,70 @@ class _HomePageState extends State<HomePage> {
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
-                      onPressed: isSaving ? null : () async {
-                        setModalState(() => isSaving = true);
-                        try {
-                          await authProvider.updateProfile(
-                            name: nameController.text.trim(),
-                            photoUrl: selectedPhotoUrl,
-                          );
-                          if (context.mounted) {
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Profile updated successfully'),
-                                backgroundColor: Colors.green,
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
-                          }
-                        } catch (e) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Failed to update profile: $e'),
-                                backgroundColor: Colors.red,
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
-                          }
-                        } finally {
-                          if (context.mounted) setModalState(() => isSaving = false);
-                        }
-                      },
+                      onPressed: isSaving
+                          ? null
+                          : () async {
+                              setModalState(() => isSaving = true);
+                              try {
+                                await authProvider.updateProfile(
+                                  name: nameController.text.trim(),
+                                  photoUrl: selectedPhotoUrl,
+                                );
+                                if (context.mounted) {
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Profile updated successfully',
+                                      ),
+                                      backgroundColor: Colors.green,
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Failed to update profile: $e',
+                                      ),
+                                      backgroundColor: Colors.red,
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                }
+                              } finally {
+                                if (context.mounted)
+                                  setModalState(() => isSaving = false);
+                              }
+                            },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF5C6AC4),
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        disabledBackgroundColor: const Color(0xFF5C6AC4).withOpacity(0.5),
+                        disabledBackgroundColor: const Color(
+                          0xFF5C6AC4,
+                        ).withOpacity(0.5),
                       ),
                       child: isSaving
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                          )
-                        : const Text('Save Changes', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text(
+                              'Save Changes',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
                     ),
                   ),
                 ],
@@ -648,7 +772,9 @@ class _HomePageState extends State<HomePage> {
             decoration: const BoxDecoration(
               color: Color(0xFF1A1D2E),
               image: DecorationImage(
-                image: NetworkImage('https://www.transparenttextures.com/patterns/dark-matter.png'),
+                image: NetworkImage(
+                  'https://www.transparenttextures.com/patterns/dark-matter.png',
+                ),
                 opacity: 0.1,
                 repeat: ImageRepeat.repeat,
               ),
@@ -660,13 +786,16 @@ class _HomePageState extends State<HomePage> {
                   Container(
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFF5C6AC4), width: 2),
+                      border: Border.all(
+                        color: const Color(0xFF5C6AC4),
+                        width: 2,
+                      ),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.3),
                           blurRadius: 10,
                           spreadRadius: 2,
-                        )
+                        ),
                       ],
                     ),
                     child: CircleAvatar(
@@ -676,7 +805,11 @@ class _HomePageState extends State<HomePage> {
                           ? CachedNetworkImageProvider(authProvider.photoUrl!)
                           : null,
                       child: authProvider.photoUrl == null
-                          ? const Icon(Icons.person, color: Colors.white30, size: 40)
+                          ? const Icon(
+                              Icons.person,
+                              color: Colors.white30,
+                              size: 40,
+                            )
                           : null,
                     ),
                   ),
@@ -689,7 +822,11 @@ class _HomePageState extends State<HomePage> {
                         color: Color(0xFF5C6AC4),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.edit, color: Colors.white, size: 14),
+                      child: const Icon(
+                        Icons.edit,
+                        color: Colors.white,
+                        size: 14,
+                      ),
                     ),
                   ),
                 ],
@@ -713,7 +850,10 @@ class _HomePageState extends State<HomePage> {
                 _isDramaMode = false;
                 _currentIndex = 0;
               });
-              Provider.of<MovieProvider>(context, listen: false).setDramaMode(false);
+              Provider.of<MovieProvider>(
+                context,
+                listen: false,
+              ).setDramaMode(false);
               Navigator.pop(context);
             },
           ),
@@ -726,7 +866,10 @@ class _HomePageState extends State<HomePage> {
                 _isDramaMode = true;
                 _currentIndex = 0;
               });
-              Provider.of<MovieProvider>(context, listen: false).setDramaMode(true);
+              Provider.of<MovieProvider>(
+                context,
+                listen: false,
+              ).setDramaMode(true);
               Navigator.pop(context);
             },
           ),
@@ -738,7 +881,9 @@ class _HomePageState extends State<HomePage> {
               Navigator.pop(context); // Close drawer
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const FavoriteActorsPage()),
+                MaterialPageRoute(
+                  builder: (context) => const FavoriteActorsPage(),
+                ),
               );
             },
           ),
@@ -766,7 +911,10 @@ class _HomePageState extends State<HomePage> {
     required VoidCallback onTap,
   }) {
     return ListTile(
-      leading: Icon(icon, color: isSelected ? const Color(0xFF5C6AC4) : Colors.white30),
+      leading: Icon(
+        icon,
+        color: isSelected ? const Color(0xFF5C6AC4) : Colors.white30,
+      ),
       title: Text(
         label,
         style: TextStyle(
@@ -796,13 +944,17 @@ class _MovieListScreenState extends State<MovieListScreen> {
     Future.microtask(() {
       if (!mounted) return;
       final provider = Provider.of<MovieProvider>(context, listen: false);
-      final historyProvider = Provider.of<HistoryProvider>(context, listen: false);
+      final historyProvider = Provider.of<HistoryProvider>(
+        context,
+        listen: false,
+      );
       provider.fetchNowPlaying();
       provider.fetchRecommendations(history: historyProvider.history);
     });
-    
+
     _scrollController.addListener(() {
-      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 200) {
         Provider.of<MovieProvider>(context, listen: false).fetchNextPage();
       }
     });
@@ -836,7 +988,8 @@ class _MovieListScreenState extends State<MovieListScreen> {
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       itemCount: 5,
-                      itemBuilder: (context, index) => const MovieCardShimmer(isHorizontal: true),
+                      itemBuilder: (context, index) =>
+                          const MovieCardShimmer(isHorizontal: true),
                     ),
                   ),
                 ),
@@ -858,7 +1011,7 @@ class _MovieListScreenState extends State<MovieListScreen> {
               ],
             );
           }
-          
+
           return CustomScrollView(
             controller: _scrollController,
             slivers: [
@@ -887,13 +1040,14 @@ class _MovieListScreenState extends State<MovieListScreen> {
                       itemCount: provider.recommendations.length,
                       itemBuilder: (context, index) {
                         return RepaintBoundary(
-                          child: MovieCard(
-                            movie: provider.recommendations[index],
-                            isHorizontal: true,
-                          )
-                              .animate(delay: (index * 100).ms)
-                              .fadeIn(duration: 400.ms)
-                              .slideX(begin: 0.2),
+                          child:
+                              MovieCard(
+                                    movie: provider.recommendations[index],
+                                    isHorizontal: true,
+                                  )
+                                  .animate(delay: (index * 100).ms)
+                                  .fadeIn(duration: 400.ms)
+                                  .slideX(begin: 0.2),
                         );
                       },
                     ),
