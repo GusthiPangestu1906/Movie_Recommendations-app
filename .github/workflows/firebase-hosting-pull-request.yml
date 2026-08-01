@@ -1,5 +1,22 @@
 name: Deploy to Firebase Hosting on PR
-on: pull_request
+
+on:
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'scripts/**'
+      - 'android/**'
+      - 'ios/**'
+
+concurrency:
+  group: hosting-pr-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  checks: write
+  contents: read
+  pull-requests: write
+
 jobs:
   build_and_preview:
     if: '${{ github.event.pull_request.head.repo.full_name == github.repository }}'
@@ -11,6 +28,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          cache: true
 
       - name: Create dummy .env for build
         run: touch .env
@@ -20,16 +38,17 @@ jobs:
           flutter build web --release \
             --dart-define=TMDB_API_KEY=${{ secrets.TMDB_API_KEY }} \
             --dart-define=FIREBASE_WEB_KEY=${{ secrets.FIREBASE_WEB_KEY }} \
-            --dart-define=FIREBASE_ANDROID_KEY=${{ secrets.FIREBASE_ANDROID_KEY }} \
-            --dart-define=FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }} \
+            --dart-define=FIREBASE_PROJECT_ID=mymovies-app-project \
             --dart-define=FIREBASE_WEB_APP_ID=${{ secrets.FIREBASE_WEB_APP_ID }} \
-            --dart-define=FIREBASE_ANDROID_APP_ID=${{ secrets.FIREBASE_ANDROID_APP_ID }} \
             --dart-define=FIREBASE_MESSAGING_SENDER_ID=${{ secrets.FIREBASE_MESSAGING_SENDER_ID }} \
-            --dart-define=FIREBASE_AUTH_DOMAIN=${{ secrets.FIREBASE_AUTH_DOMAIN }} \
-            --dart-define=FIREBASE_STORAGE_BUCKET=${{ secrets.FIREBASE_STORAGE_BUCKET }}
+            --dart-define=FIREBASE_AUTH_DOMAIN=mymovies-app-project.firebaseapp.com \
+            --dart-define=FIREBASE_STORAGE_BUCKET=mymovies-app-project.appspot.com
+
+      - name: Verify Web Build
+        run: ls -R build/web
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_MYMOVIES_APP_PROJECT }}'
-          projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
+          projectId: mymovies-app-project

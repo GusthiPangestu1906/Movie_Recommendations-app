@@ -3,8 +3,14 @@ name: Security & Secret Scan
 on:
   push:
     branches: [ main, master ]
+    paths-ignore:
+      - '**.md'
   pull_request:
     branches: [ main, master ]
+
+concurrency:
+  group: security-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   secret-scan:

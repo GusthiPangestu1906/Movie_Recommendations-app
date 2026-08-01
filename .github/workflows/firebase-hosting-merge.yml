@@ -1,8 +1,19 @@
 name: Deploy to Firebase Hosting on merge
+
 on:
   push:
     branches:
       - main
+    paths-ignore:
+      - '**.md'
+      - 'scripts/**'
+      - 'android/**'
+      - 'ios/**'
+
+concurrency:
+  group: hosting-merge-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
@@ -13,6 +24,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          cache: true
 
       - name: Create dummy .env for build
         run: touch .env
@@ -35,4 +47,4 @@ jobs:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MYMOVIES_APP_PROJECT }}
           channelId: live
-          projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
+          projectId: mymovies-app-project
