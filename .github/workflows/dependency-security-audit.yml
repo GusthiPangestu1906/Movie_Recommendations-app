@@ -3,10 +3,20 @@ name: Dependency Vulnerability Scan
 on:
   push:
     branches: [ main, master ]
+    paths:
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
   pull_request:
     branches: [ main, master ]
+    paths:
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
   schedule:
-    - cron: '0 0 * * 1' # Berjalan otomatis setiap Senin jam 12 malam untuk cek celah baru
+    - cron: '0 0 * * 1' # Cek setiap Senin jam 12 malam
+
+concurrency:
+  group: audit-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   vulnerability-scan:
@@ -18,13 +28,6 @@ jobs:
       - name: Run OSV-Scanner
         uses: google/osv-scanner-action/osv-scanner-action@v1.9.0
         with:
-          # Memindai pubspec.lock secara mendalam untuk mencari celah keamanan
           scan-args: |-
             --recursive
             ./
-
-      - name: Alert on Vulnerabilities
-        if: failure()
-        run: |
-          echo "❌ BAHAYA: Ditemukan celah keamanan pada package yang Anda gunakan!"
-          echo "Segera jalankan 'flutter pub upgrade' atau update package ke versi terbaru."

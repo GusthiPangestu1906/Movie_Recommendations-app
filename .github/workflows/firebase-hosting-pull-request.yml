@@ -1,5 +1,17 @@
 name: Deploy to Firebase Hosting on PR
-on: pull_request
+
+on:
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'scripts/**'
+      - 'android/**'
+      - 'ios/**'
+
+concurrency:
+  group: hosting-pr-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build_and_preview:
     if: '${{ github.event.pull_request.head.repo.full_name == github.repository }}'
@@ -11,6 +23,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          cache: true
 
       - name: Create dummy .env for build
         run: touch .env
