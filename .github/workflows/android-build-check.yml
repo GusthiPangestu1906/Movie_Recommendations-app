@@ -36,8 +36,13 @@ jobs:
       - name: Get Dependencies
         run: flutter pub get
 
-      - name: Create dummy .env for build
-        run: touch .env
+      - name: Create dummy Firebase and Env files
+        run: |
+          touch .env
+          mkdir -p android/app/src/debug
+          # Buat dummy google-services.json dengan struktur minimal yang valid
+          echo '{"project_info":{"project_id":"dummy-id"},"client":[]}' > android/app/google-services.json
+          cp android/app/google-services.json android/app/src/debug/google-services.json
 
       - name: Build Debug APK
         run: flutter build apk --debug
