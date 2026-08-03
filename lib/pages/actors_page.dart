@@ -317,15 +317,15 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      Row(
+                      const Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.auto_awesome,
                             color: Color(0xFF5C6AC4),
                             size: 16,
                           ),
-                          const SizedBox(width: 6),
-                          const Text(
+                          SizedBox(width: 6),
+                          Text(
                             'Star Profile',
                             style: TextStyle(
                               color: Color(0xFF5C6AC4),
