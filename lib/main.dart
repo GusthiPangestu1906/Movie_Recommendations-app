@@ -9,8 +9,9 @@ import 'providers/movie_provider.dart';
 import 'providers/history_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/connectivity_provider.dart';
+import 'features/home/presentation/providers/home_provider.dart';
 import 'pages/login_page.dart';
-import 'pages/home_page.dart';
+import 'features/home/presentation/pages/home_page.dart';
 import 'pages/booting_page.dart';
 
 void main() {
@@ -22,6 +23,7 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => ConnectivityProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => HomeProvider()),
         ChangeNotifierProxyProvider<AuthProvider, MovieProvider>(
           create: (_) => MovieProvider(),
           update: (_, auth, movieProvider) {

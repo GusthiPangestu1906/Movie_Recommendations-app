@@ -6,15 +6,14 @@ import '../providers/history_provider.dart';
 import '../widgets/movie_card.dart';
 import '../widgets/shimmer_loading.dart';
 
-class TvPage extends StatefulWidget {
-  const TvPage({super.key});
+class MovieListScreen extends StatefulWidget {
+  const MovieListScreen({super.key});
 
   @override
-  State<TvPage> createState() => _TvPageState();
+  State<MovieListScreen> createState() => _MovieListScreenState();
 }
 
-class _TvPageState extends State<TvPage> {
-  final TextEditingController _tvSearchController = TextEditingController();
+class _MovieListScreenState extends State<MovieListScreen> {
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -27,26 +26,20 @@ class _TvPageState extends State<TvPage> {
         context,
         listen: false,
       );
-      provider.fetchTvSeries();
-      provider.fetchTvRecommendations(history: historyProvider.history);
+      provider.fetchNowPlaying();
+      provider.fetchRecommendations(history: historyProvider.history);
     });
 
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {
-        final provider = Provider.of<MovieProvider>(context, listen: false);
-        if (_tvSearchController.text.isEmpty) {
-          provider.fetchMoreTvSeries();
-        } else {
-          provider.fetchMoreSearchResults();
-        }
+        Provider.of<MovieProvider>(context, listen: false).fetchNextPage();
       }
     });
   }
 
   @override
   void dispose() {
-    _tvSearchController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -55,9 +48,7 @@ class _TvPageState extends State<TvPage> {
   Widget build(BuildContext context) {
     return Consumer<MovieProvider>(
       builder: (context, provider, child) {
-        if (provider.isLoading &&
-            provider.tvSeries.isEmpty &&
-            provider.tvSearchResults.isEmpty) {
+        if (provider.isLoading && provider.movies.isEmpty) {
           return CustomScrollView(
             slivers: [
               const SliverToBoxAdapter(child: SizedBox(height: 8)),
@@ -98,17 +89,12 @@ class _TvPageState extends State<TvPage> {
           );
         }
 
-        final list = _tvSearchController.text.isNotEmpty
-            ? provider.tvSearchResults
-            : provider.tvSeries;
-
         return CustomScrollView(
           controller: _scrollController,
           slivers: [
             const SliverToBoxAdapter(child: SizedBox(height: 8)),
-            // Recommendation Section Header
-            if (_tvSearchController.text.isEmpty &&
-                provider.tvRecommendations.isNotEmpty) ...[
+
+            if (provider.recommendations.isNotEmpty) ...[
               const SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(16, 8, 16, 12),
@@ -128,30 +114,30 @@ class _TvPageState extends State<TvPage> {
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: provider.tvRecommendations.length,
+                    itemCount: provider.recommendations.length,
                     itemBuilder: (context, index) {
-                      return MovieCard(
-                            movie: provider.tvRecommendations[index],
-                            isHorizontal: true,
-                          )
-                          .animate(delay: (index * 100).ms)
-                          .fadeIn(duration: 400.ms)
-                          .slideX(begin: 0.2);
+                      return RepaintBoundary(
+                        child:
+                            MovieCard(
+                                  movie: provider.recommendations[index],
+                                  isHorizontal: true,
+                                )
+                                .animate(delay: (index * 100).ms)
+                                .fadeIn(duration: 400.ms)
+                                .slideX(begin: 0.2),
+                      );
                     },
                   ),
                 ),
               ),
             ],
 
-            // Main List Section Header
-            SliverToBoxAdapter(
+            const SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                padding: EdgeInsets.fromLTRB(16, 16, 16, 12),
                 child: Text(
-                  _tvSearchController.text.isNotEmpty
-                      ? 'Search Results'
-                      : 'Popular Dramas',
-                  style: const TextStyle(
+                  'Popular',
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -160,31 +146,20 @@ class _TvPageState extends State<TvPage> {
               ),
             ),
 
-            if (list.isEmpty)
-              const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 40),
-                  child: Center(
-                    child: Text(
-                      'No dramas found',
-                      style: TextStyle(color: Colors.white38),
-                    ),
-                  ),
-                ),
-              )
-            else
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) => MovieCard(movie: list[index])
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => RepaintBoundary(
+                    child: MovieCard(movie: provider.movies[index])
                         .animate(delay: (index * 50).ms)
                         .fadeIn(duration: 400.ms)
                         .slideY(begin: 0.1),
-                    childCount: list.length,
                   ),
+                  childCount: provider.movies.length,
                 ),
               ),
+            ),
 
             if (provider.isFetchingMore)
               SliverPadding(
