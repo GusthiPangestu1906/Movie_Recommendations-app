@@ -4,7 +4,7 @@ import '../providers/movie_provider.dart';
 import '../models/movie.dart';
 import '../providers/connectivity_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'actor_detail_page.dart';
+import '../features/actor_detail/presentation/pages/actor_detail_page.dart';
 
 class FavoriteActorsPage extends StatefulWidget {
   const FavoriteActorsPage({super.key});

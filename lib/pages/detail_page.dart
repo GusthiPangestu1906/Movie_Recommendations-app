@@ -9,7 +9,7 @@ import '../models/movie.dart';
 import '../providers/movie_provider.dart';
 import '../providers/history_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'actor_detail_page.dart';
+import '../features/actor_detail/presentation/pages/actor_detail_page.dart';
 import '../widgets/shimmer_loading.dart';
 import '../widgets/movie_card.dart';
 
