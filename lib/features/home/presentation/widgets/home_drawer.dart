@@ -22,9 +22,7 @@ class HomeDrawer extends StatelessWidget {
       child: Column(
         children: [
           UserAccountsDrawerHeader(
-            decoration: const BoxDecoration(
-              color: Color(0xFF1A1D2E),
-            ),
+            decoration: const BoxDecoration(color: Color(0xFF1A1D2E)),
             currentAccountPicture: GestureDetector(
               onTap: () => _showEditProfile(context),
               child: Stack(
@@ -95,7 +93,10 @@ class HomeDrawer extends StatelessWidget {
             onTap: () {
               homeProvider.setDramaMode(false);
               homeProvider.setIndex(0);
-              Provider.of<MovieProvider>(context, listen: false).setDramaMode(false);
+              Provider.of<MovieProvider>(
+                context,
+                listen: false,
+              ).setDramaMode(false);
               Navigator.pop(context);
             },
           ),
@@ -107,7 +108,10 @@ class HomeDrawer extends StatelessWidget {
             onTap: () {
               homeProvider.setDramaMode(true);
               homeProvider.setIndex(0);
-              Provider.of<MovieProvider>(context, listen: false).setDramaMode(true);
+              Provider.of<MovieProvider>(
+                context,
+                listen: false,
+              ).setDramaMode(true);
               Navigator.pop(context);
             },
           ),

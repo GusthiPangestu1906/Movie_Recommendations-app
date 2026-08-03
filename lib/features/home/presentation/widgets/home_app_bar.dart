@@ -8,10 +8,7 @@ import 'filter_sheet.dart';
 class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   final int currentIndex;
 
-  const HomeAppBar({
-    super.key,
-    required this.currentIndex,
-  });
+  const HomeAppBar({super.key, required this.currentIndex});
 
   @override
   Widget build(BuildContext context) {
@@ -113,7 +110,6 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => Size.fromHeight(
-        kToolbarHeight + (currentIndex == 1 ? 60 : 0),
-      );
+  Size get preferredSize =>
+      Size.fromHeight(kToolbarHeight + (currentIndex == 1 ? 60 : 0));
 }

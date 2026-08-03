@@ -16,15 +16,31 @@ class _ProfileSheetState extends State<ProfileSheet> {
   bool _isSaving = false;
 
   final List<String> _seeds = [
-    'Eden', 'Sasha', 'Willow', 'Aiden', 'Skylar', 'Nova', 'River', 'Jade',
-    'Zion', 'Amara', 'Kiran', 'Lumi', 'Vesper', 'Aura', 'Orion', 'Ember',
+    'Eden',
+    'Sasha',
+    'Willow',
+    'Aiden',
+    'Skylar',
+    'Nova',
+    'River',
+    'Jade',
+    'Zion',
+    'Amara',
+    'Kiran',
+    'Lumi',
+    'Vesper',
+    'Aura',
+    'Orion',
+    'Ember',
   ];
 
   @override
   void initState() {
     super.initState();
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    _nameController = TextEditingController(text: authProvider.user?.displayName);
+    _nameController = TextEditingController(
+      text: authProvider.user?.displayName,
+    );
     _selectedPhotoUrl = authProvider.photoUrl;
   }
 
@@ -133,7 +149,9 @@ class _ProfileSheetState extends State<ProfileSheet> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isSelected ? const Color(0xFF5C6AC4) : Colors.white12,
+                        color: isSelected
+                            ? const Color(0xFF5C6AC4)
+                            : Colors.white12,
                         width: isSelected ? 3 : 1,
                       ),
                       boxShadow: isSelected
@@ -186,8 +204,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
                           Navigator.pop(context);
                         }
                       } catch (e) {
-                        if (context.mounted) {
-                        }
+                        if (context.mounted) {}
                       } finally {
                         if (context.mounted) {
                           setState(() => _isSaving = false);
@@ -200,7 +217,9 @@ class _ProfileSheetState extends State<ProfileSheet> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
-                disabledBackgroundColor: const Color(0xFF5C6AC4).withOpacity(0.5),
+                disabledBackgroundColor: const Color(
+                  0xFF5C6AC4,
+                ).withOpacity(0.5),
               ),
               child: _isSaving
                   ? const SizedBox(
@@ -213,7 +232,10 @@ class _ProfileSheetState extends State<ProfileSheet> {
                     )
                   : const Text(
                       'Save Changes',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
             ),
           ),
