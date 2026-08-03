@@ -4,7 +4,7 @@ import '../providers/movie_provider.dart';
 import '../models/movie.dart';
 import '../providers/connectivity_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'actor_detail_page.dart';
+import '../features/actor_detail/presentation/pages/actor_detail_page.dart';
 
 class FavoriteActorsPage extends StatefulWidget {
   const FavoriteActorsPage({super.key});
@@ -317,15 +317,15 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      Row(
+                      const Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.auto_awesome,
                             color: Color(0xFF5C6AC4),
                             size: 16,
                           ),
-                          const SizedBox(width: 6),
-                          const Text(
+                          SizedBox(width: 6),
+                          Text(
                             'Star Profile',
                             style: TextStyle(
                               color: Color(0xFF5C6AC4),
