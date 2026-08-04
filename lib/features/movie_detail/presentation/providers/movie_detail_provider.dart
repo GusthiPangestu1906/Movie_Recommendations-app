@@ -30,9 +30,9 @@ class MovieDetailProvider extends ChangeNotifier {
         await launchUrl(url, mode: LaunchMode.externalApplication);
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Trailer not available')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Trailer not available')));
     }
   }
 

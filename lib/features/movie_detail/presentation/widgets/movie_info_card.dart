@@ -21,19 +21,15 @@ class MovieInfoCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Expanded(
-              child:
-                  Text(
-                        movie.title,
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: -0.5,
-                        ),
-                      )
-                      .animate()
-                      .fadeIn(duration: 400.ms)
-                      .slideX(begin: -0.1),
+              child: Text(
+                movie.title,
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: -0.5,
+                ),
+              ).animate().fadeIn(duration: 400.ms).slideX(begin: -0.1),
             ),
             Row(
               children: [
@@ -48,11 +44,7 @@ class MovieInfoCard extends StatelessWidget {
         const SizedBox(height: 12),
         Row(
           children: [
-            const Icon(
-              Icons.star_rounded,
-              color: Colors.amber,
-              size: 18,
-            ),
+            const Icon(Icons.star_rounded, color: Colors.amber, size: 18),
             const SizedBox(width: 6),
             Text(
               '${movie.voteAverage.toStringAsFixed(1)} / 10 IMDb',
@@ -76,29 +68,24 @@ class MovieInfoCard extends StatelessWidget {
         ).animate().fadeIn(delay: 300.ms),
         const SizedBox(height: 28),
         Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.05),
-                ),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white.withOpacity(0.05)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildInfoItem('Length', '2h 28min'),
+              _buildInfoItem('Language', 'English'),
+              _buildInfoItem(
+                'Rating',
+                provider.getFormattedRating(movie.certification),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildInfoItem('Length', '2h 28min'),
-                  _buildInfoItem('Language', 'English'),
-                  _buildInfoItem(
-                    'Rating',
-                    provider.getFormattedRating(movie.certification),
-                  ),
-                ],
-              ),
-            )
-            .animate()
-            .fadeIn(delay: 400.ms)
-            .scale(begin: const Offset(0.9, 0.9)),
+            ],
+          ),
+        ).animate().fadeIn(delay: 400.ms).scale(begin: const Offset(0.9, 0.9)),
         const SizedBox(height: 32),
         // Watch Now Button
         SizedBox(
@@ -107,11 +94,8 @@ class MovieInfoCard extends StatelessWidget {
           child: GestureDetector(
             onTapDown: (_) => HapticFeedback.mediumImpact(),
             child: ElevatedButton(
-              onPressed: () => provider.watchOnPlatform(
-                context,
-                movie.title,
-                movie.isTv,
-              ),
+              onPressed: () =>
+                  provider.watchOnPlatform(context, movie.title, movie.isTv),
               style: ElevatedButton.styleFrom(
                 backgroundColor: movie.isTv ? Colors.orange : Colors.redAccent,
                 foregroundColor: Colors.white,
@@ -123,10 +107,7 @@ class MovieInfoCard extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.play_circle_fill_rounded,
-                    size: 28,
-                  ),
+                  const Icon(Icons.play_circle_fill_rounded, size: 28),
                   const SizedBox(width: 12),
                   Text(
                     movie.isTv ? 'Watch on WeTV' : 'Watch on Netflix',

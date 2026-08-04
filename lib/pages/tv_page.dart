@@ -68,8 +68,10 @@ class _TvPageState extends State<TvPage> {
       ],
       child: Consumer3<MovieProvider, TvProvider, SearchProvider>(
         builder: (context, movieProvider, tvProvider, searchProvider, child) {
-          final bool isLoading = tvProvider.isLoading || searchProvider.isLoading;
-          final bool isFetchingMore = tvProvider.isFetchingMore || searchProvider.isFetchingMore;
+          final bool isLoading =
+              tvProvider.isLoading || searchProvider.isLoading;
+          final bool isFetchingMore =
+              tvProvider.isFetchingMore || searchProvider.isFetchingMore;
 
           if (isLoading &&
               tvProvider.tvSeries.isEmpty &&

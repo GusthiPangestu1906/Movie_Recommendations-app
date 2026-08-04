@@ -8,7 +8,8 @@ class MovieProvider with ChangeNotifier {
   final MovieRepository _repository;
   String? _userId;
 
-  MovieProvider({required MovieRepository repository}) : _repository = repository;
+  MovieProvider({required MovieRepository repository})
+    : _repository = repository;
 
   List<Movie> _movies = [];
   List<Movie> get movies => _movies;
@@ -90,7 +91,10 @@ class MovieProvider with ChangeNotifier {
     }
   }
 
-  Future<void> fetchRecommendations({List<Movie>? favoriteMovies, List<Movie>? history}) async {
+  Future<void> fetchRecommendations({
+    List<Movie>? favoriteMovies,
+    List<Movie>? history,
+  }) async {
     if (favoriteMovies != null && favoriteMovies.isNotEmpty) {
       try {
         final latestFavorite = favoriteMovies.first;
@@ -126,7 +130,10 @@ class MovieProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> fetchTvRecommendations({List<Movie>? favoriteTv, List<Movie>? history}) async {
+  Future<void> fetchTvRecommendations({
+    List<Movie>? favoriteTv,
+    List<Movie>? history,
+  }) async {
     if (favoriteTv != null && favoriteTv.isNotEmpty) {
       try {
         final latestFavorite = favoriteTv.first;
@@ -215,7 +222,10 @@ class MovieProvider with ChangeNotifier {
     }
   }
 
-  Future<List<Movie>> searchForHistory(String query, {bool isTv = false}) async {
+  Future<List<Movie>> searchForHistory(
+    String query, {
+    bool isTv = false,
+  }) async {
     try {
       return await _repository.searchMovies(query, isTv: isTv);
     } catch (e) {

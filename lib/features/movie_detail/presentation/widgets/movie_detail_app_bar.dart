@@ -127,10 +127,8 @@ class MovieDetailAppBar extends StatelessWidget {
                 height: double.infinity,
                 borderRadius: BorderRadius.zero,
               ),
-              errorWidget: (context, url, error) => const Icon(
-                Icons.broken_image,
-                color: Colors.white10,
-              ),
+              errorWidget: (context, url, error) =>
+                  const Icon(Icons.broken_image, color: Colors.white10),
             ),
             const DecoratedBox(
               decoration: BoxDecoration(
@@ -181,10 +179,7 @@ class MovieDetailAppBar extends StatelessWidget {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(20),
                         child: BackdropFilter(
-                          filter: ImageFilter.blur(
-                            sigmaX: 5,
-                            sigmaY: 5,
-                          ),
+                          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16,
@@ -213,14 +208,15 @@ class MovieDetailAppBar extends StatelessWidget {
     );
   }
 
-  void _showHistoryBottomSheet(BuildContext context, MovieDetailProvider provider) {
+  void _showHistoryBottomSheet(
+    BuildContext context,
+    MovieDetailProvider provider,
+  ) {
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1A1D2E),
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(28),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (context) => Column(
         mainAxisSize: MainAxisSize.min,
@@ -245,15 +241,10 @@ class MovieDetailAppBar extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           ListTile(
-            leading: const Icon(
-              Icons.edit_calendar,
-              color: Colors.blueAccent,
-            ),
+            leading: const Icon(Icons.edit_calendar, color: Colors.blueAccent),
             title: const Text(
               'Change Watch Date',
-              style: TextStyle(
-                color: Colors.white,
-              ),
+              style: TextStyle(color: Colors.white),
             ),
             onTap: () {
               Navigator.pop(context);
@@ -261,15 +252,10 @@ class MovieDetailAppBar extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: const Icon(
-              Icons.delete_outline,
-              color: Colors.redAccent,
-            ),
+            leading: const Icon(Icons.delete_outline, color: Colors.redAccent),
             title: const Text(
               'Unmark Watched',
-              style: TextStyle(
-                color: Colors.white,
-              ),
+              style: TextStyle(color: Colors.white),
             ),
             onTap: () {
               Navigator.pop(context);

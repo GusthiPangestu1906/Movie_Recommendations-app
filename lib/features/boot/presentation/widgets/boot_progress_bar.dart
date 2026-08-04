@@ -34,10 +34,7 @@ class BootProgressBar extends StatelessWidget {
                     width: contentWidth * provider.progress,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [
-                          Color(0xFF4A56E2),
-                          Color(0xFF5C6AC4),
-                        ],
+                        colors: [Color(0xFF4A56E2), Color(0xFF5C6AC4)],
                       ),
                       borderRadius: BorderRadius.circular(10),
                       boxShadow: [

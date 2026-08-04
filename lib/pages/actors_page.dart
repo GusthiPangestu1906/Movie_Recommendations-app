@@ -26,10 +26,7 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
         context,
         listen: false,
       ).setActorSearchQuery('');
-      Provider.of<SearchProvider>(
-        context,
-        listen: false,
-      ).searchActors('');
+      Provider.of<SearchProvider>(context, listen: false).searchActors('');
     });
   }
 
@@ -111,84 +108,104 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
           return Stack(
             children: [
               Consumer3<MovieProvider, FavoriteProvider, SearchProvider>(
-                builder: (context, movieProvider, favoriteProvider, searchProvider, child) {
-                  final favorites = favoriteProvider.filteredFavoriteActors;
-                  final globalResults = searchProvider.globalActorSearchResults;
-                  final isSearching = _searchController.text.isNotEmpty;
+                builder:
+                    (
+                      context,
+                      movieProvider,
+                      favoriteProvider,
+                      searchProvider,
+                      child,
+                    ) {
+                      final favorites = favoriteProvider.filteredFavoriteActors;
+                      final globalResults =
+                          searchProvider.globalActorSearchResults;
+                      final isSearching = _searchController.text.isNotEmpty;
 
-                  if (favoriteProvider.favoriteActors.isEmpty && !isSearching) {
-                    return _buildEmptyState(true);
-                  }
+                      if (favoriteProvider.favoriteActors.isEmpty &&
+                          !isSearching) {
+                        return _buildEmptyState(true);
+                      }
 
-                  if (isSearching &&
-                      favorites.isEmpty &&
-                      globalResults.isEmpty &&
-                      !searchProvider.isActorLoading) {
-                    return _buildEmptyState(false);
-                  }
+                      if (isSearching &&
+                          favorites.isEmpty &&
+                          globalResults.isEmpty &&
+                          !searchProvider.isActorLoading) {
+                        return _buildEmptyState(false);
+                      }
 
-                  return CustomScrollView(
-                    slivers: [
-                      if (favorites.isNotEmpty) ...[
-                        SliverToBoxAdapter(
-                          child: _buildSectionHeader('Your Favorites'),
-                        ),
-                        SliverPadding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          sliver: SliverList(
-                            delegate: SliverChildBuilderDelegate(
-                              (context, index) =>
-                                  _buildActorCard(context, favorites[index], favoriteProvider),
-                              childCount: favorites.length,
+                      return CustomScrollView(
+                        slivers: [
+                          if (favorites.isNotEmpty) ...[
+                            SliverToBoxAdapter(
+                              child: _buildSectionHeader('Your Favorites'),
                             ),
-                          ),
-                        ),
-                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                      ],
-                      if (isSearching) ...[
-                        SliverToBoxAdapter(
-                          child: _buildSectionHeader('Discover New Stars'),
-                        ),
-                        if (searchProvider.isActorLoading)
-                          const SliverToBoxAdapter(
-                            child: Center(
-                              child: Padding(
-                                padding: EdgeInsets.all(20.0),
-                                child: CircularProgressIndicator(
-                                  color: Color(0xFF5C6AC4),
+                            SliverPadding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              sliver: SliverList(
+                                delegate: SliverChildBuilderDelegate(
+                                  (context, index) => _buildActorCard(
+                                    context,
+                                    favorites[index],
+                                    favoriteProvider,
+                                  ),
+                                  childCount: favorites.length,
                                 ),
                               ),
                             ),
-                          )
-                        else
-                          SliverPadding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            sliver: SliverList(
-                              delegate: SliverChildBuilderDelegate(
-                                (context, index) {
-                                  final searchResults = globalResults
-                                      .where(
-                                        (g) => !favoriteProvider.isFavoriteActor(g.id),
-                                      )
-                                      .toList();
-                                  return _buildActorCard(
-                                    context,
-                                    searchResults[index],
-                                    favoriteProvider,
-                                  );
-                                },
-                                childCount: globalResults
-                                    .where(
-                                      (g) => !favoriteProvider.isFavoriteActor(g.id),
-                                    )
-                                    .length,
-                              ),
+                            const SliverToBoxAdapter(
+                              child: SizedBox(height: 20),
                             ),
-                          ),
-                      ],
-                    ],
-                  );
-                },
+                          ],
+                          if (isSearching) ...[
+                            SliverToBoxAdapter(
+                              child: _buildSectionHeader('Discover New Stars'),
+                            ),
+                            if (searchProvider.isActorLoading)
+                              const SliverToBoxAdapter(
+                                child: Center(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(20.0),
+                                    child: CircularProgressIndicator(
+                                      color: Color(0xFF5C6AC4),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            else
+                              SliverPadding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                sliver: SliverList(
+                                  delegate: SliverChildBuilderDelegate(
+                                    (context, index) {
+                                      final searchResults = globalResults
+                                          .where(
+                                            (g) => !favoriteProvider
+                                                .isFavoriteActor(g.id),
+                                          )
+                                          .toList();
+                                      return _buildActorCard(
+                                        context,
+                                        searchResults[index],
+                                        favoriteProvider,
+                                      );
+                                    },
+                                    childCount: globalResults
+                                        .where(
+                                          (g) => !favoriteProvider
+                                              .isFavoriteActor(g.id),
+                                        )
+                                        .length,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ],
+                      );
+                    },
               ),
 
               // Overlay Offline
@@ -256,7 +273,11 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
     );
   }
 
-  Widget _buildActorCard(BuildContext context, Cast actor, FavoriteProvider provider) {
+  Widget _buildActorCard(
+    BuildContext context,
+    Cast actor,
+    FavoriteProvider provider,
+  ) {
     final isFav = provider.isFavoriteActor(actor.id);
 
     return GestureDetector(

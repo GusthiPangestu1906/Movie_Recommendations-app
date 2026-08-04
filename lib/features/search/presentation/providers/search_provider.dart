@@ -7,7 +7,8 @@ class SearchProvider with ChangeNotifier {
   final MovieRepository _repository;
   Timer? _debounce;
 
-  SearchProvider({required MovieRepository repository}) : _repository = repository;
+  SearchProvider({required MovieRepository repository})
+    : _repository = repository;
 
   List<Movie> _searchResults = [];
   List<Movie> get searchResults => _searchResults;
@@ -51,7 +52,11 @@ class SearchProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> search(String query, {bool isDramaMode = false, String? selectedCountry}) async {
+  Future<void> search(
+    String query, {
+    bool isDramaMode = false,
+    String? selectedCountry,
+  }) async {
     if (_debounce?.isActive ?? false) _debounce?.cancel();
 
     if (query.isEmpty) {
@@ -108,7 +113,10 @@ class SearchProvider with ChangeNotifier {
     });
   }
 
-  Future<void> fetchMoreSearchResults({bool isDramaMode = false, String? selectedCountry}) async {
+  Future<void> fetchMoreSearchResults({
+    bool isDramaMode = false,
+    String? selectedCountry,
+  }) async {
     if (_isFetchingMore) return;
 
     final bool isQuerySearch = _lastSearchQuery.isNotEmpty;

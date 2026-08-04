@@ -6,11 +6,15 @@ import '../models/movie.dart';
 
 class ApiService {
   // KEAMANAN: Menggunakan Proxy Cloudflare untuk menyembunyikan API Key
-  static const String _proxyUrl = 'https://delicate-dew-e24d.gusthipangestu1906.workers.dev';
+  static const String _proxyUrl =
+      'https://delicate-dew-e24d.gusthipangestu1906.workers.dev';
 
   // App Secret untuk memvalidasi request ke proxy (Harus sama dengan APP_PROXY_SECRET di Cloudflare)
   static String get _appProxySecret {
-    return const String.fromEnvironment('APP_PROXY_SECRET', defaultValue: 'Haleluyah1976');
+    return const String.fromEnvironment(
+      'APP_PROXY_SECRET',
+      defaultValue: 'Haleluyah1976',
+    );
   }
 
   // Backup key jika tidak menggunakan proxy (Opsional)

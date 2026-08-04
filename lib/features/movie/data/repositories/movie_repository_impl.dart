@@ -21,8 +21,18 @@ class MovieRepositoryImpl implements MovieRepository {
   }
 
   @override
-  Future<List<Movie>> searchMovies(String query, {bool isTv = false, int page = 1, String? withGenres}) {
-    return _apiService.searchMovies(query, isTv: isTv, page: page, withGenres: withGenres);
+  Future<List<Movie>> searchMovies(
+    String query, {
+    bool isTv = false,
+    int page = 1,
+    String? withGenres,
+  }) {
+    return _apiService.searchMovies(
+      query,
+      isTv: isTv,
+      page: page,
+      withGenres: withGenres,
+    );
   }
 
   @override
@@ -41,7 +51,10 @@ class MovieRepositoryImpl implements MovieRepository {
   }
 
   @override
-  Future<List<Movie>> discoverMovies({required String withGenres, int page = 1}) {
+  Future<List<Movie>> discoverMovies({
+    required String withGenres,
+    int page = 1,
+  }) {
     return _apiService.discoverMovies(withGenres: withGenres, page: page);
   }
 
@@ -76,7 +89,11 @@ class MovieRepositoryImpl implements MovieRepository {
   }
 
   @override
-  Future<void> syncFavoriteToFirestore(String userId, Movie movie, bool isFavorite) async {
+  Future<void> syncFavoriteToFirestore(
+    String userId,
+    Movie movie,
+    bool isFavorite,
+  ) async {
     final docRef = _firestore
         .collection('users')
         .doc(userId)
@@ -90,7 +107,11 @@ class MovieRepositoryImpl implements MovieRepository {
   }
 
   @override
-  Future<void> syncActorToFirestore(String userId, Cast actor, bool isFavorite) async {
+  Future<void> syncActorToFirestore(
+    String userId,
+    Cast actor,
+    bool isFavorite,
+  ) async {
     final docRef = _firestore
         .collection('users')
         .doc(userId)
@@ -111,7 +132,10 @@ class MovieRepositoryImpl implements MovieRepository {
         .collection('favorites')
         .get();
     return favSnapshot.docs
-        .map((doc) => Movie.fromJson(doc.data(), isTv: doc.data()['isTv'] ?? false))
+        .map(
+          (doc) =>
+              Movie.fromJson(doc.data(), isTv: doc.data()['isTv'] ?? false),
+        )
         .toList();
   }
 
@@ -122,16 +146,19 @@ class MovieRepositoryImpl implements MovieRepository {
         .doc(userId)
         .collection('favorite_actors')
         .get();
-    return actorSnapshot.docs
-        .map((doc) => Cast.fromJson(doc.data()))
-        .toList();
+    return actorSnapshot.docs.map((doc) => Cast.fromJson(doc.data())).toList();
   }
 
   @override
-  Future<void> saveFavorites(List<Movie> favorites, {required bool isTv}) async {
+  Future<void> saveFavorites(
+    List<Movie> favorites, {
+    required bool isTv,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     final String key = isTv ? 'favorites_tv' : 'favorites';
-    final String encodedData = json.encode(favorites.map((m) => m.toJson()).toList());
+    final String encodedData = json.encode(
+      favorites.map((m) => m.toJson()).toList(),
+    );
     await prefs.setString(key, encodedData);
   }
 
@@ -150,7 +177,9 @@ class MovieRepositoryImpl implements MovieRepository {
   @override
   Future<void> saveFavoriteActors(List<Cast> actors) async {
     final prefs = await SharedPreferences.getInstance();
-    final String encodedData = json.encode(actors.map((a) => a.toJson()).toList());
+    final String encodedData = json.encode(
+      actors.map((a) => a.toJson()).toList(),
+    );
     await prefs.setString('favorite_actors', encodedData);
   }
 
