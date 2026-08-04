@@ -33,32 +33,26 @@ void main() {
         ChangeNotifierProvider(create: (_) => HomeProvider()),
         ChangeNotifierProvider(create: (_) => BootProvider()),
         Provider<MovieRepository>(
-          create: (_) => MovieRepositoryImpl(
-            apiService: ApiService(),
-            firestore: FirebaseFirestore.instance,
-          ),
+          create: (_) =>
+              MovieRepositoryImpl(ApiService(), FirebaseFirestore.instance),
         ),
         ChangeNotifierProxyProvider2<
           AuthProvider,
           MovieRepository,
           MovieProvider
         >(
-          create: (context) =>
-              MovieProvider(repository: context.read<MovieRepository>()),
+          create: (context) => MovieProvider(context.read<MovieRepository>()),
           update: (context, auth, repository, movieProvider) {
-            final provider =
-                movieProvider ?? MovieProvider(repository: repository);
+            final provider = movieProvider ?? MovieProvider(repository);
             provider.update(auth);
             return provider;
           },
         ),
         ChangeNotifierProvider(
-          create: (context) =>
-              SearchProvider(repository: context.read<MovieRepository>()),
+          create: (context) => SearchProvider(context.read<MovieRepository>()),
         ),
         ChangeNotifierProvider(
-          create: (context) =>
-              TvProvider(repository: context.read<MovieRepository>()),
+          create: (context) => TvProvider(context.read<MovieRepository>()),
         ),
         ChangeNotifierProxyProvider2<
           AuthProvider,
@@ -66,10 +60,9 @@ void main() {
           FavoriteProvider
         >(
           create: (context) =>
-              FavoriteProvider(repository: context.read<MovieRepository>()),
+              FavoriteProvider(context.read<MovieRepository>()),
           update: (context, auth, repository, favoriteProvider) {
-            final provider =
-                favoriteProvider ?? FavoriteProvider(repository: repository);
+            final provider = favoriteProvider ?? FavoriteProvider(repository);
             provider.update(auth);
             return provider;
           },

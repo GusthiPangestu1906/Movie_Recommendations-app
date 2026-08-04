@@ -7,8 +7,7 @@ class FavoriteProvider with ChangeNotifier {
   final MovieRepository _repository;
   String? _userId;
 
-  FavoriteProvider({required MovieRepository repository})
-    : _repository = repository;
+  FavoriteProvider(this._repository);
 
   List<Movie> _favoriteMovies = [];
   List<Movie> get favoriteMovies => _favoriteMovies;

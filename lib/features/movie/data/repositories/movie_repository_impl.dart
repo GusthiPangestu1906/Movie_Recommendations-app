@@ -9,11 +9,7 @@ class MovieRepositoryImpl implements MovieRepository {
   final ApiService _apiService;
   final FirebaseFirestore _firestore;
 
-  MovieRepositoryImpl({
-    required ApiService apiService,
-    required FirebaseFirestore firestore,
-  }) : _apiService = apiService,
-       _firestore = firestore;
+  MovieRepositoryImpl(this._apiService, this._firestore);
 
   @override
   Future<List<Movie>> getTvSeries({String? originCountry, int page = 1}) {

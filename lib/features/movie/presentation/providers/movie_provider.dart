@@ -8,8 +8,7 @@ class MovieProvider with ChangeNotifier {
   final MovieRepository _repository;
   String? _userId;
 
-  MovieProvider({required MovieRepository repository})
-    : _repository = repository;
+  MovieProvider(this._repository);
 
   List<Movie> _movies = [];
   List<Movie> get movies => _movies;

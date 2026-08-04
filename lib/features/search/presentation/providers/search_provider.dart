@@ -7,8 +7,7 @@ class SearchProvider with ChangeNotifier {
   final MovieRepository _repository;
   Timer? _debounce;
 
-  SearchProvider({required MovieRepository repository})
-    : _repository = repository;
+  SearchProvider(this._repository);
 
   List<Movie> _searchResults = [];
   List<Movie> get searchResults => _searchResults;

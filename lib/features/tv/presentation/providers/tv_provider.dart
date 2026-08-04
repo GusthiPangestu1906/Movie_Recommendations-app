@@ -5,7 +5,7 @@ import '../../../movie/domain/repositories/movie_repository.dart';
 class TvProvider with ChangeNotifier {
   final MovieRepository _repository;
 
-  TvProvider({required MovieRepository repository}) : _repository = repository;
+  TvProvider(this._repository);
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
