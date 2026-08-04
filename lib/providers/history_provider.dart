@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/movie.dart';
-import 'movie_provider.dart';
+import '../features/movie/presentation/providers/movie_provider.dart';
 import 'auth_provider.dart';
 
 class HistoryProvider with ChangeNotifier {

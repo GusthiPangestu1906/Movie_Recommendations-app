@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import 'package:animations/animations.dart';
-import '../providers/movie_provider.dart';
-import '../models/movie.dart';
-import '../pages/detail_page.dart';
+import '../../features/favorite/presentation/providers/favorite_provider.dart';
+import '../../models/movie.dart';
+import '../../features/movie_detail/presentation/pages/movie_detail_page.dart';
 
 class FavoriteButton extends StatefulWidget {
   final Movie movie;
@@ -41,14 +41,14 @@ class _FavoriteButtonState extends State<FavoriteButton>
 
   @override
   Widget build(BuildContext context) {
-    return Selector<MovieProvider, bool>(
+    return Selector<FavoriteProvider, bool>(
       selector: (_, provider) => provider.isFavorite(widget.movie.id),
       builder: (context, isFavorite, child) {
         return GestureDetector(
           onTap: () {
             HapticFeedback.lightImpact();
             _controller.forward(from: 0);
-            context.read<MovieProvider>().toggleFavorite(widget.movie);
+            context.read<FavoriteProvider>().toggleFavorite(widget.movie);
           },
           child: ScaleTransition(
             scale: _scaleAnimation,
@@ -99,7 +99,7 @@ class MovieCard extends StatelessWidget {
         borderRadius: BorderRadius.all(Radius.circular(4)),
       ),
       transitionType: ContainerTransitionType.fadeThrough,
-      openBuilder: (context, _) => DetailPage(movie: movie),
+      openBuilder: (context, _) => MovieDetailPage(movie: movie),
       closedBuilder: (context, openContainer) => RepaintBoundary(
         child: GestureDetector(
           onTap: openContainer,
@@ -215,7 +215,7 @@ class MovieCard extends StatelessWidget {
         borderRadius: BorderRadius.all(Radius.circular(4)),
       ),
       transitionType: ContainerTransitionType.fadeThrough,
-      openBuilder: (context, _) => DetailPage(movie: movie),
+      openBuilder: (context, _) => MovieDetailPage(movie: movie),
       closedBuilder: (context, openContainer) => RepaintBoundary(
         child: GestureDetector(
           onTap: openContainer,

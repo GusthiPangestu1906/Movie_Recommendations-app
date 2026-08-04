@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../../../../providers/movie_provider.dart';
+import '../../../tv/presentation/providers/tv_provider.dart';
+import '../../../search/presentation/providers/search_provider.dart';
 
 class FilterSheet extends StatelessWidget {
   final bool isDramaMode;
@@ -42,7 +43,8 @@ class FilterSheet extends StatelessWidget {
       builder: (context, scrollController) {
         return StatefulBuilder(
           builder: (context, setModalState) {
-            final provider = Provider.of<MovieProvider>(context);
+            final tvProvider = Provider.of<TvProvider>(context);
+            final searchProvider = Provider.of<SearchProvider>(context);
             return Column(
               children: [
                 Container(
@@ -85,13 +87,13 @@ class FilterSheet extends StatelessWidget {
                           runSpacing: 10,
                           children: _countries.map((country) {
                             final isSelected =
-                                (provider.selectedCountry ?? '') ==
+                                (tvProvider.selectedCountry ?? '') ==
                                 country['value'];
                             return GestureDetector(
                               onTap: () {
                                 HapticFeedback.selectionClick();
                                 setModalState(() {
-                                  provider.fetchTvSeries(
+                                  tvProvider.fetchTvSeries(
                                     country: country['value']!.isEmpty
                                         ? null
                                         : country['value'],
@@ -136,13 +138,13 @@ class FilterSheet extends StatelessWidget {
                           spacing: 10,
                           runSpacing: 10,
                           children: _genres.map((genre) {
-                            final isSelected = provider.selectedGenreIds
+                            final isSelected = searchProvider.selectedGenreIds
                                 .contains(genre['value']);
                             return GestureDetector(
                               onTap: () {
                                 HapticFeedback.selectionClick();
                                 setModalState(() {
-                                  provider.toggleGenre(genre['value']!);
+                                  searchProvider.toggleGenre(genre['value']!);
                                 });
                               },
                               child: AnimatedContainer(
@@ -190,7 +192,7 @@ class FilterSheet extends StatelessWidget {
                         child: ElevatedButton(
                           onPressed: () {
                             if (!isDramaMode) {
-                              provider.applyGenreFilter();
+                              searchProvider.applyGenreFilter();
                             }
                             Navigator.pop(context);
                           },

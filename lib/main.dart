@@ -5,14 +5,21 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'firebase_options.dart';
-import 'providers/movie_provider.dart';
 import 'providers/history_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/connectivity_provider.dart';
 import 'features/home/presentation/providers/home_provider.dart';
+import 'features/movie/domain/repositories/movie_repository.dart';
+import 'features/movie/data/repositories/movie_repository_impl.dart';
+import 'features/movie/presentation/providers/movie_provider.dart';
+import 'features/search/presentation/providers/search_provider.dart';
+import 'features/tv/presentation/providers/tv_provider.dart';
+import 'features/favorite/presentation/providers/favorite_provider.dart';
+import 'services/api_service.dart';
 import 'pages/login_page.dart';
 import 'features/home/presentation/pages/home_page.dart';
-import 'pages/booting_page.dart';
+import 'features/boot/presentation/pages/boot_page.dart';
+import 'features/boot/presentation/providers/boot_provider.dart';
 
 void main() {
   // Pastikan binding siap secepat mungkin
@@ -24,10 +31,41 @@ void main() {
         ChangeNotifierProvider(create: (_) => ConnectivityProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => HomeProvider()),
-        ChangeNotifierProxyProvider<AuthProvider, MovieProvider>(
-          create: (_) => MovieProvider(),
-          update: (_, auth, movieProvider) {
-            return (movieProvider ?? MovieProvider())..update(auth);
+        ChangeNotifierProvider(create: (_) => BootProvider()),
+        Provider<MovieRepository>(
+          create: (_) => MovieRepositoryImpl(
+            apiService: ApiService(),
+            firestore: FirebaseFirestore.instance,
+          ),
+        ),
+        ChangeNotifierProxyProvider2<AuthProvider, MovieRepository, MovieProvider>(
+          create: (context) => MovieProvider(
+            repository: context.read<MovieRepository>(),
+          ),
+          update: (context, auth, repository, movieProvider) {
+            final provider = movieProvider ?? MovieProvider(repository: repository);
+            provider.update(auth);
+            return provider;
+          },
+        ),
+        ChangeNotifierProvider(
+          create: (context) => SearchProvider(
+            repository: context.read<MovieRepository>(),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => TvProvider(
+            repository: context.read<MovieRepository>(),
+          ),
+        ),
+        ChangeNotifierProxyProvider2<AuthProvider, MovieRepository, FavoriteProvider>(
+          create: (context) => FavoriteProvider(
+            repository: context.read<MovieRepository>(),
+          ),
+          update: (context, auth, repository, favoriteProvider) {
+            final provider = favoriteProvider ?? FavoriteProvider(repository: repository);
+            provider.update(auth);
+            return provider;
           },
         ),
         ChangeNotifierProxyProvider2<
@@ -123,7 +161,7 @@ class _MyAppState extends State<MyApp> {
             return const LoginPage();
           }
           if (!auth.hasBooted) {
-            return BootingPage(onComplete: () => auth.setBooted(true));
+            return BootPage(onComplete: () => auth.setBooted(true));
           }
           return const HomePage();
         },

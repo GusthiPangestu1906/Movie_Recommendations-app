@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../models/movie.dart';
-import '../../../../pages/detail_page.dart';
+import '../../../movie_detail/presentation/pages/movie_detail_page.dart';
 import '../providers/actor_detail_provider.dart';
 
 class ActorFilmography extends StatelessWidget {
@@ -121,7 +121,7 @@ class ActorFilmography extends StatelessWidget {
         HapticFeedback.lightImpact();
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => DetailPage(movie: item)),
+          MaterialPageRoute(builder: (context) => MovieDetailPage(movie: item)),
         );
       },
       child: Container(

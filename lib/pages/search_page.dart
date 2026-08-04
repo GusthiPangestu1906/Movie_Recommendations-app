@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../providers/movie_provider.dart';
-import '../widgets/movie_card.dart';
-import '../widgets/shimmer_loading.dart';
+import '../features/search/presentation/providers/search_provider.dart';
+import '../features/tv/presentation/providers/tv_provider.dart';
+import '../core/widgets/movie_card.dart';
+import '../core/widgets/shimmer_loading.dart';
 
 class SearchPage extends StatelessWidget {
   const SearchPage({super.key});
@@ -12,13 +13,13 @@ class SearchPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0B0E1E),
-      body: Consumer<MovieProvider>(
-        builder: (context, provider, child) {
-          final results = provider.isDramaMode
-              ? provider.tvSearchResults
-              : provider.searchResults;
+      body: Consumer2<SearchProvider, TvProvider>(
+        builder: (context, searchProvider, tvProvider, child) {
+          final results = tvProvider.isDramaMode
+              ? searchProvider.tvSearchResults
+              : searchProvider.searchResults;
 
-          if (provider.isLoading && results.isEmpty) {
+          if (searchProvider.isLoading && results.isEmpty) {
             return ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: 5,

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../../../../providers/movie_provider.dart';
+import '../../../search/presentation/providers/search_provider.dart';
+import '../../../tv/presentation/providers/tv_provider.dart';
 import '../providers/home_provider.dart';
 import 'filter_sheet.dart';
 
@@ -13,7 +14,8 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final homeProvider = Provider.of<HomeProvider>(context);
-    final movieProvider = Provider.of<MovieProvider>(context, listen: false);
+    final searchProvider = Provider.of<SearchProvider>(context, listen: false);
+    final tvProvider = Provider.of<TvProvider>(context, listen: false);
     final isDramaMode = homeProvider.isDramaMode;
 
     String title = isDramaMode ? 'Drama Universe' : 'Movie Universe';
@@ -29,7 +31,11 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
             children: [
               Expanded(
                 child: TextField(
-                  onChanged: (value) => movieProvider.search(value),
+                  onChanged: (value) => searchProvider.search(
+                    value,
+                    isDramaMode: isDramaMode,
+                    selectedCountry: tvProvider.selectedCountry,
+                  ),
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     hintText: isDramaMode
@@ -88,7 +94,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
           onPressed: () {
             HapticFeedback.mediumImpact();
             homeProvider.toggleDramaMode();
-            movieProvider.setDramaMode(homeProvider.isDramaMode);
+            tvProvider.setDramaMode(homeProvider.isDramaMode);
           },
           tooltip: 'Switch Mode',
         ),

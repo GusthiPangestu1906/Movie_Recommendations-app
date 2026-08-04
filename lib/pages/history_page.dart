@@ -4,10 +4,11 @@ import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'dart:async';
 import '../providers/history_provider.dart';
-import '../providers/movie_provider.dart';
+import '../features/movie/presentation/providers/movie_provider.dart';
+import '../features/tv/presentation/providers/tv_provider.dart';
 import '../providers/connectivity_provider.dart';
 import '../models/movie.dart';
-import '../widgets/movie_card.dart';
+import '../core/widgets/movie_card.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class HistoryPage extends StatefulWidget {
@@ -40,8 +41,7 @@ class _HistoryPageState extends State<HistoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    final movieProvider = Provider.of<MovieProvider>(context);
-    final isDramaMode = movieProvider.isDramaMode;
+    final isDramaMode = Provider.of<TvProvider>(context).isDramaMode;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0B0E1E),
@@ -247,7 +247,7 @@ class _AddHistoryBottomSheetState extends State<AddHistoryBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final isTv = Provider.of<MovieProvider>(context).isDramaMode;
+    final isTv = Provider.of<TvProvider>(context).isDramaMode;
 
     return Consumer<ConnectivityProvider>(
       builder: (context, connectivity, _) {

@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../../../providers/movie_provider.dart';
+import '../../../favorite/presentation/providers/favorite_provider.dart';
 import '../providers/actor_detail_provider.dart';
 
 class ActorHeader extends StatelessWidget {
@@ -103,15 +103,15 @@ class ActorHeader extends StatelessWidget {
             Positioned(
               top: 20,
               right: 16,
-              child: Consumer<MovieProvider>(
-                builder: (context, movieProvider, child) {
-                  final isFav = movieProvider.isFavoriteActor(actorId);
+              child: Consumer<FavoriteProvider>(
+                builder: (context, favoriteProvider, child) {
+                  final isFav = favoriteProvider.isFavoriteActor(actorId);
                   return _buildGlassButton(
                     icon: isFav ? Icons.favorite : Icons.favorite_border,
                     iconColor: isFav ? Colors.redAccent : Colors.white,
                     onTap: () {
                       HapticFeedback.mediumImpact();
-                      movieProvider.toggleFavoriteActor(actorDetails);
+                      favoriteProvider.toggleFavoriteActor(actorDetails);
                     },
                   );
                 },

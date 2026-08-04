@@ -46,6 +46,21 @@ class Movie {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'overview': overview,
+      'poster_path': posterPath,
+      'backdrop_path': backdropPath,
+      'vote_average': voteAverage,
+      'release_date': releaseDate,
+      'isTv': isTv,
+      'origin_country': originCountry,
+      'character': character,
+    };
+  }
+
   String get fullPosterPath => posterPath.isNotEmpty
       ? 'https://image.tmdb.org/t/p/w500$posterPath'
       : 'https://via.placeholder.com/500x750?text=No+Image';
@@ -97,6 +112,15 @@ class Cast {
       placeOfBirth: json['place_of_birth'],
       popularity: (json['popularity'] as num?)?.toDouble(),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'profile_path': profilePath,
+      'character': character,
+    };
   }
 
   String get fullProfilePath {
