@@ -9,12 +9,9 @@ class ApiService {
   static const String _proxyUrl =
       'https://delicate-dew-e24d.gusthipangestu1906.workers.dev';
 
-  // App Secret untuk memvalidasi request ke proxy (Harus sama dengan APP_PROXY_SECRET di Cloudflare)
+  // App Secret untuk memvalidasi request ke proxy (Diambil dari --dart-define saat build)
   static String get _appProxySecret {
-    return const String.fromEnvironment(
-      'APP_PROXY_SECRET',
-      defaultValue: 'Haleluyah1976',
-    );
+    return const String.fromEnvironment('APP_PROXY_SECRET');
   }
 
   // Backup key jika tidak menggunakan proxy (Opsional)
