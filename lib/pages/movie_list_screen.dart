@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../providers/movie_provider.dart';
+import '../features/movie/presentation/providers/movie_provider.dart';
 import '../providers/history_provider.dart';
-import '../widgets/movie_card.dart';
-import '../widgets/shimmer_loading.dart';
+import '../core/widgets/movie_card.dart';
+import '../core/widgets/shimmer_loading.dart';
 
 class MovieListScreen extends StatefulWidget {
   const MovieListScreen({super.key});

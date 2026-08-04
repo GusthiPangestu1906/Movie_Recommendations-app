@@ -5,8 +5,19 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/movie.dart';
 
 class ApiService {
-  // KEAMANAN: API Key diambil dari environment variables atau build flags
-  // Tidak ada hardcoded key di source code
+  // KEAMANAN: Menggunakan Proxy Cloudflare untuk menyembunyikan API Key
+  static const String _proxyUrl =
+      'https://delicate-dew-e24d.gusthipangestu1906.workers.dev';
+
+  // App Secret untuk memvalidasi request ke proxy (Harus sama dengan APP_PROXY_SECRET di Cloudflare)
+  static String get _appProxySecret {
+    return const String.fromEnvironment(
+      'APP_PROXY_SECRET',
+      defaultValue: 'Haleluyah1976',
+    );
+  }
+
+  // Backup key jika tidak menggunakan proxy (Opsional)
   static String get _apiKey {
     const keyFromEnv = String.fromEnvironment('TMDB_API_KEY');
     if (keyFromEnv.isNotEmpty) return keyFromEnv;
@@ -14,6 +25,14 @@ class ApiService {
   }
 
   static const String _baseUrl = 'https://api.themoviedb.org/3';
+
+  // LOGIKA OTOMATIS:
+  // Jika sedang RUN/DEBUG di localhost -> Gunakan API Key lokal (.env)
+  // Jika sedang RELEASE/DEPLOY (GitHub/Hosting) -> Gunakan Cloudflare Proxy
+  static bool get _useProxy {
+    if (kDebugMode) return false; // Matikan proxy saat di localhost
+    return _proxyUrl.contains('workers.dev'); // Aktifkan jika sudah dideploy
+  }
 
   // Simple in-memory cache
   final Map<String, dynamic> _cache = {};
@@ -27,15 +46,18 @@ class ApiService {
       final uri = Uri.parse(url);
 
       // KEAMANAN: Persiapkan headers dengan aman
-      Map<String, String>? headers;
-      if (!uri.host.contains('wikidata.org') && !isWikidata) {
-        headers = {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        };
-        if (additionalHeaders != null) {
-          headers.addAll(additionalHeaders);
-        }
+      Map<String, String> headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      };
+
+      // Tambahkan secret jika menggunakan proxy
+      if (_useProxy && !uri.host.contains('wikidata.org') && !isWikidata) {
+        headers['X-App-Proxy-Secret'] = _appProxySecret;
+      }
+
+      if (additionalHeaders != null) {
+        headers.addAll(additionalHeaders);
       }
 
       final response = await http
@@ -64,16 +86,21 @@ class ApiService {
     return data;
   }
 
-  // KEAMANAN: Helper untuk build URL dengan API key di query parameter
-  // (TMDB tidak support header auth, jadi key harus di URL)
+  // KEAMANAN: Helper untuk build URL.
+  // Jika pakai proxy, API Key tidak disertakan di URL karena ditangani Worker.
   String _buildTmdbUrl(String endpoint, {Map<String, String>? params}) {
+    if (_useProxy) {
+      final uri = Uri.parse(_proxyUrl + endpoint);
+      return uri.replace(queryParameters: params).toString();
+    }
+
     final queryParams = {...?params, 'api_key': _apiKey};
     final uri = Uri.parse(_baseUrl + endpoint);
     return uri.replace(queryParameters: queryParams).toString();
   }
 
   Future<List<Movie>> getNowPlayingMovies() async {
-    if (_apiKey.isEmpty) throw Exception('API Key is missing');
+    if (!_useProxy && _apiKey.isEmpty) throw Exception('API Key is missing');
     final url = _buildTmdbUrl('/movie/now_playing');
     final data = await _getWithCache(url);
     if (data != null) {
@@ -85,7 +112,7 @@ class ApiService {
   }
 
   Future<List<Movie>> getTvSeries({int page = 1, String? originCountry}) async {
-    if (_apiKey.isEmpty) throw Exception('API Key is missing');
+    if (!_useProxy && _apiKey.isEmpty) throw Exception('API Key is missing');
     final params = {
       'page': page.toString(),
       'sort_by': 'popularity.desc',
@@ -106,7 +133,7 @@ class ApiService {
     String category, {
     int page = 1,
   }) async {
-    if (_apiKey.isEmpty) throw Exception('API Key is missing');
+    if (!_useProxy && _apiKey.isEmpty) throw Exception('API Key is missing');
     final params = {'page': page.toString()};
     final url = _buildTmdbUrl('/movie/$category', params: params);
     final data = await _getWithCache(url);
@@ -124,7 +151,7 @@ class ApiService {
     String? releaseDateLte,
     String? withGenres,
   }) async {
-    if (_apiKey.isEmpty) throw Exception('API Key is missing');
+    if (!_useProxy && _apiKey.isEmpty) throw Exception('API Key is missing');
     final params = {
       'page': page.toString(),
       'sort_by': 'popularity.desc',
@@ -147,7 +174,7 @@ class ApiService {
     int movieId, {
     bool isTv = false,
   }) async {
-    if (_apiKey.isEmpty) throw Exception('API Key is missing');
+    if (!_useProxy && _apiKey.isEmpty) throw Exception('API Key is missing');
     final type = isTv ? 'tv' : 'movie';
     final url = _buildTmdbUrl('/$type/$movieId/recommendations');
     final data = await _getWithCache(url);
@@ -160,7 +187,7 @@ class ApiService {
   }
 
   Future<List<Movie>> getDetails(int movieId, {bool isTv = false}) async {
-    if (_apiKey.isEmpty) throw Exception('API Key is missing');
+    if (!_useProxy && _apiKey.isEmpty) throw Exception('API Key is missing');
     final type = isTv ? 'tv' : 'movie';
     final url = _buildTmdbUrl('/$type/$movieId');
     final data = await _getWithCache(url);
@@ -177,7 +204,7 @@ class ApiService {
     bool isTv = false,
     int page = 1,
   }) async {
-    if (_apiKey.isEmpty) throw Exception('API Key is missing');
+    if (!_useProxy && _apiKey.isEmpty) throw Exception('API Key is missing');
     final type = isTv ? 'tv' : 'movie';
     final params = {
       'query': query,
@@ -213,7 +240,7 @@ class ApiService {
   }
 
   Future<List<Cast>> getMovieCast(int movieId, {bool isTv = false}) async {
-    if (_apiKey.isEmpty) throw Exception('API Key is missing');
+    if (!_useProxy && _apiKey.isEmpty) throw Exception('API Key is missing');
     final type = isTv ? 'tv' : 'movie';
     final url = _buildTmdbUrl('/$type/$movieId/credits');
     final data = await _getWithCache(url);
@@ -226,7 +253,7 @@ class ApiService {
   }
 
   Future<String?> getMovieTrailer(int movieId, {bool isTv = false}) async {
-    if (_apiKey.isEmpty) throw Exception('API Key is missing');
+    if (!_useProxy && _apiKey.isEmpty) throw Exception('API Key is missing');
     final type = isTv ? 'tv' : 'movie';
     final url = _buildTmdbUrl('/$type/$movieId/videos');
     final data = await _getWithCache(url);
@@ -247,7 +274,7 @@ class ApiService {
     bool isTv = false,
   }) async {
     if (isTv) return 'TV-PG';
-    if (_apiKey.isEmpty) throw Exception('API Key is missing');
+    if (!_useProxy && _apiKey.isEmpty) throw Exception('API Key is missing');
     final url = _buildTmdbUrl('/movie/$movieId/release_dates');
     final data = await _getWithCache(url);
     if (data != null) {
@@ -272,7 +299,7 @@ class ApiService {
   }
 
   Future<List<Cast>> searchActors(String query) async {
-    if (_apiKey.isEmpty) throw Exception('API Key is missing');
+    if (!_useProxy && _apiKey.isEmpty) throw Exception('API Key is missing');
     final params = {'query': query};
     final url = _buildTmdbUrl('/search/person', params: params);
 
@@ -373,7 +400,7 @@ class ApiService {
   }
 
   Future<Map<String, String?>> getPersonExternalIds(int personId) async {
-    if (_apiKey.isEmpty) throw Exception('API Key is missing');
+    if (!_useProxy && _apiKey.isEmpty) throw Exception('API Key is missing');
     final url = _buildTmdbUrl('/person/$personId/external_ids');
     final data = await _makeGetRequest(url);
     if (data != null) {
@@ -387,7 +414,7 @@ class ApiService {
   }
 
   Future<Cast?> getPersonDetails(int personId) async {
-    if (_apiKey.isEmpty) throw Exception('API Key is missing');
+    if (!_useProxy && _apiKey.isEmpty) throw Exception('API Key is missing');
     final params = {'append_to_response': 'combined_credits'};
     final url = _buildTmdbUrl('/person/$personId', params: params);
     final data = await _makeGetRequest(url);
@@ -404,7 +431,7 @@ class ApiService {
   }
 
   Future<Map<String, List<Movie>>> getVerifiedFilmography(int personId) async {
-    if (_apiKey.isEmpty) throw Exception('API Key is missing');
+    if (!_useProxy && _apiKey.isEmpty) throw Exception('API Key is missing');
     final url = _buildTmdbUrl('/person/$personId/combined_credits');
     final data = await _makeGetRequest(url);
 

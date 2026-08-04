@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../providers/movie_provider.dart';
+import '../../../movie/presentation/providers/movie_provider.dart';
+import '../../../favorite/presentation/providers/favorite_provider.dart';
+import '../../../search/presentation/providers/search_provider.dart';
 import '../providers/actor_detail_provider.dart';
 import '../widgets/actor_header.dart';
 import '../widgets/quick_stats_bar.dart';
@@ -22,6 +24,8 @@ class ActorDetailPage extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => ActorDetailProvider(
         movieProvider: Provider.of<MovieProvider>(context, listen: false),
+        favoriteProvider: Provider.of<FavoriteProvider>(context, listen: false),
+        searchProvider: Provider.of<SearchProvider>(context, listen: false),
         actorId: actorId,
       )..loadActorData(),
       child: Scaffold(

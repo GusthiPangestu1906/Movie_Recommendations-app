@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../providers/auth_provider.dart';
-import '../../../../providers/movie_provider.dart';
+import '../../../tv/presentation/providers/tv_provider.dart';
 import '../../../../pages/actors_page.dart';
 import '../providers/home_provider.dart';
 import 'profile_sheet.dart';
@@ -93,7 +93,7 @@ class HomeDrawer extends StatelessWidget {
             onTap: () {
               homeProvider.setDramaMode(false);
               homeProvider.setIndex(0);
-              Provider.of<MovieProvider>(
+              Provider.of<TvProvider>(
                 context,
                 listen: false,
               ).setDramaMode(false);
@@ -108,7 +108,7 @@ class HomeDrawer extends StatelessWidget {
             onTap: () {
               homeProvider.setDramaMode(true);
               homeProvider.setIndex(0);
-              Provider.of<MovieProvider>(
+              Provider.of<TvProvider>(
                 context,
                 listen: false,
               ).setDramaMode(true);

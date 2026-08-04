@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../../../models/movie.dart';
-import '../../../../providers/movie_provider.dart';
+import '../../../movie/presentation/providers/movie_provider.dart';
+
+import '../../../favorite/presentation/providers/favorite_provider.dart';
+import '../../../search/presentation/providers/search_provider.dart';
 
 class ActorDetailProvider extends ChangeNotifier {
   final MovieProvider movieProvider;
+  final FavoriteProvider favoriteProvider;
+  final SearchProvider searchProvider;
   final int actorId;
 
   Cast? _actorDetails;
@@ -13,7 +18,12 @@ class ActorDetailProvider extends ChangeNotifier {
   bool _isLoadingFilmography = true;
   bool _isBiographyExpanded = false;
 
-  ActorDetailProvider({required this.movieProvider, required this.actorId});
+  ActorDetailProvider({
+    required this.movieProvider,
+    required this.favoriteProvider,
+    required this.searchProvider,
+    required this.actorId,
+  });
 
   Cast? get actorDetails => _actorDetails;
   List<Movie>? get verifiedMovies => _verifiedMovies;
@@ -50,14 +60,14 @@ class ActorDetailProvider extends ChangeNotifier {
         Cast? fallbackActor;
 
         try {
-          fallbackActor = movieProvider.favoriteActors.firstWhere(
+          fallbackActor = favoriteProvider.favoriteActors.firstWhere(
             (a) => a.id == actorId,
           );
         } catch (_) {}
 
         if (fallbackActor == null) {
           try {
-            fallbackActor = movieProvider.globalActorSearchResults.firstWhere(
+            fallbackActor = searchProvider.globalActorSearchResults.firstWhere(
               (a) => a.id == actorId,
             );
           } catch (_) {}
