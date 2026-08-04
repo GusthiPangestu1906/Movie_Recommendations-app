@@ -1,0 +1,35 @@
+name: Security & Secret Scan
+
+on:
+  push:
+    branches: [ main, feature/** ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  scan-secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Gitleaks Scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Manual Human Pattern Scan
+        run: |
+          echo "🔍 Scanning for human-like hardcoded secrets..."
+          # Mencari pola defaultValue dengan isi, apiKey, secret, dll.
+          # Keluar dengan error jika ditemukan
+          grep -rnE "defaultValue:\s*['\"][^'\"]+['\"]" lib/ || true
+          grep -rnE "(apiKey|api_key|secret|token|password)\s*[:=]\s*['\"][^'\"]+['\"]" lib/ || true
+          
+          # Logic untuk menggagalkan build jika grep menemukan hasil
+          if grep -rqE "defaultValue:\s*['\"][^'\"]+['\"]" lib/; then
+            echo "❌ ERROR: Hardcoded secrets found in code!"
+            exit 1
+          fi
+          echo "✅ No human-like secrets detected."

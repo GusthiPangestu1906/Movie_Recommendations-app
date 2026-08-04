@@ -32,6 +32,7 @@ jobs:
       - name: Build Web
         run: |
           flutter build web --release \
+            --dart-define=APP_PROXY_SECRET=${{ secrets.APP_PROXY_SECRET }} \
             --dart-define=TMDB_API_KEY=${{ secrets.TMDB_API_KEY }} \
             --dart-define=FIREBASE_WEB_KEY=${{ secrets.FIREBASE_WEB_KEY }} \
             --dart-define=FIREBASE_ANDROID_KEY=${{ secrets.FIREBASE_ANDROID_KEY }} \

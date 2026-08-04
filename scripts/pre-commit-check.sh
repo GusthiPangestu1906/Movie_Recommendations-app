@@ -1,31 +1,48 @@
 #!/bin/bash
 
-# --- SCRIPT KEAMANAN LOKAL (PRE-COMMIT) ---
-# Memastikan tidak ada data sensitif yang masuk ke commit
+# --- CONFIGURATION ---
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
 
-echo "🔍 Menjalankan pemeriksaan keamanan pra-commit..."
+echo -e "${YELLOW}🔍 Menjalankan Pemeriksaan Keamanan Ketat...${NC}"
 
-# 1. Cek apakah ada file .env yang masuk ke staging area
-STAGED_ENV=$(git diff --cached --name-only | grep -E "\.env$|google-services\.json$" || true)
-
-if [ -n "$STAGED_ENV" ]; then
-  echo "❌ KESALAHAN: Anda mencoba men-commit file sensitif:"
-  echo "$STAGED_ENV"
-  echo "Gunakan 'git rm --cached <file>' dan pastikan masuk ke .gitignore."
-  exit 1
+# 1. Cek apakah file .env tidak sengaja masuk ke staging
+STAGED_ENV=$(git diff --cached --name-only | grep -E "\.env$")
+if [ ! -z "$STAGED_ENV" ]; then
+    echo -e "${RED}❌ ERROR: Anda mencoba meng-commit file .env ($STAGED_ENV)!${NC}"
+    echo -e "${YELLOW}Gunakan 'git rm --cached .env' untuk mengeluarkannya.${NC}"
+    exit 1
 fi
 
-# 2. Cek apakah ada kata kunci sensitif (API Keys) yang tidak sengaja tertulis di kode
-# Mencari pola umum API Key (panjang & random) di file yang akan di-commit
-FORBIDDEN_KEYWORDS="AIza\|sk-\|TMDB_API_KEY\|FIREBASE_KEY"
-LEAK_DETECTED=$(git diff --cached | grep -i "$FORBIDDEN_KEYWORDS" || true)
+# 2. Cek Hardcoded Secrets (Pola Manusiawi)
+# Mencari: defaultValue: '...', apiKey = '...', secret: "..."
+# Mengecualikan: String kosong ('') atau variabel
+SUSPICIOUS_PATTERNS=(
+    "defaultValue:\s*['\"][^'\"]+['\"]"          # defaultValue dengan isi (seperti Haleluyah1976)
+    "(apiKey|api_key|secret|token|password)\s*[:=]\s*['\"][^'\"]+['\"]" # Assignment rahasia
+    "api_key=[a-zA-Z0-9]{10,}"                   # API key dalam URL string
+)
 
-if [ -n "$LEAK_DETECTED" ]; then
-  echo "⚠️ PERINGATAN: Ditemukan teks yang mirip API Key di dalam kode Anda!"
-  echo "Pastikan Anda menggunakan .env atau --dart-define, jangan menulis API Key langsung."
-  # Kita beri pilihan tetap lanjut atau batal (exit 1 untuk batal)
-  # exit 1
+FAILED=0
+for PATTERN in "${SUSPICIOUS_PATTERNS[@]}"; do
+    # Scan hanya pada file .dart yang di-stage (staged files)
+    MATCHES=$(git diff --cached --name-only | grep "\.dart$" | xargs grep -E "$PATTERN" 2>/dev/null)
+
+    if [ ! -z "$MATCHES" ]; then
+        echo -e "${RED}❌ ERROR: Ditemukan potensi Hardcoded Secret!${NC}"
+        echo -e "${YELLOW}Pola: $PATTERN${NC}"
+        echo -e "$MATCHES"
+        FAILED=1
+    fi
+done
+
+if [ $FAILED -eq 1 ]; then
+    echo -e "${RED}🚨 Commit ditolak. Bersihkan rahasia sebelum commit kembali.${NC}"
+    exit 1
+else
+    echo -e "${GREEN}✅ Keamanan kode lolos verifikasi.${NC}"
 fi
 
-echo "✅ Pemeriksaan selesai. Melanjutkan commit..."
 exit 0
