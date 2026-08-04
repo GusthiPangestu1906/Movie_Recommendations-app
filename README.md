@@ -12,10 +12,11 @@ A modern, high-performance Flutter application for discovering movies, dramas, a
   - **Health Checks**: Automated asset integrity and production log verification.
 - **🚀 Flutter Web 3.22+ Optimized**: Migrated to the new `flutter.loader.load()` API for faster and warning-free web initialization.
 - **📱 PWA Ready**: Optimized manifest and service workers for "Add to Home Screen" support.
+- **🏗️ Domain-Driven Refactor**: Migrated from a monolithic `MovieProvider` to specialized domain providers (`Movie`, `Tv`, `Search`, `Favorite`) for better maintainability.
 - **🔐 Secure Architecture**: 
-  - **Dual-Mode API**: Menggunakan `.env` lokal untuk pengembangan dan Cloudflare Worker Proxy untuk versi produksi.
-  - **API Masking**: Menyembunyikan TMDB API Key dari sisi klien menggunakan Cloudflare sebagai perisai (Edge Computing).
-  - **Secret Management**: Validasi request menggunakan `X-App-Proxy-Secret` untuk mencegah akses unauthorized ke proxy.
+  - **Dual-Mode API**: Automatic switching between local `.env` (development) and Cloudflare Worker Proxy (production).
+  - **API Masking**: TMDB API Key is hidden server-side using Cloudflare Workers as a secure shield.
+  - **Secret Management**: Request validation using `X-App-Proxy-Secret` to prevent unauthorized proxy access.
 
 ## 🛠️ Tech Stack
 
