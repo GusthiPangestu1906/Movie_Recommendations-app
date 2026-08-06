@@ -7,6 +7,7 @@ import '../../../../models/movie.dart';
 import '../../../movie/presentation/providers/movie_provider.dart';
 import '../../../favorite/presentation/providers/favorite_provider.dart';
 import '../../../../core/widgets/shimmer_loading.dart';
+import '../../../../core/widgets/app_loading_indicator.dart';
 import '../../../actor_detail/presentation/pages/actor_detail_page.dart';
 
 class MovieCastSection extends StatelessWidget {
@@ -102,8 +103,9 @@ class MovieCastSection extends StatelessWidget {
                           width: 60,
                           height: 60,
                           fit: BoxFit.cover,
-                          placeholder: (context, url) =>
-                              Container(color: Colors.white10),
+                          placeholder: (context, url) => const Center(
+                            child: AppLoadingIndicator(size: 20),
+                          ),
                           errorWidget: (context, url, error) =>
                               const Icon(Icons.person, color: Colors.white30),
                         ),

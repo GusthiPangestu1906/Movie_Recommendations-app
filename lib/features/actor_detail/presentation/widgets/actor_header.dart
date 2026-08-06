@@ -7,6 +7,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../favorite/presentation/providers/favorite_provider.dart';
+import '../../../../core/widgets/app_loading_indicator.dart';
 import '../providers/actor_detail_provider.dart';
 
 class ActorHeader extends StatelessWidget {
@@ -62,7 +63,8 @@ class ActorHeader extends StatelessWidget {
                 height: 500,
                 fit: BoxFit.cover,
                 alignment: Alignment.topCenter,
-                placeholder: (context, url) => Container(color: Colors.white10),
+                placeholder: (context, url) =>
+                    Center(child: AppLoadingIndicator(size: 40)),
                 errorWidget: (context, url, error) => Container(
                   height: 500,
                   color: Colors.white10,

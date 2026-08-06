@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../models/movie.dart';
+import '../../../../core/widgets/app_loading_indicator.dart';
 import '../../../movie_detail/presentation/pages/movie_detail_page.dart';
 import '../providers/actor_detail_provider.dart';
 
@@ -150,7 +151,7 @@ class ActorFilmography extends StatelessWidget {
                     width: double.infinity,
                     alignment: Alignment.topCenter,
                     placeholder: (context, url) =>
-                        Container(color: Colors.white10),
+                        const Center(child: AppLoadingIndicator(size: 30)),
                     errorWidget: (context, url, error) =>
                         const Icon(Icons.movie, color: Colors.white10),
                   ),

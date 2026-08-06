@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../features/movie/presentation/providers/movie_provider.dart';
 import '../features/favorite/presentation/providers/favorite_provider.dart';
 import '../features/search/presentation/providers/search_provider.dart';
+import '../core/widgets/app_loading_indicator.dart';
 import '../models/movie.dart';
 import '../providers/connectivity_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -167,7 +168,7 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
                                 child: Center(
                                   child: Padding(
                                     padding: EdgeInsets.all(20.0),
-                                    child: CircularProgressIndicator(
+                                    child: AppLoadingIndicator(
                                       color: Color(0xFF5C6AC4),
                                     ),
                                   ),
@@ -317,7 +318,7 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
                     fit: BoxFit.cover,
                     alignment: Alignment.topCenter,
                     placeholder: (context, url) =>
-                        Container(color: Colors.white10),
+                        const Center(child: AppLoadingIndicator(size: 30)),
                     errorWidget: (context, url, error) =>
                         const Icon(Icons.person, color: Colors.white10),
                   ),

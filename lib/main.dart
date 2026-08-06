@@ -21,9 +21,29 @@ import 'features/home/presentation/pages/home_page.dart';
 import 'features/boot/presentation/pages/boot_page.dart';
 import 'features/boot/presentation/providers/boot_provider.dart';
 
-void main() {
-  // Pastikan binding siap secepat mungkin
+void main() async {
+  // 1. Pastikan binding siap
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 2. Inisialisasi Environment & Firebase sebelum runApp
+  try {
+    await dotenv.load(fileName: ".env");
+
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
+
+    if (!kIsWeb) {
+      FirebaseFirestore.instance.settings = const Settings(
+        persistenceEnabled: true,
+        cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+      );
+    }
+  } catch (e) {
+    debugPrint("Early Init Error: $e");
+  }
 
   runApp(
     MultiProvider(
@@ -84,55 +104,13 @@ void main() {
   );
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  late Future<void> _initializationFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializationFuture = _initialize();
-  }
-
-  Future<void> _initialize() async {
-    try {
-      // 1. Load Environment Variables secara paralel
-      await dotenv.load(fileName: ".env").catchError((e) {
-        debugPrint("[INFO] .env skipped: $e");
-      });
-
-      // 2. Initialize Firebase
-      if (Firebase.apps.isEmpty) {
-        final options = DefaultFirebaseOptions.currentPlatform;
-        if (options.apiKey.isNotEmpty) {
-          await Firebase.initializeApp(options: options);
-        }
-      }
-
-      // 3. Firestore Persistence (Non-Web)
-      if (!kIsWeb) {
-        try {
-          FirebaseFirestore.instance.settings = const Settings(
-            persistenceEnabled: true,
-            cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
-          );
-        } catch (_) {}
-      }
-    } catch (e) {
-      debugPrint("Init error: $e");
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'My Movies',
+      title: 'nyxdex',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
@@ -144,15 +122,7 @@ class _MyAppState extends State<MyApp> {
         useMaterial3: true,
       ),
       builder: (context, child) {
-        return FutureBuilder(
-          future: _initializationFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Container(color: const Color(0xFF0B0E1E));
-            }
-            return WebResponsiveWrapper(child: child ?? const SizedBox());
-          },
-        );
+        return WebResponsiveWrapper(child: child ?? const SizedBox());
       },
       home: Consumer<AuthProvider>(
         builder: (context, auth, _) {

@@ -1,4 +1,4 @@
-# My Movies - Movie & Drama Discovery App
+# nyxdex - Cinematic Universe
 
 A modern, high-performance Flutter application for discovering movies, dramas, and actors. This app features a clean UI, cinematic animations, and is optimized for both Mobile and Web platforms with a focus on security and best practices.
 

@@ -6,6 +6,7 @@ import 'package:animations/animations.dart';
 import '../../features/favorite/presentation/providers/favorite_provider.dart';
 import '../../models/movie.dart';
 import '../../features/movie_detail/presentation/pages/movie_detail_page.dart';
+import 'app_loading_indicator.dart';
 
 class FavoriteButton extends StatefulWidget {
   final Movie movie;
@@ -120,8 +121,9 @@ class MovieCard extends StatelessWidget {
                           alignment: Alignment.center,
                           width: double.infinity,
                           height: double.infinity,
-                          placeholder: (context, url) =>
-                              Container(color: Colors.white10),
+                          placeholder: (context, url) => const Center(
+                            child: AppLoadingIndicator(size: 20),
+                          ),
                           errorWidget: (context, url, error) =>
                               const Icon(Icons.movie, color: Colors.white10),
                         ),
@@ -246,7 +248,7 @@ class MovieCard extends StatelessWidget {
                         fit: BoxFit.cover,
                         alignment: Alignment.center,
                         placeholder: (context, url) =>
-                            Container(color: Colors.white10),
+                            const Center(child: AppLoadingIndicator(size: 30)),
                         errorWidget: (context, url, error) =>
                             const Icon(Icons.movie, color: Colors.white10),
                       ),

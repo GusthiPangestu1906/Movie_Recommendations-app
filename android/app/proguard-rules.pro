@@ -4,7 +4,7 @@
 -dontwarn com.google.android.play.core.**
 
 # Preserve data models from being obfuscated
--keep class com.example.mymovies.models.** { *; }
+-keep class com.nxrl.nyxdex.models.** { *; }
 
 # Generic Flutter preservation
 -keep class io.flutter.app.** { *; }

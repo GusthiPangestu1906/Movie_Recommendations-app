@@ -5,7 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import '../../../../models/movie.dart';
-import '../../../../core/widgets/shimmer_loading.dart';
+import '../../../../core/widgets/app_loading_indicator.dart';
 import '../providers/movie_detail_provider.dart';
 
 class MovieDetailAppBar extends StatelessWidget {
@@ -122,11 +122,8 @@ class MovieDetailAppBar extends StatelessWidget {
             CachedNetworkImage(
               imageUrl: movie.fullBackdropPath,
               fit: BoxFit.cover,
-              placeholder: (context, url) => const ShimmerLoading(
-                width: double.infinity,
-                height: double.infinity,
-                borderRadius: BorderRadius.zero,
-              ),
+              placeholder: (context, url) =>
+                  const Center(child: AppLoadingIndicator()),
               errorWidget: (context, url, error) =>
                   const Icon(Icons.broken_image, color: Colors.white10),
             ),
