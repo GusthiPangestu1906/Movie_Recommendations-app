@@ -43,6 +43,26 @@ if [ $FAILED -eq 1 ]; then
     exit 1
 else
     echo -e "${GREEN}✅ Keamanan kode lolos verifikasi.${NC}"
+
+    # 3. Jalankan Dart Format Check
+    echo -e "${YELLOW}📐 Memeriksa format kode (dart format)...${NC}"
+    dart format --set-exit-if-changed . > /dev/null
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}❌ ERROR: Kode belum dirapikan.${NC}"
+        echo -e "${YELLOW}Silakan jalankan 'dart format .' sebelum commit.${NC}"
+        exit 1
+    fi
+
+    # 4. Jalankan Flutter Analyze
+    echo -e "${YELLOW}🧪 Menjalankan analisa statis (flutter analyze)...${NC}"
+    # Langsung jalankan perintah dan cek exit code-nya
+    flutter analyze
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✅ Linter bersih.${NC}"
+    else
+        echo -e "${RED}❌ ERROR: Ditemukan masalah pada kode (Linter/Static Analysis).${NC}"
+        exit 1
+    fi
 fi
 
 exit 0

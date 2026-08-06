@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../providers/auth_provider.dart';
+import '../../../../core/widgets/app_loading_indicator.dart';
 
 class ProfileSheet extends StatefulWidget {
   const ProfileSheet({super.key});
@@ -170,11 +171,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
                         placeholder: (context, url) => Container(
                           color: Colors.white.withOpacity(0.05),
                           child: const Center(
-                            child: SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
+                            child: AppLoadingIndicator(size: 20),
                           ),
                         ),
                         errorWidget: (context, url, error) =>
@@ -222,14 +219,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
                 ).withOpacity(0.5),
               ),
               child: _isSaving
-                  ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
+                  ? const AppLoadingIndicator(size: 24, color: Colors.white)
                   : const Text(
                       'Save Changes',
                       style: TextStyle(

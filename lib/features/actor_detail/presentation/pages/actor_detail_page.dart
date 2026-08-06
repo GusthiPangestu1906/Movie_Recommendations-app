@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../movie/presentation/providers/movie_provider.dart';
 import '../../../favorite/presentation/providers/favorite_provider.dart';
 import '../../../search/presentation/providers/search_provider.dart';
+import '../../../../core/widgets/app_loading_indicator.dart';
 import '../providers/actor_detail_provider.dart';
 import '../widgets/actor_header.dart';
 import '../widgets/quick_stats_bar.dart';
@@ -33,8 +34,8 @@ class ActorDetailPage extends StatelessWidget {
         body: Consumer<ActorDetailProvider>(
           builder: (context, provider, child) {
             if (provider.isLoadingBasic) {
-              return const Center(
-                child: CircularProgressIndicator(color: Color(0xFF5C6AC4)),
+              return Center(
+                child: AppLoadingIndicator(color: const Color(0xFF5C6AC4)),
               );
             }
 

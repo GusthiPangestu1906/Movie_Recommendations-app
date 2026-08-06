@@ -1,27 +1,60 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 
 class BootProvider extends ChangeNotifier {
   double _progress = 0.0;
-  String _statusMessage = "Starting...";
+  String _status = "Initializing System...";
 
   double get progress => _progress;
-  String get statusMessage => _statusMessage;
+  String get status => _status;
 
-  final List<Map<String, dynamic>> _steps = [
-    {"progress": 0.2, "message": "Starting..."},
-    {"progress": 0.4, "message": "Loading..."},
-    {"progress": 0.7, "message": "Syncing..."},
-    {"progress": 1.0, "message": "Ready!"},
+  final List<String> _logs = [
+    "Loading Kernel...",
+    "Initializing Firebase...",
+    "Checking Network Connectivity...",
+    "Syncing Remote Config...",
+    "Optimizing Database...",
+    "Mounting UI Modules...",
+    "Starting NYXDEX Engine...",
+    "Securing Connection...",
+    "Ready to Launch",
   ];
 
   Future<void> runBootSequence(VoidCallback onComplete) async {
-    for (var step in _steps) {
-      await Future.delayed(const Duration(milliseconds: 600));
-      _progress = (step["progress"] as num).toDouble();
-      _statusMessage = step["message"] as String;
+    _progress = 0.0;
+    _status = _logs[0];
+    notifyListeners();
+
+    final Random random = Random();
+
+    for (int i = 0; i < _logs.length; i++) {
+      // Update status text
+      _status = _logs[i];
+      notifyListeners();
+
+      // Hitung target progress untuk log ini
+      double targetProgress = (i + 1) / _logs.length;
+
+      // Durasi bervariasi biar gak kaku
+      int duration = 400 + random.nextInt(800);
+      if (i == 4) duration = 1500; // Simulasi optimasi yang lama
+
+      await _smoothProgress(_progress, targetProgress, duration);
+      await Future.delayed(Duration(milliseconds: random.nextInt(200)));
+    }
+
+    await Future.delayed(const Duration(milliseconds: 800));
+    onComplete();
+  }
+
+  Future<void> _smoothProgress(double start, double end, int durationMs) async {
+    final int steps = 15;
+    final int stepDuration = durationMs ~/ steps;
+
+    for (int i = 1; i <= steps; i++) {
+      await Future.delayed(Duration(milliseconds: stepDuration));
+      _progress = start + (end - start) * (i / steps);
       notifyListeners();
     }
-    await Future.delayed(const Duration(milliseconds: 1000));
-    onComplete();
   }
 }

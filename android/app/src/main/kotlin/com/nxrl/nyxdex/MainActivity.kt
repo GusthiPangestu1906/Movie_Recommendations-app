@@ -1,4 +1,4 @@
-package com.example.mymovies
+package com.nxrl.nyxdex
 
 import io.flutter.embedding.android.FlutterActivity
 

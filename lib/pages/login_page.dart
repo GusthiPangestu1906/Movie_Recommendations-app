@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../core/widgets/app_loading_indicator.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -69,11 +70,7 @@ class _LoginPageState extends State<LoginPage> {
               children: [
                 const SizedBox(height: 40),
                 Center(
-                  child: Image.asset(
-                    'assets/Group 3.png',
-                    width: 150,
-                    height: 150,
-                  ),
+                  child: Image.asset('assets/nyx.png', width: 150, height: 150),
                 ),
                 const SizedBox(height: 60),
                 Text(
@@ -148,13 +145,9 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     child: _isLoading
-                        ? const SizedBox(
-                            height: 24,
-                            width: 24,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2.5,
-                            ),
+                        ? const AppLoadingIndicator(
+                            size: 24,
+                            color: Colors.white,
                           )
                         : Text(
                             _isLoginMode ? 'Login' : 'Sign Up',

@@ -7,59 +7,48 @@ class BootProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final contentWidth = screenWidth > 600 ? 400.0 : screenWidth - 80.0;
-
     return Consumer<BootProvider>(
       builder: (context, provider, child) {
+        final screenWidth = MediaQuery.of(context).size.width;
+        // Gunakan lebar yang pasti (65% screen atau max 320)
+        final barWidth = screenWidth > 500 ? 320.0 : screenWidth * 0.65;
+
         return SizedBox(
-          width: contentWidth,
-          child: Column(
+          width: barWidth,
+          height: 2,
+          child: Stack(
             children: [
-              Stack(
-                children: [
-                  // Track
-                  Container(
-                    height: 4,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  // Fill
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 500),
-                    height: 4,
-                    width: contentWidth * provider.progress,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF4A56E2), Color(0xFF5C6AC4)],
-                      ),
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF4A56E2).withOpacity(0.3),
-                          blurRadius: 8,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+              // Track (Background)
+              Container(
+                width: barWidth,
+                height: 2,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.06),
+                  borderRadius: BorderRadius.circular(1),
+                ),
               ),
-              const SizedBox(height: 16),
-              // Status Message
-              AnimatedSwitcher(
+              // Fill (Progress)
+              AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
-                child: Text(
-                  provider.statusMessage,
-                  key: ValueKey(provider.statusMessage),
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.4),
-                    fontSize: 13,
-                    letterSpacing: 0.5,
-                    fontWeight: FontWeight.w400,
+                curve: Curves.easeOut,
+                width: barWidth * provider.progress,
+                height: 2,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color(0xFF4A56E2),
+                      Color(0xFF5C6AC4),
+                      Colors.white,
+                    ],
                   ),
+                  borderRadius: BorderRadius.circular(1),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF4A56E2).withOpacity(0.4),
+                      blurRadius: 8,
+                      offset: const Offset(0, 0),
+                    ),
+                  ],
                 ),
               ),
             ],

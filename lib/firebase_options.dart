@@ -87,6 +87,6 @@ class DefaultFirebaseOptions {
     messagingSenderId: _messagingSenderId,
     projectId: _projectId,
     storageBucket: _storageBucket,
-    iosBundleId: 'com.example.movieApp',
+    iosBundleId: 'com.nxrl.nyxdex',
   );
 }

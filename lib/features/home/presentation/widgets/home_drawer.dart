@@ -81,7 +81,7 @@ class HomeDrawer extends StatelessWidget {
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             accountEmail: Text(
-              user?.email ?? 'guest@mymovies.app',
+              user?.email ?? 'guest@nyxdex.app',
               style: const TextStyle(color: Colors.white38, fontSize: 13),
             ),
           ),
