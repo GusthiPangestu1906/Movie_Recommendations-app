@@ -8,8 +8,9 @@ import 'filter_sheet.dart';
 
 class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   final int currentIndex;
+  final bool isWeb;
 
-  const HomeAppBar({super.key, required this.currentIndex});
+  const HomeAppBar({super.key, required this.currentIndex, this.isWeb = false});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +19,11 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
     final tvProvider = Provider.of<TvProvider>(context, listen: false);
     final isDramaMode = homeProvider.isDramaMode;
 
-    String title = isDramaMode ? 'Drama Universe' : 'Movie Universe';
+    if (isWeb) {
+      return _buildWebAppBar(context, homeProvider, isDramaMode);
+    }
+
+    String title = isDramaMode ? 'NYXDEX DRAMA' : 'NYXDEX MOVIES';
     PreferredSizeWidget? bottom;
 
     if (currentIndex == 1) {
@@ -75,11 +80,18 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
       );
     } else if (currentIndex == 2) {
-      title = isDramaMode ? 'Drama History' : 'Movie History';
+      title = isDramaMode ? 'History' : 'History';
     }
 
     return AppBar(
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontWeight: FontWeight.w900,
+          letterSpacing: 1.5,
+          fontSize: 18,
+        ),
+      ),
       centerTitle: true,
       elevation: 0,
       backgroundColor: Colors.transparent,
@@ -103,6 +115,100 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
+  Widget _buildWebAppBar(
+    BuildContext context,
+    HomeProvider homeProvider,
+    bool isDramaMode,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+      child: Row(
+        children: [
+          const Text(
+            'NYXDEX',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 4,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(width: 60),
+          _navItem("MOVIES", !isDramaMode, () {
+            if (isDramaMode) homeProvider.toggleDramaMode();
+          }),
+          const SizedBox(width: 30),
+          _navItem("TV SERIES", isDramaMode, () {
+            if (!isDramaMode) homeProvider.toggleDramaMode();
+          }),
+          const Spacer(),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white.withOpacity(0.1)),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  isDramaMode
+                      ? Icons.tv_rounded
+                      : Icons.movie_creation_outlined,
+                  size: 16,
+                  color: Colors.blueAccent,
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  isDramaMode ? "TV MODE" : "MOVIE MODE",
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 20),
+          const CircleAvatar(
+            radius: 18,
+            backgroundColor: Colors.white10,
+            child: Icon(Icons.person_outline, color: Colors.white70, size: 20),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _navItem(String label, bool isActive, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              color: isActive ? Colors.white : Colors.white38,
+              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+              fontSize: 13,
+              letterSpacing: 2,
+            ),
+          ),
+          if (isActive)
+            Container(
+              margin: const EdgeInsets.only(top: 6),
+              height: 2,
+              width: 15,
+              color: Colors.blueAccent,
+            ),
+        ],
+      ),
+    );
+  }
+
   void _showFilterPicker(BuildContext context, bool isDramaMode) {
     showModalBottomSheet(
       context: context,
@@ -116,6 +222,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize =>
-      Size.fromHeight(kToolbarHeight + (currentIndex == 1 ? 60 : 0));
+  Size get preferredSize => Size.fromHeight(
+    isWeb ? 80 : (kToolbarHeight + (currentIndex == 1 ? 60 : 0)),
+  );
 }

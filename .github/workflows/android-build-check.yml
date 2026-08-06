@@ -41,7 +41,7 @@ jobs:
           touch .env
           mkdir -p android/app/src/debug
           # Buat dummy google-services.json yang lebih lengkap untuk melewati validasi Gradle
-          echo '{"project_info":{"project_number":"123456789012","project_id":"dummy-id"},"client":[{"client_info":{"mobilesdk_app_id":"1:123456789012:android:dummyid","android_client_info":{"package_name":"com.example.mymovies"}},"api_key":[{"current_key":"dummy-key"}],"services":{}}],"configuration_version":"1"}' > android/app/google-services.json
+          echo '{"project_info":{"project_number":"123456789012","project_id":"dummy-id"},"client":[{"client_info":{"mobilesdk_app_id":"1:123456789012:android:dummyid","android_client_info":{"package_name":"com.nxrl.nyxdex"}},"api_key":[{"current_key":"dummy-key"}],"services":{}}],"configuration_version":"1"}' > android/app/google-services.json
           cp android/app/google-services.json android/app/src/debug/google-services.json
 
       - name: Build Debug APK
