@@ -17,7 +17,7 @@ jobs:
     name: Gitleaks Scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # scan all history
 
@@ -30,7 +30,7 @@ jobs:
     name: Check for Sensitive Files
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Verify no secret files are committed
         run: |
