@@ -37,24 +37,25 @@ for FILE in $STAGED_DART_FILES; do
 done
 
 if [ $FORMAT_ERROR -eq 1 ]; then
-    echo -e "${YELLOW}👉 Jalankan 'dart format .' untuk memperbaiki semua file.${NC}"
+    echo -e "${YELLOW}👉 Jalankan 'dart format .' untuk memperbaiki file yang bermasalah.${NC}"
     exit 1
 fi
 
-# 4. Jalankan Flutter Analyze (Hanya jika ada perubahan signifikan)
+# 4. Jalankan Flutter Analyze
 echo -e "${YELLOW}🧪 Menjalankan analisa statis (flutter analyze)...${NC}"
-# Menggunakan --no-fatal-infos agar tidak terlalu cerewet
+# Redirect stderr ke stdout agar semua pesan (termasuk update flutter) tertangkap
 ANALYSIS=$(flutter analyze --no-fatal-infos 2>&1)
 EXIT_CODE=$?
 
-# Jika exit code 0 ATAU output mengandung "No issues found", maka dianggap lolos.
-# Ini untuk menangani bug exit code pada beberapa shell Windows.
-if [ $EXIT_CODE -eq 0 ] || [[ "$ANALYSIS" == *"No issues found"* ]]; then
+# Deteksi keberhasilan yang lebih tangguh:
+# Kita anggap lolos jika exit code 0 ATAU output mengandung teks "no issues found" (tanpa mempedulikan case/spasi)
+if [ $EXIT_CODE -eq 0 ] || echo "$ANALYSIS" | grep -qi "no issues found"; then
     echo -e "${GREEN}✅ Kode bersih dan rapi. Lanjut commit!${NC}"
     exit 0
 else
     echo -e "${RED}❌ ERROR: Ditemukan masalah pada kode.${NC}"
-    echo "$ANALYSIS" | grep -E "info|warning|error" | head -n 5
-    echo -e "${YELLOW}... (hanya menampilkan 5 masalah pertama)${NC}"
+    # Tampilkan hanya baris yang mengandung error/warning agar informatif
+    echo "$ANALYSIS" | grep -E "info|warning|error" | head -n 10
+    echo -e "${YELLOW}... (menampilkan ringkasan linter)${NC}"
     exit 1
 fi
