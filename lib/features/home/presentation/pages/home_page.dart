@@ -11,8 +11,28 @@ import '../widgets/home_app_bar.dart';
 import '../widgets/home_bottom_nav.dart';
 import '../widgets/offline_overlay.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  late PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    final homeProvider = Provider.of<HomeProvider>(context, listen: false);
+    _pageController = PageController(initialPage: homeProvider.currentIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   List<Widget> _getPages(bool isDramaMode) {
     return [
@@ -36,13 +56,27 @@ class HomePage extends StatelessWidget {
         builder: (context, connectivity, _) {
           return Stack(
             children: [
-              pages[currentIndex],
+              PageView(
+                controller: _pageController,
+                onPageChanged: (index) {
+                  homeProvider.setIndex(index);
+                },
+                children: pages,
+              ),
               if (!connectivity.isOnline) const OfflineOverlay(),
             ],
           );
         },
       ),
-      bottomNavigationBar: const HomeBottomNav(),
+      bottomNavigationBar: HomeBottomNav(
+        onTap: (index) {
+          _pageController.animateToPage(
+            index,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        },
+      ),
     );
   }
 }

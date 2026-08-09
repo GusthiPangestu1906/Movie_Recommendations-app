@@ -201,8 +201,7 @@ class ActorHeader extends StatelessWidget {
         border: Border.all(color: Colors.white.withOpacity(0.2)),
       ),
       child: SvgPicture.asset(
-        'assets/instagram.svg',
-        colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+        'assets/Instagram_logo_2022.svg',
         width: 24,
         height: 24,
       ),

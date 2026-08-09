@@ -66,6 +66,14 @@ class FavoriteProvider with ChangeNotifier {
     }
   }
 
+  Future<void> refreshFavorites() async {
+    if (_userId != null) {
+      await loadFromFirestore();
+    } else {
+      await loadFromLocal();
+    }
+  }
+
   Future<void> loadFromFirestore() async {
     if (_userId == null) return;
     try {

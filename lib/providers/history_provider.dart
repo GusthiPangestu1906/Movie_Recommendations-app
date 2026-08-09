@@ -87,6 +87,14 @@ class HistoryProvider with ChangeNotifier {
     }
   }
 
+  Future<void> refreshHistory() async {
+    if (_userId != null) {
+      await _loadFromFirestore();
+    } else {
+      await _loadHistory();
+    }
+  }
+
   Future<void> _loadFromFirestore() async {
     if (_userId == null) return;
 

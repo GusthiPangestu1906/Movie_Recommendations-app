@@ -93,23 +93,31 @@ class _HistoryPageState extends State<HistoryPage> {
             );
           }
 
-          return CustomScrollView(
-            slivers: [
-              SliverPadding(
-                padding: const EdgeInsets.all(16),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) => RepaintBoundary(
-                      child: MovieCard(movie: history[index])
-                          .animate(delay: (index * 50).ms)
-                          .fadeIn(duration: 400.ms)
-                          .slideY(begin: 0.1),
+          return RefreshIndicator(
+            onRefresh: () async {
+              await provider.refreshHistory();
+            },
+            color: const Color(0xFF5C6AC4),
+            backgroundColor: const Color(0xFF1A1D2E),
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.all(16),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => RepaintBoundary(
+                        child: MovieCard(movie: history[index])
+                            .animate(delay: (index * 50).ms)
+                            .fadeIn(duration: 400.ms)
+                            .slideY(begin: 0.1),
+                      ),
+                      childCount: history.length,
                     ),
-                    childCount: history.length,
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           );
         },
       ),
