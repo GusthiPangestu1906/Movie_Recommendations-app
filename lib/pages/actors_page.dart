@@ -168,7 +168,9 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
                             ],
                             if (isSearching) ...[
                               SliverToBoxAdapter(
-                                child: _buildSectionHeader('Discover New Stars'),
+                                child: _buildSectionHeader(
+                                  'Discover New Stars',
+                                ),
                               ),
                               if (searchProvider.isActorLoading)
                                 const SliverToBoxAdapter(
