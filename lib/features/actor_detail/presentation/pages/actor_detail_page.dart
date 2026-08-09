@@ -6,7 +6,6 @@ import '../../../search/presentation/providers/search_provider.dart';
 import '../../../../core/widgets/app_loading_indicator.dart';
 import '../providers/actor_detail_provider.dart';
 import '../widgets/actor_header.dart';
-import '../widgets/quick_stats_bar.dart';
 import '../widgets/actor_biography.dart';
 import '../widgets/actor_filmography.dart';
 
@@ -34,9 +33,7 @@ class ActorDetailPage extends StatelessWidget {
         body: Consumer<ActorDetailProvider>(
           builder: (context, provider, child) {
             if (provider.isLoadingBasic) {
-              return Center(
-                child: AppLoadingIndicator(color: const Color(0xFF5C6AC4)),
-              );
+              return const Center(child: AppLoadingIndicator());
             }
 
             if (provider.actorDetails == null) {
@@ -61,8 +58,8 @@ class ActorDetailPage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(height: 10),
-                          QuickStatsBar(),
-                          SizedBox(height: 32),
+                          // QuickStatsBar removed as it's now on the back of the photo card
+                          SizedBox(height: 10),
                           ActorBiography(),
                           SizedBox(height: 32),
                           ActorFilmography(),
