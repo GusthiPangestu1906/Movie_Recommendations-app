@@ -10,15 +10,9 @@ class AppLoadingIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child:
-          Image.asset(
-                'assets/reel.png',
-                width: size,
-                height: size,
-                color: color,
-              )
-              .animate(onPlay: (c) => c.repeat())
-              .rotate(duration: 2.seconds, curve: Curves.linear),
+      child: Image.asset('assets/reel.png', width: size, height: size)
+          .animate(onPlay: (c) => c.repeat())
+          .rotate(duration: 2.seconds, curve: Curves.linear),
     );
   }
 }
