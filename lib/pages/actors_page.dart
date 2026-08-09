@@ -134,77 +134,87 @@ class _FavoriteActorsPageState extends State<FavoriteActorsPage> {
                         return _buildEmptyState(false);
                       }
 
-                      return CustomScrollView(
-                        slivers: [
-                          if (favorites.isNotEmpty) ...[
-                            SliverToBoxAdapter(
-                              child: _buildSectionHeader('Your Favorites'),
-                            ),
-                            SliverPadding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
+                      return RefreshIndicator(
+                        onRefresh: () async {
+                          await favoriteProvider.refreshFavorites();
+                        },
+                        color: const Color(0xFF5C6AC4),
+                        backgroundColor: const Color(0xFF1A1D2E),
+                        child: CustomScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          slivers: [
+                            if (favorites.isNotEmpty) ...[
+                              SliverToBoxAdapter(
+                                child: _buildSectionHeader('Your Favorites'),
                               ),
-                              sliver: SliverList(
-                                delegate: SliverChildBuilderDelegate(
-                                  (context, index) => _buildActorCard(
-                                    context,
-                                    favorites[index],
-                                    favoriteProvider,
-                                  ),
-                                  childCount: favorites.length,
-                                ),
-                              ),
-                            ),
-                            const SliverToBoxAdapter(
-                              child: SizedBox(height: 20),
-                            ),
-                          ],
-                          if (isSearching) ...[
-                            SliverToBoxAdapter(
-                              child: _buildSectionHeader('Discover New Stars'),
-                            ),
-                            if (searchProvider.isActorLoading)
-                              const SliverToBoxAdapter(
-                                child: Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(20.0),
-                                    child: AppLoadingIndicator(
-                                      color: Color(0xFF5C6AC4),
-                                    ),
-                                  ),
-                                ),
-                              )
-                            else
                               SliverPadding(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 16,
                                 ),
                                 sliver: SliverList(
                                   delegate: SliverChildBuilderDelegate(
-                                    (context, index) {
-                                      final searchResults = globalResults
+                                    (context, index) => _buildActorCard(
+                                      context,
+                                      favorites[index],
+                                      favoriteProvider,
+                                    ),
+                                    childCount: favorites.length,
+                                  ),
+                                ),
+                              ),
+                              const SliverToBoxAdapter(
+                                child: SizedBox(height: 20),
+                              ),
+                            ],
+                            if (isSearching) ...[
+                              SliverToBoxAdapter(
+                                child: _buildSectionHeader(
+                                  'Discover New Stars',
+                                ),
+                              ),
+                              if (searchProvider.isActorLoading)
+                                const SliverToBoxAdapter(
+                                  child: Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.all(20.0),
+                                      child: AppLoadingIndicator(
+                                        color: Color(0xFF5C6AC4),
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              else
+                                SliverPadding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
+                                  sliver: SliverList(
+                                    delegate: SliverChildBuilderDelegate(
+                                      (context, index) {
+                                        final searchResults = globalResults
+                                            .where(
+                                              (g) => !favoriteProvider
+                                                  .isFavoriteActor(g.id),
+                                            )
+                                            .toList();
+                                        return _buildActorCard(
+                                          context,
+                                          searchResults[index],
+                                          favoriteProvider,
+                                        );
+                                      },
+                                      childCount: globalResults
                                           .where(
                                             (g) => !favoriteProvider
                                                 .isFavoriteActor(g.id),
                                           )
-                                          .toList();
-                                      return _buildActorCard(
-                                        context,
-                                        searchResults[index],
-                                        favoriteProvider,
-                                      );
-                                    },
-                                    childCount: globalResults
-                                        .where(
-                                          (g) => !favoriteProvider
-                                              .isFavoriteActor(g.id),
-                                        )
-                                        .length,
+                                          .length,
+                                    ),
                                   ),
                                 ),
-                              ),
+                            ],
                           ],
-                        ],
+                        ),
                       );
                     },
               ),

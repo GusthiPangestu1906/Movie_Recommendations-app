@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 import '../providers/home_provider.dart';
 
 class HomeBottomNav extends StatelessWidget {
-  const HomeBottomNav({super.key});
+  final Function(int)? onTap;
+
+  const HomeBottomNav({super.key, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +27,13 @@ class HomeBottomNav extends StatelessWidget {
         selectedFontSize: 10,
         type: BottomNavigationBarType.fixed,
         elevation: 0,
-        onTap: (index) => homeProvider.setIndex(index),
+        onTap: (index) {
+          if (onTap != null) {
+            onTap!(index);
+          } else {
+            homeProvider.setIndex(index);
+          }
+        },
         items: [
           BottomNavigationBarItem(
             icon: Padding(
