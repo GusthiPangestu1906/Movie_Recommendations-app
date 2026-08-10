@@ -99,7 +99,7 @@ class FilterSheet extends StatelessWidget {
                                     country: country['value']!.isEmpty
                                         ? null
                                         : country['value'],
-                                    history: historyProvider.history,
+                                    history: historyProvider.allHistory,
                                   );
                                 });
                               },
@@ -196,7 +196,7 @@ class FilterSheet extends StatelessWidget {
                           onPressed: () {
                             if (!isDramaMode) {
                               searchProvider.applyGenreFilter(
-                                history: historyProvider.history,
+                                history: historyProvider.allHistory,
                               );
                             }
                             Navigator.pop(context);

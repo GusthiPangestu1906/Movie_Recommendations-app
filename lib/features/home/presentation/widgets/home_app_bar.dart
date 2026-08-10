@@ -45,7 +45,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
                     value,
                     isDramaMode: isDramaMode,
                     selectedCountry: tvProvider.selectedCountry,
-                    history: historyProvider.history,
+                    history: historyProvider.allHistory,
                   ),
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(

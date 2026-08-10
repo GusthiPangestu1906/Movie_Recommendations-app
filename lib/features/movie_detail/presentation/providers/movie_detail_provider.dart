@@ -22,7 +22,7 @@ class MovieDetailProvider extends ChangeNotifier {
   Future<void> init() async {
     await movieProvider.loadMovieExtras(
       movie,
-      history: historyProvider.history,
+      history: historyProvider.allHistory,
     );
   }
 
@@ -118,12 +118,12 @@ class MovieDetailProvider extends ChangeNotifier {
     if (movie.isTv) {
       movieProvider.fetchTvRecommendations(
         favoriteTv: favoriteProvider.favoriteTv,
-        history: historyProvider.history,
+        history: historyProvider.allHistory,
       );
     } else {
       movieProvider.fetchRecommendations(
         favoriteMovies: favoriteProvider.favoriteMovies,
-        history: historyProvider.history,
+        history: historyProvider.allHistory,
       );
     }
   }

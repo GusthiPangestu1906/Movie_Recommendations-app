@@ -27,8 +27,8 @@ class _MovieListScreenState extends State<MovieListScreen> {
         context,
         listen: false,
       );
-      provider.fetchNowPlaying(history: historyProvider.history);
-      provider.fetchRecommendations(history: historyProvider.history);
+      provider.fetchNowPlaying(history: historyProvider.allHistory);
+      provider.fetchRecommendations(history: historyProvider.allHistory);
     });
 
     _scrollController.addListener(() {
@@ -41,7 +41,7 @@ class _MovieListScreenState extends State<MovieListScreen> {
         Provider.of<MovieProvider>(
           context,
           listen: false,
-        ).fetchNextPage(history: historyProvider.history);
+        ).fetchNextPage(history: historyProvider.allHistory);
       }
     });
   }

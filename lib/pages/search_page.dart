@@ -41,7 +41,7 @@ class _SearchPageState extends State<SearchPage> {
         searchProvider.fetchMoreSearchResults(
           isDramaMode: tvProvider.isDramaMode,
           selectedCountry: tvProvider.selectedCountry,
-          history: historyProvider.history,
+          history: historyProvider.allHistory,
         );
       }
     }

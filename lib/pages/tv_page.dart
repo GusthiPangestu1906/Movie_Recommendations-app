@@ -28,13 +28,13 @@ class _TvPageState extends State<TvPage> {
       if (!mounted) return;
       final historyProvider = context.read<HistoryProvider>();
       context.read<TvProvider>().fetchTvSeries(
-        history: historyProvider.history,
+        history: historyProvider.allHistory,
       );
       final movieProvider = context.read<MovieProvider>();
       final favoriteProvider = context.read<FavoriteProvider>();
       movieProvider.fetchTvRecommendations(
         favoriteTv: favoriteProvider.favoriteTv,
-        history: historyProvider.history,
+        history: historyProvider.allHistory,
       );
     });
 
@@ -44,13 +44,13 @@ class _TvPageState extends State<TvPage> {
         final historyProvider = context.read<HistoryProvider>();
         if (_tvSearchController.text.isEmpty) {
           context.read<TvProvider>().fetchMoreTvSeries(
-            history: historyProvider.history,
+            history: historyProvider.allHistory,
           );
         } else {
           context.read<SearchProvider>().fetchMoreSearchResults(
             isDramaMode: true,
             selectedCountry: context.read<TvProvider>().selectedCountry,
-            history: historyProvider.history,
+            history: historyProvider.allHistory,
           );
         }
       }
