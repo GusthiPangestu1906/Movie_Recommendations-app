@@ -48,8 +48,11 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip cross-origin requests
-  if (url.origin !== location.origin) {
+  // Cache TMDB posters & cross-origin images
+  const isTmdbImage = url.hostname.includes('image.tmdb.org');
+  const isSameOrigin = url.origin === location.origin;
+
+  if (!isSameOrigin && !isTmdbImage) {
     return;
   }
 

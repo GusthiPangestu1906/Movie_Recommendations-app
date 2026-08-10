@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import '../features/movie/presentation/providers/movie_provider.dart';
 import '../providers/history_provider.dart';
 import '../core/widgets/movie_card.dart';
@@ -125,14 +124,10 @@ class _MovieListScreenState extends State<MovieListScreen> {
                     itemCount: provider.recommendations.length,
                     itemBuilder: (context, index) {
                       return RepaintBoundary(
-                        child:
-                            MovieCard(
-                                  movie: provider.recommendations[index],
-                                  isHorizontal: true,
-                                )
-                                .animate(delay: (index * 100).ms)
-                                .fadeIn(duration: 400.ms)
-                                .slideX(begin: 0.2),
+                        child: MovieCard(
+                          movie: provider.recommendations[index],
+                          isHorizontal: true,
+                        ),
                       );
                     },
                   ),
@@ -159,10 +154,7 @@ class _MovieListScreenState extends State<MovieListScreen> {
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) => RepaintBoundary(
-                    child: MovieCard(movie: provider.movies[index])
-                        .animate(delay: (index * 50).ms)
-                        .fadeIn(duration: 400.ms)
-                        .slideY(begin: 0.1),
+                    child: MovieCard(movie: provider.movies[index]),
                   ),
                   childCount: provider.movies.length,
                 ),
