@@ -126,11 +126,11 @@ class MyApp extends StatelessWidget {
       },
       home: Consumer<AuthProvider>(
         builder: (context, auth, _) {
-          if (!auth.isAuthenticated) {
-            return const LoginPage();
-          }
           if (!auth.hasBooted) {
             return BootPage(onComplete: () => auth.setBooted(true));
+          }
+          if (!auth.isAuthenticated) {
+            return const LoginPage();
           }
           return const HomePage();
         },
@@ -154,16 +154,10 @@ class WebResponsiveWrapper extends StatelessWidget {
             backgroundColor: const Color(0xFF05070A),
             body: Container(
               decoration: const BoxDecoration(
-                image: DecorationImage(
-                  // Menggunakan resolusi yang lebih kecil & format webp untuk Speed Index
-                  image: NetworkImage(
-                    'https://images.unsplash.com/photo-1477346611705-65d1883cee1e?q=80&w=1000&auto=format,webp&fit=crop',
-                  ),
-                  fit: BoxFit.cover,
-                  colorFilter: ColorFilter.mode(
-                    Colors.black87,
-                    BlendMode.darken,
-                  ),
+                gradient: RadialGradient(
+                  center: Alignment.center,
+                  radius: 1.2,
+                  colors: [Color(0xFF14192D), Color(0xFF05070A)],
                 ),
               ),
               child: Center(

@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 
 class BootProvider extends ChangeNotifier {
@@ -25,36 +24,16 @@ class BootProvider extends ChangeNotifier {
     _status = _logs[0];
     notifyListeners();
 
-    final Random random = Random();
-
+    // Smooth cinematic boot sequence (~3.1s total duration for clear visual enjoyment)
+    const int stepDelayMs = 300;
     for (int i = 0; i < _logs.length; i++) {
-      // Update status text
       _status = _logs[i];
+      _progress = (i + 1) / _logs.length;
       notifyListeners();
-
-      // Hitung target progress untuk log ini
-      double targetProgress = (i + 1) / _logs.length;
-
-      // Durasi bervariasi biar gak kaku
-      int duration = 400 + random.nextInt(800);
-      if (i == 4) duration = 1500; // Simulasi optimasi yang lama
-
-      await _smoothProgress(_progress, targetProgress, duration);
-      await Future.delayed(Duration(milliseconds: random.nextInt(200)));
+      await Future.delayed(const Duration(milliseconds: stepDelayMs));
     }
 
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future.delayed(const Duration(milliseconds: 400));
     onComplete();
-  }
-
-  Future<void> _smoothProgress(double start, double end, int durationMs) async {
-    final int steps = 15;
-    final int stepDuration = durationMs ~/ steps;
-
-    for (int i = 1; i <= steps; i++) {
-      await Future.delayed(Duration(milliseconds: stepDuration));
-      _progress = start + (end - start) * (i / steps);
-      notifyListeners();
-    }
   }
 }

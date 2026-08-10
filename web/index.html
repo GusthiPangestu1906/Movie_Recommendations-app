@@ -9,10 +9,13 @@
   <meta name="theme-color" content="#0B0E1E">
 
   <!-- Performance: Resource Hints untuk critical resources -->
-  <link rel="preconnect" href="https://www.googleapis.com">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://firebaseapp.com">
-  <link rel="dns-prefetch" href="https://www.google-analytics.com">
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://image.tmdb.org" crossorigin>
+  <link rel="preconnect" href="https://api.themoviedb.org" crossorigin>
+  <link rel="dns-prefetch" href="https://image.tmdb.org">
+  <link rel="dns-prefetch" href="https://api.themoviedb.org">
 
   <!-- Open Graph / Preview Link -->
   <meta property="og:title" content="nyxdex - Cinematic Universe">
@@ -29,7 +32,8 @@
 
   <!-- Security Headers -->
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' https:; connect-src 'self' https:;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' https:; connect-src 'self' https:; worker-src 'self' blob:; object-src 'none';"
+>
 
   <title>Nyxdex - Cinematic Universe</title>
   <!-- Cache buster v3 untuk memaksa refresh favicon -->
@@ -39,30 +43,17 @@
   <link rel="canonical" href="https://nyxdex.web.app">
 
   <style>
-    /* Splash screen minimalis saat loading awal */
+    /* Dark background shell for seamless Flutter launch */
     body {
       background-color: #010203;
       margin: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       height: 100vh;
       width: 100vw;
       overflow: hidden;
     }
-    .nyx-initial-spinner {
-      width: 35px;
-      height: 35px;
-      border: 3px solid rgba(92, 106, 196, 0.1);
-      border-top: 3px solid #5C6AC4;
-      border-radius: 50%;
-      animation: nyx-spin 0.8s linear infinite;
-    }
-    @keyframes nyx-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
-  <div class="nyx-initial-spinner"></div>
   <!-- Menggunakan standar bootstrap terbaru tanpa window.flutterConfiguration manual -->
   <script src="flutter_bootstrap.js" async></script>
   
