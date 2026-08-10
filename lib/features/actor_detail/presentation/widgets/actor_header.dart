@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../favorite/presentation/providers/favorite_provider.dart';
-import '../../../../core/widgets/app_loading_indicator.dart';
+import '../../../../core/widgets/common/loading/app_loading_indicator.dart';
 import '../providers/actor_detail_provider.dart';
 
 class ActorHeader extends StatefulWidget {

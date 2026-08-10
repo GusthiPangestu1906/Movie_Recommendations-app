@@ -1,37 +1,34 @@
+import 'dart:math' as math;
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:provider/provider.dart';
-import 'package:animations/animations.dart';
-import '../../features/favorite/presentation/providers/favorite_provider.dart';
 import '../../models/movie.dart';
-import '../../features/movie_detail/presentation/pages/movie_detail_page.dart';
-import 'app_loading_indicator.dart';
+import 'movie_card/widgets/horizontal_movie_card.dart';
+import 'movie_card/widgets/movie_card_back.dart';
+import 'movie_card/widgets/standard_movie_card.dart';
 
-class FavoriteButton extends StatefulWidget {
+class MovieCard extends StatefulWidget {
   final Movie movie;
-  const FavoriteButton({super.key, required this.movie});
+  final bool isHorizontal;
+
+  const MovieCard({super.key, required this.movie, this.isHorizontal = false});
 
   @override
-  State<FavoriteButton> createState() => _FavoriteButtonState();
+  State<MovieCard> createState() => _MovieCardState();
 }
 
-class _FavoriteButtonState extends State<FavoriteButton>
+class _MovieCardState extends State<MovieCard>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
+  double _dragExtent = 0;
+  bool _isRevealed = false;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 200),
       vsync: this,
+      duration: const Duration(milliseconds: 400),
     );
-    _scaleAnimation = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.3), weight: 50),
-      TweenSequenceItem(tween: Tween(begin: 1.3, end: 1.0), weight: 50),
-    ]).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -40,348 +37,82 @@ class _FavoriteButtonState extends State<FavoriteButton>
     super.dispose();
   }
 
+  void _toggleReveal() {
+    if (_isRevealed) {
+      _controller.reverse();
+    } else {
+      _controller.forward();
+    }
+    _isRevealed = !_isRevealed;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Selector<FavoriteProvider, bool>(
-      selector: (_, provider) => provider.isFavorite(widget.movie.id),
-      builder: (context, isFavorite, child) {
-        return GestureDetector(
-          onTap: () {
-            HapticFeedback.lightImpact();
-            _controller.forward(from: 0);
-            context.read<FavoriteProvider>().toggleFavorite(widget.movie);
+    if (widget.isHorizontal) {
+      return HorizontalMovieCard(movie: widget.movie);
+    }
+
+    final revealLimit = MediaQuery.of(context).size.width * 0.75;
+
+    Widget currentCard;
+    if (widget.movie.watchDate == null) {
+      currentCard = StandardMovieCard(movie: widget.movie);
+    } else {
+      currentCard = GestureDetector(
+        onHorizontalDragUpdate: (details) {
+          setState(() {
+            _dragExtent += details.primaryDelta!;
+            if (_dragExtent > 0) _dragExtent = 0;
+            if (_dragExtent < -revealLimit) _dragExtent = -revealLimit;
+            _controller.value = _dragExtent.abs() / revealLimit;
+          });
+        },
+        onHorizontalDragEnd: (details) {
+          if (_dragExtent.abs() > revealLimit / 2 ||
+              details.primaryVelocity! < -500) {
+            _controller.forward();
+            _isRevealed = true;
+            _dragExtent = -revealLimit;
+          } else {
+            _controller.reverse();
+            _isRevealed = false;
+            _dragExtent = 0;
+          }
+          HapticFeedback.lightImpact();
+        },
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            final angle = _controller.value * math.pi;
+            final isBackVisible = angle > math.pi / 2;
+
+            return Transform(
+              transform: Matrix4.identity()
+                ..setEntry(3, 2, 0.001) // perspective
+                ..rotateY(angle),
+              alignment: Alignment.center,
+              child: isBackVisible
+                  ? Transform(
+                      transform: Matrix4.identity()..rotateY(math.pi),
+                      alignment: Alignment.center,
+                      child: MovieCardBack(
+                        movie: widget.movie,
+                        onTap: _toggleReveal,
+                      ),
+                    )
+                  : StandardMovieCard(
+                      movie: widget.movie,
+                      onFlip: _toggleReveal,
+                    ),
+            );
           },
-          child: ScaleTransition(
-            scale: _scaleAnimation,
-            child: Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: Colors.black45,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                transitionBuilder: (child, animation) =>
-                    ScaleTransition(scale: animation, child: child),
-                child: Icon(
-                  isFavorite ? Icons.favorite : Icons.favorite_border,
-                  key: ValueKey<bool>(isFavorite),
-                  color: isFavorite ? Colors.redAccent : Colors.white,
-                  size: 14,
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class MovieCard extends StatelessWidget {
-  final Movie movie;
-  final bool isHorizontal;
-
-  const MovieCard({super.key, required this.movie, this.isHorizontal = false});
-
-  @override
-  Widget build(BuildContext context) {
-    return isHorizontal
-        ? _buildHorizontalCard(context)
-        : _buildStandardCard(context);
-  }
-
-  Widget _buildHorizontalCard(BuildContext context) {
-    return OpenContainer(
-      closedElevation: 0,
-      closedColor: Colors.transparent,
-      openColor: const Color(0xFF0B0E1E),
-      closedShape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(4)),
-      ),
-      transitionType: ContainerTransitionType.fadeThrough,
-      openBuilder: (context, _) => MovieDetailPage(movie: movie),
-      closedBuilder: (context, openContainer) => RepaintBoundary(
-        child: GestureDetector(
-          onTap: openContainer,
-          child: Container(
-            width: 160,
-            margin: const EdgeInsets.only(right: 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: Stack(
-                      children: [
-                        CachedNetworkImage(
-                          imageUrl: movie.fullPosterPath,
-                          fit: BoxFit.cover,
-                          alignment: Alignment.center,
-                          width: double.infinity,
-                          height: double.infinity,
-                          placeholder: (context, url) => const Center(
-                            child: AppLoadingIndicator(size: 20),
-                          ),
-                          errorWidget: (context, url, error) =>
-                              const Icon(Icons.movie, color: Colors.white10),
-                        ),
-                        Positioned(
-                          top: 8,
-                          left: 8,
-                          child: FavoriteButton(movie: movie),
-                        ),
-                        Positioned(
-                          top: 8,
-                          right: 8,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.black54,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.star_rounded,
-                                  color: Colors.amber,
-                                  size: 12,
-                                ),
-                                const SizedBox(width: 2),
-                                Text(
-                                  movie.voteAverage.toStringAsFixed(1),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        movie.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        movie.releaseDate.isNotEmpty
-                            ? movie.releaseDate.split('-')[0]
-                            : 'N/A',
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-            ),
-          ),
         ),
-      ),
-    );
-  }
+      );
+    }
 
-  Widget _buildStandardCard(BuildContext context) {
-    return OpenContainer(
-      closedElevation: 0,
-      closedColor: Colors.transparent,
-      openColor: const Color(0xFF0B0E1E),
-      closedShape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(4)),
-      ),
-      transitionType: ContainerTransitionType.fadeThrough,
-      openBuilder: (context, _) => MovieDetailPage(movie: movie),
-      closedBuilder: (context, openContainer) => RepaintBoundary(
-        child: GestureDetector(
-          onTap: openContainer,
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 20),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.02),
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: Colors.white.withOpacity(0.05)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, 5),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: Row(
-                children: [
-                  Stack(
-                    children: [
-                      CachedNetworkImage(
-                        imageUrl: movie.fullPosterPath,
-                        width: 120,
-                        height: 180,
-                        fit: BoxFit.cover,
-                        alignment: Alignment.center,
-                        placeholder: (context, url) =>
-                            const Center(child: AppLoadingIndicator(size: 30)),
-                        errorWidget: (context, url, error) =>
-                            const Icon(Icons.movie, color: Colors.white10),
-                      ),
-                      Positioned(
-                        top: 8,
-                        left: 8,
-                        child: FavoriteButton(movie: movie),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 16,
-                        horizontal: 8,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            movie.title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: Colors.white,
-                              height: 1.2,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerLeft,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.star_rounded,
-                                  color: Colors.amber,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  movie.voteAverage.toStringAsFixed(1),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                                const Text(
-                                  ' / 10 TMDb',
-                                  style: TextStyle(
-                                    color: Colors.white30,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerLeft,
-                            child: Wrap(
-                              spacing: 8,
-                              runSpacing: 4,
-                              children: [
-                                _buildBadge(
-                                  icon: Icons.calendar_today,
-                                  text: movie.releaseDate.isNotEmpty
-                                      ? movie.releaseDate.split('-')[0]
-                                      : 'N/A',
-                                ),
-                                _buildBadge(
-                                  icon: movie.isTv
-                                      ? Icons.tv
-                                      : Icons.movie_filter,
-                                  text: movie.isTv ? 'Drama' : 'Movie',
-                                  color: const Color(
-                                    0xFF5C6AC4,
-                                  ).withOpacity(0.2),
-                                  textColor: const Color(0xFF5C6AC4),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.only(right: 12),
-                    child: Icon(Icons.chevron_right, color: Colors.white10),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBadge({
-    required IconData icon,
-    required String text,
-    Color? color,
-    Color? textColor,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color ?? Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: textColor ?? Colors.white30, size: 10),
-          const SizedBox(width: 4),
-          Text(
-            text,
-            style: TextStyle(
-              color: textColor ?? Colors.white30,
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: currentCard,
     );
   }
 }

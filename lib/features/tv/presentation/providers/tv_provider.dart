@@ -24,12 +24,25 @@ class TvProvider with ChangeNotifier {
   String? _selectedCountry;
   String? get selectedCountry => _selectedCountry;
 
+  void _syncWithHistory(List<Movie> list, List<Movie> history) {
+    if (history.isEmpty) return;
+    for (var movie in list) {
+      final historyItem = history.firstWhere(
+        (h) => h.id == movie.id && h.isTv == movie.isTv,
+        orElse: () => movie,
+      );
+      if (historyItem.watchDate != null) {
+        movie.watchDate = historyItem.watchDate;
+      }
+    }
+  }
+
   void setDramaMode(bool value) {
     _isDramaMode = value;
     notifyListeners();
   }
 
-  Future<void> fetchTvSeries({String? country}) async {
+  Future<void> fetchTvSeries({String? country, List<Movie>? history}) async {
     _isLoading = true;
     _selectedCountry = country;
     _currentTvPage = 1;
@@ -39,6 +52,7 @@ class TvProvider with ChangeNotifier {
         originCountry: country,
         page: _currentTvPage,
       );
+      if (history != null) _syncWithHistory(_tvSeries, history);
     } catch (e) {
       debugPrint('Error fetching TV series: $e');
     } finally {
@@ -47,7 +61,7 @@ class TvProvider with ChangeNotifier {
     }
   }
 
-  Future<void> fetchMoreTvSeries() async {
+  Future<void> fetchMoreTvSeries({List<Movie>? history}) async {
     if (_isFetchingMore) return;
     _isFetchingMore = true;
     notifyListeners();
@@ -58,6 +72,7 @@ class TvProvider with ChangeNotifier {
         originCountry: _selectedCountry,
         page: _currentTvPage,
       );
+      if (history != null) _syncWithHistory(nextTv, history);
       _tvSeries.addAll(nextTv);
     } catch (e) {
       debugPrint('Error fetching more TV series: $e');

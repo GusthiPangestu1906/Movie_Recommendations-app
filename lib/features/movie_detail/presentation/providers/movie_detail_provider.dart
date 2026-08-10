@@ -20,7 +20,10 @@ class MovieDetailProvider extends ChangeNotifier {
   });
 
   Future<void> init() async {
-    await movieProvider.loadMovieExtras(movie);
+    await movieProvider.loadMovieExtras(
+      movie,
+      history: historyProvider.history,
+    );
   }
 
   void playTrailer(BuildContext context, String? key) async {

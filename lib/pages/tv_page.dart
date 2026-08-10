@@ -7,7 +7,8 @@ import '../features/search/presentation/providers/search_provider.dart';
 import '../features/favorite/presentation/providers/favorite_provider.dart';
 import '../providers/history_provider.dart';
 import '../core/widgets/movie_card.dart';
-import '../core/widgets/shimmer_loading.dart';
+import '../core/widgets/common/loading/shimmer_loading.dart';
+import '../core/widgets/movie_card/widgets/movie_card_shimmer.dart';
 
 class TvPage extends StatefulWidget {
   const TvPage({super.key});
@@ -25,10 +26,12 @@ class _TvPageState extends State<TvPage> {
     super.initState();
     Future.microtask(() {
       if (!mounted) return;
-      context.read<TvProvider>().fetchTvSeries();
+      final historyProvider = context.read<HistoryProvider>();
+      context.read<TvProvider>().fetchTvSeries(
+        history: historyProvider.history,
+      );
       final movieProvider = context.read<MovieProvider>();
       final favoriteProvider = context.read<FavoriteProvider>();
-      final historyProvider = context.read<HistoryProvider>();
       movieProvider.fetchTvRecommendations(
         favoriteTv: favoriteProvider.favoriteTv,
         history: historyProvider.history,
@@ -38,12 +41,16 @@ class _TvPageState extends State<TvPage> {
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {
+        final historyProvider = context.read<HistoryProvider>();
         if (_tvSearchController.text.isEmpty) {
-          context.read<TvProvider>().fetchMoreTvSeries();
+          context.read<TvProvider>().fetchMoreTvSeries(
+            history: historyProvider.history,
+          );
         } else {
           context.read<SearchProvider>().fetchMoreSearchResults(
             isDramaMode: true,
             selectedCountry: context.read<TvProvider>().selectedCountry,
+            history: historyProvider.history,
           );
         }
       }

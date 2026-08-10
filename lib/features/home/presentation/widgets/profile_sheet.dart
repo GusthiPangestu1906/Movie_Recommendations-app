@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../providers/auth_provider.dart';
-import '../../../../core/widgets/app_loading_indicator.dart';
+import '../../../../core/widgets/common/loading/app_loading_indicator.dart';
 
 class ProfileSheet extends StatefulWidget {
   const ProfileSheet({super.key});

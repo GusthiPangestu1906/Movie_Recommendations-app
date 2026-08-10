@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../../../../providers/history_provider.dart';
 import '../../../tv/presentation/providers/tv_provider.dart';
 import '../../../search/presentation/providers/search_provider.dart';
 
@@ -45,6 +46,7 @@ class FilterSheet extends StatelessWidget {
           builder: (context, setModalState) {
             final tvProvider = Provider.of<TvProvider>(context);
             final searchProvider = Provider.of<SearchProvider>(context);
+            final historyProvider = Provider.of<HistoryProvider>(context);
             return Column(
               children: [
                 Container(
@@ -97,6 +99,7 @@ class FilterSheet extends StatelessWidget {
                                     country: country['value']!.isEmpty
                                         ? null
                                         : country['value'],
+                                    history: historyProvider.history,
                                   );
                                 });
                               },
@@ -192,7 +195,9 @@ class FilterSheet extends StatelessWidget {
                         child: ElevatedButton(
                           onPressed: () {
                             if (!isDramaMode) {
-                              searchProvider.applyGenreFilter();
+                              searchProvider.applyGenreFilter(
+                                history: historyProvider.history,
+                              );
                             }
                             Navigator.pop(context);
                           },
