@@ -4,7 +4,15 @@
   <base href="$FLUTTER_BASE_HREF">
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Nyxdex - temukan rekomendasi film dan tontonan favoritmu">
+  <meta name="theme-color" content="#0B0E1E">
+
+  <!-- Performance: Resource Hints untuk critical resources -->
+  <link rel="preconnect" href="https://www.googleapis.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://firebaseapp.com">
+  <link rel="dns-prefetch" href="https://www.google-analytics.com">
 
   <!-- Open Graph / Preview Link -->
   <meta property="og:title" content="nyxdex - Cinematic Universe">
@@ -19,11 +27,16 @@
   <meta name="twitter:description" content="nyxdex - temukan rekomendasi film dan tontonan favoritmu">
   <meta name="twitter:image" content="https://nyxdex.web.app/og-banner.png">
 
+  <!-- Security Headers -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' https:; connect-src 'self' https:;">
+
   <title>Nyxdex - Cinematic Universe</title>
   <!-- Cache buster v3 untuk memaksa refresh favicon -->
-  <link rel="icon" type="image/png" href="favicon.png?v=3">
+  <link rel="icon" type="image/png" href="favicon.png?v=3" fetchpriority="high">
   <link rel="apple-touch-icon" href="favicon.png?v=3">
   <link rel="manifest" href="manifest.json">
+  <link rel="canonical" href="https://nyxdex.web.app">
 
   <style>
     /* Splash screen minimalis saat loading awal */
@@ -52,5 +65,58 @@
   <div class="nyx-initial-spinner"></div>
   <!-- Menggunakan standar bootstrap terbaru tanpa window.flutterConfiguration manual -->
   <script src="flutter_bootstrap.js" async></script>
+  
+  <!-- Service Worker Registration untuk caching dan offline support -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js', {
+          scope: '/',
+        }).then((registration) => {
+          console.log('Service Worker registered:', registration);
+          // Check untuk updates setiap jam
+          setInterval(() => {
+            registration.update();
+          }, 3600000);
+        }).catch((error) => {
+          console.log('Service Worker registration failed:', error);
+        });
+      });
+    }
+  </script>
+
+  <!-- Performance Monitoring: Web Vitals -->
+  <script>
+    // Utility untuk tracking Web Vitals metrics
+    const reportWebVitals = () => {
+      // Cumulative Layout Shift (CLS)
+      new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          console.log('CLS:', entry.value);
+        }
+      }).observe({type: 'layout-shift', buffered: true});
+
+      // Largest Contentful Paint (LCP)
+      new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          console.log('LCP:', entry.startTime);
+        }
+      }).observe({type: 'largest-contentful-paint', buffered: true});
+
+      // First Input Delay (FID) / Interaction to Next Paint (INP)
+      new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          console.log('INP/FID:', entry.processingDuration);
+        }
+      }).observe({type: 'first-input', buffered: true});
+    };
+
+    // Defer Web Vitals reporting sampai page interactive
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', reportWebVitals);
+    } else {
+      reportWebVitals();
+    }
+  </script>
 </body>
 </html>
