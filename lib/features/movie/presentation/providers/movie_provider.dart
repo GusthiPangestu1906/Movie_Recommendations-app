@@ -117,7 +117,9 @@ class MovieProvider with ChangeNotifier {
           latestFavorite.id,
           isTv: false,
         );
-        if (history != null) _syncWithHistory(_recommendations, history);
+        if (history != null) {
+          _syncWithHistory(_recommendations, history);
+        }
         notifyListeners();
         return;
       } catch (e) {
@@ -134,7 +136,7 @@ class MovieProvider with ChangeNotifier {
             latestHistory.id,
             isTv: false,
           );
-          if (history != null) _syncWithHistory(_recommendations, history);
+          _syncWithHistory(_recommendations, history);
           notifyListeners();
           return;
         } catch (e) {
@@ -158,7 +160,9 @@ class MovieProvider with ChangeNotifier {
           latestFavorite.id,
           isTv: true,
         );
-        if (history != null) _syncWithHistory(_tvRecommendations, history);
+        if (history != null) {
+          _syncWithHistory(_tvRecommendations, history);
+        }
         notifyListeners();
         return;
       } catch (e) {
@@ -175,7 +179,7 @@ class MovieProvider with ChangeNotifier {
             latestHistory.id,
             isTv: true,
           );
-          if (history != null) _syncWithHistory(_tvRecommendations, history);
+          _syncWithHistory(_tvRecommendations, history);
           notifyListeners();
           return;
         } catch (e) {
