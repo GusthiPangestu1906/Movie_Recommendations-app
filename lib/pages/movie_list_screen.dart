@@ -4,7 +4,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../features/movie/presentation/providers/movie_provider.dart';
 import '../providers/history_provider.dart';
 import '../core/widgets/movie_card.dart';
-import '../core/widgets/shimmer_loading.dart';
+import '../core/widgets/common/loading/shimmer_loading.dart';
+import '../core/widgets/movie_card/widgets/movie_card_shimmer.dart';
 
 class MovieListScreen extends StatefulWidget {
   const MovieListScreen({super.key});
@@ -26,14 +27,21 @@ class _MovieListScreenState extends State<MovieListScreen> {
         context,
         listen: false,
       );
-      provider.fetchNowPlaying();
-      provider.fetchRecommendations(history: historyProvider.history);
+      provider.fetchNowPlaying(history: historyProvider.allHistory);
+      provider.fetchRecommendations(history: historyProvider.allHistory);
     });
 
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {
-        Provider.of<MovieProvider>(context, listen: false).fetchNextPage();
+        final historyProvider = Provider.of<HistoryProvider>(
+          context,
+          listen: false,
+        );
+        Provider.of<MovieProvider>(
+          context,
+          listen: false,
+        ).fetchNextPage(history: historyProvider.allHistory);
       }
     });
   }

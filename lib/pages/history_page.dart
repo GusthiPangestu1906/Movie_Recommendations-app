@@ -9,7 +9,7 @@ import '../features/tv/presentation/providers/tv_provider.dart';
 import '../providers/connectivity_provider.dart';
 import '../models/movie.dart';
 import '../core/widgets/movie_card.dart';
-import '../core/widgets/app_loading_indicator.dart';
+import '../core/widgets/common/loading/app_loading_indicator.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class HistoryPage extends StatefulWidget {

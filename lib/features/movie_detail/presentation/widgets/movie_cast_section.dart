@@ -6,8 +6,8 @@ import 'package:provider/provider.dart';
 import '../../../../models/movie.dart';
 import '../../../movie/presentation/providers/movie_provider.dart';
 import '../../../favorite/presentation/providers/favorite_provider.dart';
-import '../../../../core/widgets/shimmer_loading.dart';
-import '../../../../core/widgets/app_loading_indicator.dart';
+import '../../../../core/widgets/common/loading/shimmer_loading.dart';
+import '../../../../core/widgets/common/loading/app_loading_indicator.dart';
 import '../../../actor_detail/presentation/pages/actor_detail_page.dart';
 
 class MovieCastSection extends StatelessWidget {

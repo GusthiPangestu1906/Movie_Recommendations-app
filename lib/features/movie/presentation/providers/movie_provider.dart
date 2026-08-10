@@ -37,12 +37,26 @@ class MovieProvider with ChangeNotifier {
     }
   }
 
-  Future<void> fetchNowPlaying() async {
+  void _syncWithHistory(List<Movie> list, List<Movie> history) {
+    if (history.isEmpty) return;
+    for (var movie in list) {
+      final historyItem = history.firstWhere(
+        (h) => h.id == movie.id && h.isTv == movie.isTv,
+        orElse: () => movie,
+      );
+      if (historyItem.watchDate != null) {
+        movie.watchDate = historyItem.watchDate;
+      }
+    }
+  }
+
+  Future<void> fetchNowPlaying({List<Movie>? history}) async {
     _isLoading = true;
     _currentPage = 1;
     notifyListeners();
     try {
       _movies = await _repository.getNowPlayingMovies();
+      if (history != null) _syncWithHistory(_movies, history);
     } catch (e) {
       debugPrint('Error fetching now playing: $e');
     } finally {
@@ -51,7 +65,7 @@ class MovieProvider with ChangeNotifier {
     }
   }
 
-  Future<void> fetchByCategory(String category) async {
+  Future<void> fetchByCategory(String category, {List<Movie>? history}) async {
     _isLoading = true;
     _currentPage = 1;
     _currentCategory = category;
@@ -61,6 +75,7 @@ class MovieProvider with ChangeNotifier {
         category,
         page: _currentPage,
       );
+      if (history != null) _syncWithHistory(_movies, history);
     } catch (e) {
       debugPrint('Error fetching category $category: $e');
     } finally {
@@ -69,7 +84,7 @@ class MovieProvider with ChangeNotifier {
     }
   }
 
-  Future<void> fetchNextPage() async {
+  Future<void> fetchNextPage({List<Movie>? history}) async {
     if (_isFetchingMore) return;
     _isFetchingMore = true;
     notifyListeners();
@@ -80,6 +95,7 @@ class MovieProvider with ChangeNotifier {
         _currentCategory,
         page: _currentPage,
       );
+      if (history != null) _syncWithHistory(nextMovies, history);
       _movies.addAll(nextMovies);
     } catch (e) {
       debugPrint('Error fetching next page: $e');
@@ -101,6 +117,9 @@ class MovieProvider with ChangeNotifier {
           latestFavorite.id,
           isTv: false,
         );
+        if (history != null) {
+          _syncWithHistory(_recommendations, history);
+        }
         notifyListeners();
         return;
       } catch (e) {
@@ -117,6 +136,7 @@ class MovieProvider with ChangeNotifier {
             latestHistory.id,
             isTv: false,
           );
+          _syncWithHistory(_recommendations, history);
           notifyListeners();
           return;
         } catch (e) {
@@ -140,6 +160,9 @@ class MovieProvider with ChangeNotifier {
           latestFavorite.id,
           isTv: true,
         );
+        if (history != null) {
+          _syncWithHistory(_tvRecommendations, history);
+        }
         notifyListeners();
         return;
       } catch (e) {
@@ -156,6 +179,7 @@ class MovieProvider with ChangeNotifier {
             latestHistory.id,
             isTv: true,
           );
+          _syncWithHistory(_tvRecommendations, history);
           notifyListeners();
           return;
         } catch (e) {
@@ -168,7 +192,7 @@ class MovieProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> loadMovieExtras(Movie movie) async {
+  Future<void> loadMovieExtras(Movie movie, {List<Movie>? history}) async {
     if (movie.cast != null &&
         movie.trailerKey != null &&
         movie.certification != null) {
@@ -177,6 +201,7 @@ class MovieProvider with ChangeNotifier {
           movie.id,
           isTv: movie.isTv,
         );
+        if (history != null) _syncWithHistory(_relatedMovies, history);
         notifyListeners();
       } catch (e) {
         debugPrint('Error loading related movies: $e');
@@ -196,6 +221,8 @@ class MovieProvider with ChangeNotifier {
       movie.trailerKey = results[1] as String?;
       movie.certification = results[2] as String?;
       _relatedMovies = results[3] as List<Movie>;
+
+      if (history != null) _syncWithHistory(_relatedMovies, history);
 
       notifyListeners();
     } catch (e) {

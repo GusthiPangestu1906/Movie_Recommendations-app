@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../models/movie.dart';
 import '../../../../core/widgets/movie_card.dart';
-import '../../../../core/widgets/shimmer_loading.dart';
+import '../../../../core/widgets/movie_card/widgets/movie_card_shimmer.dart';
 
 class RelatedMoviesSection extends StatelessWidget {
   final List<Movie> related;

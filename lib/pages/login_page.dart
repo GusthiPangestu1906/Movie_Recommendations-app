@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import '../core/widgets/app_loading_indicator.dart';
+import '../core/widgets/common/loading/app_loading_indicator.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

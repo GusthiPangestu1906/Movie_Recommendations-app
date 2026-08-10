@@ -17,6 +17,8 @@ class HistoryProvider with ChangeNotifier {
   List<Movie> _tvHistory = [];
   List<Movie> get tvHistory => _tvHistory;
 
+  List<Movie> get allHistory => [..._history, ..._tvHistory];
+
   String _searchQuery = '';
   String get searchQuery => _searchQuery;
 
@@ -170,7 +172,8 @@ class HistoryProvider with ChangeNotifier {
     if (_userId != null) {
       await _saveToFirestore(movie);
     }
-    _movieProvider?.fetchRecommendations(history: _history);
+    _movieProvider?.fetchRecommendations(history: allHistory);
+    _movieProvider?.fetchTvRecommendations(history: allHistory);
   }
 
   Future<void> _saveToFirestore(Movie movie) async {
@@ -196,7 +199,8 @@ class HistoryProvider with ChangeNotifier {
           .doc(movieId.toString())
           .delete();
     }
-    _movieProvider?.fetchRecommendations(history: _history);
+    _movieProvider?.fetchRecommendations(history: allHistory);
+    _movieProvider?.fetchTvRecommendations(history: allHistory);
   }
 
   Future<void> _saveHistory() async {

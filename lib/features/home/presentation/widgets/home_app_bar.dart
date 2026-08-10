@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../../../../providers/history_provider.dart';
 import '../../../search/presentation/providers/search_provider.dart';
 import '../../../tv/presentation/providers/tv_provider.dart';
 import '../providers/home_provider.dart';
@@ -17,6 +18,10 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
     final homeProvider = Provider.of<HomeProvider>(context);
     final searchProvider = Provider.of<SearchProvider>(context, listen: false);
     final tvProvider = Provider.of<TvProvider>(context, listen: false);
+    final historyProvider = Provider.of<HistoryProvider>(
+      context,
+      listen: false,
+    );
     final isDramaMode = homeProvider.isDramaMode;
 
     if (isWeb) {
@@ -40,6 +45,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
                     value,
                     isDramaMode: isDramaMode,
                     selectedCountry: tvProvider.selectedCountry,
+                    history: historyProvider.allHistory,
                   ),
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(

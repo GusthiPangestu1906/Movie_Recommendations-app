@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../features/movie/presentation/providers/movie_provider.dart';
 import '../features/favorite/presentation/providers/favorite_provider.dart';
 import '../features/search/presentation/providers/search_provider.dart';
-import '../core/widgets/app_loading_indicator.dart';
+import '../core/widgets/common/loading/app_loading_indicator.dart';
 import '../models/movie.dart';
 import '../providers/connectivity_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';

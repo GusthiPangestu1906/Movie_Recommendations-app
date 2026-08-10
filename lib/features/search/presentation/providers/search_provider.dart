@@ -33,6 +33,19 @@ class SearchProvider with ChangeNotifier {
   int _currentSearchPage = 1;
   String _lastSearchQuery = '';
 
+  void _syncWithHistory(List<Movie> list, List<Movie> history) {
+    if (history.isEmpty) return;
+    for (var movie in list) {
+      final historyItem = history.firstWhere(
+        (h) => h.id == movie.id && h.isTv == movie.isTv,
+        orElse: () => movie,
+      );
+      if (historyItem.watchDate != null) {
+        movie.watchDate = historyItem.watchDate;
+      }
+    }
+  }
+
   final List<String> _selectedGenreIds = [];
   List<String> get selectedGenreIds => _selectedGenreIds;
 
@@ -55,6 +68,7 @@ class SearchProvider with ChangeNotifier {
     String query, {
     bool isDramaMode = false,
     String? selectedCountry,
+    List<Movie>? history,
   }) async {
     if (_debounce?.isActive ?? false) _debounce?.cancel();
 
@@ -62,7 +76,7 @@ class SearchProvider with ChangeNotifier {
       if (isDramaMode) {
         _tvSearchResults = [];
       } else if (_selectedGenreIds.isNotEmpty) {
-        applyGenreFilter();
+        applyGenreFilter(history: history);
       } else {
         _searchResults = [];
         _suggestions = [];
@@ -92,6 +106,7 @@ class SearchProvider with ChangeNotifier {
           } else {
             _tvSearchResults = results;
           }
+          if (history != null) _syncWithHistory(_tvSearchResults, history);
         } else {
           final genreString = _selectedGenreIds.isEmpty
               ? null
@@ -101,6 +116,7 @@ class SearchProvider with ChangeNotifier {
             withGenres: genreString,
             page: _currentSearchPage,
           );
+          if (history != null) _syncWithHistory(_searchResults, history);
           _suggestions = _searchResults.take(5).toList();
         }
       } catch (e) {
@@ -115,6 +131,7 @@ class SearchProvider with ChangeNotifier {
   Future<void> fetchMoreSearchResults({
     bool isDramaMode = false,
     String? selectedCountry,
+    List<Movie>? history,
   }) async {
     if (_isFetchingMore) return;
 
@@ -147,6 +164,8 @@ class SearchProvider with ChangeNotifier {
           page: _currentSearchPage,
         );
       }
+
+      if (history != null) _syncWithHistory(nextResults, history);
 
       if (isDramaMode) {
         _tvSearchResults.addAll(nextResults);
@@ -185,7 +204,7 @@ class SearchProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> applyGenreFilter() async {
+  Future<void> applyGenreFilter({List<Movie>? history}) async {
     if (_selectedGenreIds.isEmpty) {
       _searchResults = [];
       notifyListeners();
@@ -202,6 +221,7 @@ class SearchProvider with ChangeNotifier {
         withGenres: genreString,
         page: _currentSearchPage,
       );
+      if (history != null) _syncWithHistory(_searchResults, history);
     } catch (e) {
       debugPrint('Error applying genre filter: $e');
     } finally {
@@ -210,12 +230,13 @@ class SearchProvider with ChangeNotifier {
     }
   }
 
-  Future<void> searchByCategory(String category) async {
+  Future<void> searchByCategory(String category, {List<Movie>? history}) async {
     _isLoading = true;
     _selectedGenreIds.clear();
     notifyListeners();
     try {
       _searchResults = await _repository.getMoviesByCategory(category);
+      if (history != null) _syncWithHistory(_searchResults, history);
     } catch (e) {
       debugPrint('Error searching by category: $e');
     } finally {

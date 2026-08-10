@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../movie/presentation/providers/movie_provider.dart';
 import '../../../favorite/presentation/providers/favorite_provider.dart';
 import '../../../search/presentation/providers/search_provider.dart';
-import '../../../../core/widgets/app_loading_indicator.dart';
+import '../../../../core/widgets/common/loading/app_loading_indicator.dart';
 import '../providers/actor_detail_provider.dart';
 import '../widgets/actor_header.dart';
 import '../widgets/actor_biography.dart';

@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../models/movie.dart';
-import '../../../../core/widgets/app_loading_indicator.dart';
+import '../../../../core/widgets/common/loading/app_loading_indicator.dart';
 import '../../../movie_detail/presentation/pages/movie_detail_page.dart';
 import '../providers/actor_detail_provider.dart';
 

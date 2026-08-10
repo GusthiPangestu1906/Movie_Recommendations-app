@@ -1,13 +1,51 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../providers/history_provider.dart';
 import '../features/search/presentation/providers/search_provider.dart';
 import '../features/tv/presentation/providers/tv_provider.dart';
 import '../core/widgets/movie_card.dart';
-import '../core/widgets/shimmer_loading.dart';
+import '../core/widgets/movie_card/widgets/movie_card_shimmer.dart';
 
-class SearchPage extends StatelessWidget {
+class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
+
+  @override
+  State<SearchPage> createState() => _SearchPageState();
+}
+
+class _SearchPageState extends State<SearchPage> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      final searchProvider = context.read<SearchProvider>();
+      final tvProvider = context.read<TvProvider>();
+      final historyProvider = context.read<HistoryProvider>();
+
+      if (!searchProvider.isFetchingMore) {
+        searchProvider.fetchMoreSearchResults(
+          isDramaMode: tvProvider.isDramaMode,
+          selectedCountry: tvProvider.selectedCountry,
+          history: historyProvider.allHistory,
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,9 +110,13 @@ class SearchPage extends StatelessWidget {
           }
 
           return ListView.builder(
+            controller: _scrollController,
             padding: const EdgeInsets.all(16),
-            itemCount: results.length,
+            itemCount: results.length + (searchProvider.isFetchingMore ? 2 : 0),
             itemBuilder: (context, index) {
+              if (index >= results.length) {
+                return const MovieCardShimmer();
+              }
               return RepaintBoundary(
                 child: MovieCard(movie: results[index])
                     .animate(delay: (index * 50).ms)
