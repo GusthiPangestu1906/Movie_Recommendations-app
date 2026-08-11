@@ -11,6 +11,9 @@
 .svn/
 .swiftpm/
 migrate_working_dir/
+PULL_REQUEST_DESCRIPTION.md
+COMMIT_MESSAGE.md
+
 
 # IntelliJ related
 *.iml
