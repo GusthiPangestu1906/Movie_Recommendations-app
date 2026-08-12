@@ -1,464 +1,89 @@
-import 'dart:convert';
-import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../core/network/api_client.dart';
+import '../features/movie/data/datasources/movie_remote_data_source.dart';
+import '../features/movie/data/datasources/person_remote_data_source.dart';
 import '../models/movie.dart';
 
+/// Facade Service providing access to TMDB & Wikidata API endpoints.
+/// Maintains 100% backward compatibility while delegating data operations
+/// to specialized [MovieRemoteDataSource] and [PersonRemoteDataSource] implementations.
 class ApiService {
-  // KEAMANAN: Menggunakan Proxy Cloudflare untuk menyembunyikan API Key
-  static const String _proxyUrl =
-      'https://delicate-dew-e24d.gusthipangestu1906.workers.dev';
+  final MovieRemoteDataSource _movieRemoteDataSource;
+  final PersonRemoteDataSource _personRemoteDataSource;
 
-  // App Secret untuk memvalidasi request ke proxy (Diambil dari --dart-define saat build)
-  static String get _appProxySecret {
-    return const String.fromEnvironment('APP_PROXY_SECRET');
-  }
+  ApiService({
+    ApiClient? apiClient,
+    MovieRemoteDataSource? movieRemoteDataSource,
+    PersonRemoteDataSource? personRemoteDataSource,
+  }) : _movieRemoteDataSource =
+           movieRemoteDataSource ??
+           MovieRemoteDataSourceImpl(apiClient ?? ApiClient()),
+       _personRemoteDataSource =
+           personRemoteDataSource ??
+           PersonRemoteDataSourceImpl(apiClient ?? ApiClient());
 
-  // Backup key jika tidak menggunakan proxy (Opsional)
-  static String get _apiKey {
-    const keyFromEnv = String.fromEnvironment('TMDB_API_KEY');
-    if (keyFromEnv.isNotEmpty) return keyFromEnv;
-    return dotenv.env['TMDB_API_KEY'] ?? '';
-  }
+  Future<List<Movie>> getNowPlayingMovies() =>
+      _movieRemoteDataSource.getNowPlayingMovies();
 
-  static const String _baseUrl = 'https://api.themoviedb.org/3';
+  Future<List<Movie>> getTvSeries({int page = 1, String? originCountry}) =>
+      _movieRemoteDataSource.getTvSeries(
+        page: page,
+        originCountry: originCountry,
+      );
 
-  // LOGIKA OTOMATIS:
-  // Jika sedang RUN/DEBUG di localhost -> Gunakan API Key lokal (.env)
-  // Jika sedang RELEASE/DEPLOY (GitHub/Hosting) -> Gunakan Cloudflare Proxy
-  static bool get _useProxy {
-    if (kDebugMode) return false; // Matikan proxy saat di localhost
-    return _proxyUrl.contains('workers.dev'); // Aktifkan jika sudah dideploy
-  }
-
-  // Simple in-memory cache
-  final Map<String, dynamic> _cache = {};
-
-  Future<dynamic> _makeGetRequest(
-    String url, {
-    bool isWikidata = false,
-    Map<String, String>? additionalHeaders,
-  }) async {
-    try {
-      final uri = Uri.parse(url);
-
-      // KEAMANAN: Persiapkan headers dengan aman
-      Map<String, String> headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      };
-
-      // Tambahkan secret jika menggunakan proxy
-      if (_useProxy && !uri.host.contains('wikidata.org') && !isWikidata) {
-        headers['X-App-Proxy-Secret'] = _appProxySecret;
-      }
-
-      if (additionalHeaders != null) {
-        headers.addAll(additionalHeaders);
-      }
-
-      final response = await http
-          .get(uri, headers: headers)
-          .timeout(const Duration(seconds: 15));
-
-      if (response.statusCode == 200) {
-        return json.decode(response.body);
-      }
-      return null;
-    } catch (e) {
-      // KEAMANAN: Gunakan debugPrint agar log tidak muncul di Production
-      debugPrint('API Request Error: $e');
-      return null;
-    }
-  }
-
-  Future<dynamic> _getWithCache(String url) async {
-    if (_cache.containsKey(url)) {
-      return _cache[url];
-    }
-    final data = await _makeGetRequest(url);
-    if (data != null) {
-      _cache[url] = data;
-    }
-    return data;
-  }
-
-  // KEAMANAN: Helper untuk build URL.
-  // Jika pakai proxy, API Key tidak disertakan di URL karena ditangani Worker.
-  String _buildTmdbUrl(String endpoint, {Map<String, String>? params}) {
-    if (_useProxy) {
-      final uri = Uri.parse(_proxyUrl + endpoint);
-      return uri.replace(queryParameters: params).toString();
-    }
-
-    final queryParams = {...?params, 'api_key': _apiKey};
-    final uri = Uri.parse(_baseUrl + endpoint);
-    return uri.replace(queryParameters: queryParams).toString();
-  }
-
-  Future<List<Movie>> getNowPlayingMovies() async {
-    if (!_useProxy && _apiKey.isEmpty) throw Exception('API Key is missing');
-    final url = _buildTmdbUrl('/movie/now_playing');
-    final data = await _getWithCache(url);
-    if (data != null) {
-      final List results = data['results'];
-      return results.map((movie) => Movie.fromJson(movie)).toList();
-    } else {
-      throw Exception('Failed to load movies');
-    }
-  }
-
-  Future<List<Movie>> getTvSeries({int page = 1, String? originCountry}) async {
-    if (!_useProxy && _apiKey.isEmpty) throw Exception('API Key is missing');
-    final params = {
-      'page': page.toString(),
-      'sort_by': 'popularity.desc',
-      if (originCountry != null && originCountry.isNotEmpty)
-        'with_origin_country': originCountry,
-    };
-    final url = _buildTmdbUrl('/discover/tv', params: params);
-    final data = await _getWithCache(url);
-    if (data != null) {
-      final List results = data['results'];
-      return results.map((tv) => Movie.fromJson(tv, isTv: true)).toList();
-    } else {
-      throw Exception('Failed to load TV series');
-    }
-  }
-
-  Future<List<Movie>> getMoviesByCategory(
-    String category, {
-    int page = 1,
-  }) async {
-    if (!_useProxy && _apiKey.isEmpty) throw Exception('API Key is missing');
-    final params = {'page': page.toString()};
-    final url = _buildTmdbUrl('/movie/$category', params: params);
-    final data = await _getWithCache(url);
-    if (data != null) {
-      final List results = data['results'];
-      return results.map((movie) => Movie.fromJson(movie)).toList();
-    } else {
-      throw Exception('Failed to load movies by category');
-    }
-  }
+  Future<List<Movie>> getMoviesByCategory(String category, {int page = 1}) =>
+      _movieRemoteDataSource.getMoviesByCategory(category, page: page);
 
   Future<List<Movie>> discoverMovies({
     int page = 1,
     String? releaseDateGte,
     String? releaseDateLte,
     String? withGenres,
-  }) async {
-    if (!_useProxy && _apiKey.isEmpty) throw Exception('API Key is missing');
-    final params = {
-      'page': page.toString(),
-      'sort_by': 'popularity.desc',
-      if (releaseDateGte != null) 'primary_release_date.gte': releaseDateGte,
-      if (releaseDateLte != null) 'primary_release_date.lte': releaseDateLte,
-      if (withGenres != null) 'with_genres': withGenres,
-    };
-    final url = _buildTmdbUrl('/discover/movie', params: params);
-    final data = await _makeGetRequest(url);
+  }) => _movieRemoteDataSource.discoverMovies(
+    page: page,
+    releaseDateGte: releaseDateGte,
+    releaseDateLte: releaseDateLte,
+    withGenres: withGenres,
+  );
 
-    if (data != null) {
-      final List results = data['results'];
-      return results.map((movie) => Movie.fromJson(movie)).toList();
-    } else {
-      throw Exception('Failed to discover movies');
-    }
-  }
+  Future<List<Movie>> getRecommendations(int movieId, {bool isTv = false}) =>
+      _movieRemoteDataSource.getRecommendations(movieId, isTv: isTv);
 
-  Future<List<Movie>> getRecommendations(
-    int movieId, {
-    bool isTv = false,
-  }) async {
-    if (!_useProxy && _apiKey.isEmpty) throw Exception('API Key is missing');
-    final type = isTv ? 'tv' : 'movie';
-    final url = _buildTmdbUrl('/$type/$movieId/recommendations');
-    final data = await _getWithCache(url);
-    if (data != null) {
-      final List results = data['results'];
-      return results.map((movie) => Movie.fromJson(movie, isTv: isTv)).toList();
-    } else {
-      return [];
-    }
-  }
-
-  Future<List<Movie>> getDetails(int movieId, {bool isTv = false}) async {
-    if (!_useProxy && _apiKey.isEmpty) throw Exception('API Key is missing');
-    final type = isTv ? 'tv' : 'movie';
-    final url = _buildTmdbUrl('/$type/$movieId');
-    final data = await _getWithCache(url);
-    if (data != null) {
-      return [Movie.fromJson(data, isTv: isTv)];
-    } else {
-      return [];
-    }
-  }
+  Future<List<Movie>> getDetails(int movieId, {bool isTv = false}) =>
+      _movieRemoteDataSource.getDetails(movieId, isTv: isTv);
 
   Future<List<Movie>> searchMovies(
     String query, {
     String? withGenres,
     bool isTv = false,
     int page = 1,
-  }) async {
-    if (!_useProxy && _apiKey.isEmpty) throw Exception('API Key is missing');
-    final type = isTv ? 'tv' : 'movie';
-    final params = {
-      'query': query,
-      'page': page.toString(),
-      if (withGenres != null) 'with_genres': withGenres,
-    };
-    final url = _buildTmdbUrl('/search/$type', params: params);
-    final data = await _makeGetRequest(url);
+  }) => _movieRemoteDataSource.searchMovies(
+    query,
+    withGenres: withGenres,
+    isTv: isTv,
+    page: page,
+  );
 
-    if (data != null) {
-      final List results = data['results'] ?? [];
+  Future<List<Cast>> getMovieCast(int movieId, {bool isTv = false}) =>
+      _movieRemoteDataSource.getMovieCast(movieId, isTv: isTv);
 
-      if (withGenres != null && withGenres.isNotEmpty) {
-        final genreSet = withGenres
-            .split(',')
-            .map((id) => int.tryParse(id))
-            .whereType<int>()
-            .toSet();
+  Future<String?> getMovieTrailer(int movieId, {bool isTv = false}) =>
+      _movieRemoteDataSource.getMovieTrailer(movieId, isTv: isTv);
 
-        return results
-            .where((item) {
-              final List<dynamic> genreIds = item['genre_ids'] ?? [];
-              return genreIds.any((id) => genreSet.contains(id));
-            })
-            .map((item) => Movie.fromJson(item, isTv: isTv))
-            .toList();
-      }
+  Future<String?> getMovieCertification(int movieId, {bool isTv = false}) =>
+      _movieRemoteDataSource.getMovieCertification(movieId, isTv: isTv);
 
-      return results.map((item) => Movie.fromJson(item, isTv: isTv)).toList();
-    } else {
-      throw Exception('Failed to search');
-    }
-  }
+  Future<List<Cast>> searchActors(String query) =>
+      _personRemoteDataSource.searchActors(query);
 
-  Future<List<Cast>> getMovieCast(int movieId, {bool isTv = false}) async {
-    if (!_useProxy && _apiKey.isEmpty) throw Exception('API Key is missing');
-    final type = isTv ? 'tv' : 'movie';
-    final url = _buildTmdbUrl('/$type/$movieId/credits');
-    final data = await _getWithCache(url);
-    if (data != null) {
-      final List castList = data['cast'];
-      return castList.take(10).map((c) => Cast.fromJson(c)).toList();
-    } else {
-      return [];
-    }
-  }
+  Future<List<Cast>> searchWikidataActors(String query) =>
+      _personRemoteDataSource.searchWikidataActors(query);
 
-  Future<String?> getMovieTrailer(int movieId, {bool isTv = false}) async {
-    if (!_useProxy && _apiKey.isEmpty) throw Exception('API Key is missing');
-    final type = isTv ? 'tv' : 'movie';
-    final url = _buildTmdbUrl('/$type/$movieId/videos');
-    final data = await _getWithCache(url);
-    if (data != null) {
-      final List results = data['results'];
-      final trailer = results.firstWhere(
-        (v) => v['type'] == 'Trailer' && v['site'] == 'YouTube',
-        orElse: () => null,
-      );
-      return trailer?['key'];
-    } else {
-      return null;
-    }
-  }
+  Future<Map<String, String?>> getPersonExternalIds(int personId) =>
+      _personRemoteDataSource.getPersonExternalIds(personId);
 
-  Future<String?> getMovieCertification(
-    int movieId, {
-    bool isTv = false,
-  }) async {
-    if (isTv) return 'TV-PG';
-    if (!_useProxy && _apiKey.isEmpty) throw Exception('API Key is missing');
-    final url = _buildTmdbUrl('/movie/$movieId/release_dates');
-    final data = await _getWithCache(url);
-    if (data != null) {
-      final List results = data['results'];
-      final usResult = results.firstWhere(
-        (r) => r['iso_3166_1'] == 'US',
-        orElse: () => results.isNotEmpty ? results.first : null,
-      );
+  Future<Cast?> getPersonDetails(int personId) =>
+      _personRemoteDataSource.getPersonDetails(personId);
 
-      if (usResult != null) {
-        final List releaseDates = usResult['release_dates'];
-        final cert = releaseDates.firstWhere(
-          (d) =>
-              d['certification'] != null &&
-              d['certification'].toString().isNotEmpty,
-          orElse: () => null,
-        );
-        return cert?['certification'];
-      }
-    }
-    return null;
-  }
-
-  Future<List<Cast>> searchActors(String query) async {
-    if (!_useProxy && _apiKey.isEmpty) throw Exception('API Key is missing');
-    final params = {'query': query};
-    final url = _buildTmdbUrl('/search/person', params: params);
-
-    final data = await _makeGetRequest(url);
-
-    if (data != null) {
-      final List results = data['results'] ?? [];
-      List<Cast> actors = results.map((c) => Cast.fromJson(c)).toList();
-      if (actors.isEmpty) {
-        actors = await searchWikidataActors(query);
-      }
-      return actors;
-    } else {
-      throw Exception('Failed to search actors');
-    }
-  }
-
-  Future<List<Cast>> searchWikidataActors(String query) async {
-    // Gunakan Uri.https untuk konstruksi URL yang lebih aman
-    final searchUri = Uri.https('www.wikidata.org', '/w/api.php', {
-      'origin': '*',
-      'action': 'wbsearchentities',
-      'search': query,
-      'language': 'id',
-      'format': 'json',
-    });
-
-    try {
-      final data = await _makeGetRequest(
-        searchUri.toString(),
-        isWikidata: true,
-      );
-      if (data == null) return [];
-
-      final List searchResults = data['search'] ?? [];
-      final itemsToFetch = searchResults.take(5).toList();
-
-      final results = await Future.wait(
-        itemsToFetch.map((item) async {
-          final String qid = item['id'];
-          final String name = item['label'] ?? 'Unknown';
-          final String description = (item['description'] ?? '').toLowerCase();
-
-          bool isLikelyPerson =
-              description.contains('pemeran') ||
-              description.contains('aktris') ||
-              description.contains('aktor') ||
-              description.contains('actor') ||
-              description.contains('actress') ||
-              description.contains('human') ||
-              description.contains('sutradara');
-
-          if (!isLikelyPerson) return null;
-
-          final detailUri = Uri.https('www.wikidata.org', '/w/api.php', {
-            'origin': '*',
-            'action': 'wbgetentities',
-            'ids': qid,
-            'props': 'claims',
-            'format': 'json',
-          });
-
-          final detailData = await _makeGetRequest(
-            detailUri.toString(),
-            isWikidata: true,
-          );
-
-          String? imageUrl;
-          if (detailData != null &&
-              detailData['entities'] != null &&
-              detailData['entities'][qid] != null) {
-            final claims = detailData['entities'][qid]['claims'];
-            if (claims != null && claims['P18'] != null) {
-              final String imageName =
-                  claims['P18'][0]['mainsnak']['datavalue']['value'];
-              final encodedImage = Uri.encodeComponent(
-                imageName.replaceAll(' ', '_'),
-              );
-              imageUrl =
-                  'https://commons.wikimedia.org/wiki/Special:FilePath/$encodedImage?width=500';
-            }
-          }
-
-          return Cast(
-            id: qid.hashCode,
-            name: name,
-            profilePath: imageUrl,
-            character: item['description'] ?? 'Wikidata Entity',
-          );
-        }),
-      );
-
-      return results.whereType<Cast>().toList();
-    } catch (e) {
-      debugPrint('Wikidata search error: $e');
-    }
-    return [];
-  }
-
-  Future<Map<String, String?>> getPersonExternalIds(int personId) async {
-    if (!_useProxy && _apiKey.isEmpty) throw Exception('API Key is missing');
-    final url = _buildTmdbUrl('/person/$personId/external_ids');
-    final data = await _makeGetRequest(url);
-    if (data != null) {
-      return {
-        'instagram': data['instagram_id'],
-        'twitter': data['twitter_id'],
-        'facebook': data['facebook_id'],
-      };
-    }
-    return {};
-  }
-
-  Future<Cast?> getPersonDetails(int personId) async {
-    if (!_useProxy && _apiKey.isEmpty) throw Exception('API Key is missing');
-    final params = {'append_to_response': 'combined_credits'};
-    final url = _buildTmdbUrl('/person/$personId', params: params);
-    final data = await _makeGetRequest(url);
-
-    if (data != null) {
-      final cast = Cast.fromJson(data);
-      final externals = await getPersonExternalIds(personId);
-      cast.instagramId = externals['instagram'];
-      cast.twitterId = externals['twitter'];
-      cast.facebookId = externals['facebook'];
-      return cast;
-    }
-    return null;
-  }
-
-  Future<Map<String, List<Movie>>> getVerifiedFilmography(int personId) async {
-    if (!_useProxy && _apiKey.isEmpty) throw Exception('API Key is missing');
-    final url = _buildTmdbUrl('/person/$personId/combined_credits');
-    final data = await _makeGetRequest(url);
-
-    if (data != null) {
-      final List credits = data['cast'] ?? [];
-      final seenIds = <int>{};
-      final List<Movie> verifiedMovies = [];
-      final List<Movie> candidateTv = [];
-
-      for (var item in credits) {
-        final id = item['id'];
-        if (id == null || seenIds.contains(id)) continue;
-        final bool isTv = item['media_type'] == 'tv';
-        final movie = Movie.fromJson(item, isTv: isTv);
-        if (isTv) {
-          candidateTv.add(movie);
-        } else {
-          verifiedMovies.add(movie);
-        }
-        seenIds.add(id);
-      }
-
-      verifiedMovies.sort((a, b) => b.voteAverage.compareTo(a.voteAverage));
-      candidateTv.sort((a, b) => b.voteAverage.compareTo(a.voteAverage));
-
-      return {
-        'movies': verifiedMovies.take(20).toList(),
-        'tv': candidateTv.take(10).toList(),
-      };
-    }
-    return {'movies': [], 'tv': []};
-  }
+  Future<Map<String, List<Movie>>> getVerifiedFilmography(int personId) =>
+      _personRemoteDataSource.getVerifiedFilmography(personId);
 }
